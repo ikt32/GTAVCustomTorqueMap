@@ -1,0 +1,146 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Manual Transmission">
+      <UniqueIdentifier>{ec5233c7-b82a-470f-8df2-e78bce9d5929}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External Utils">
+      <UniqueIdentifier>{c256fb81-2282-40d4-b759-8d6f8f3f8463}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utils">
+      <UniqueIdentifier>{3a0d094a-6f9d-43b8-aaea-6bf1b897a99b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Menu">
+      <UniqueIdentifier>{3d1002af-79db-40b1-a64b-6cf65d44aa32}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="script.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GTAVManualTransmission\Gears\Memory\NativeMemory.cpp">
+      <Filter>Manual Transmission</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GTAVManualTransmission\Gears\Memory\VehicleExtensions.cpp">
+      <Filter>Manual Transmission</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GTAVManualTransmission\Gears\Util\Logger.cpp">
+      <Filter>External Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GTAVManualTransmission\Gears\Util\Paths.cpp">
+      <Filter>External Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GTAVManualTransmission\Gears\Util\StringFormat.cpp">
+      <Filter>External Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="FileVersion.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GTAVMenuBase\menu.cpp">
+      <Filter>Menu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GTAVMenuBase\menucontrols.cpp">
+      <Filter>Menu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GTAVMenuBase\menukeyboard.cpp">
+      <Filter>Menu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GTAVMenuBase\menusettings.cpp">
+      <Filter>Menu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GTAVMenuBase\menuutils.cpp">
+      <Filter>Menu</Filter>
+    </ClCompile>
+    <ClCompile Include="scriptSettings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="scriptMenu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GTAVManualTransmission\Gears\Util\UIUtils.cpp">
+      <Filter>External Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Names.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GTAVManualTransmission\Gears\Util\MathExt.cpp">
+      <Filter>External Utils</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="script.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GTAVManualTransmission\Gears\Memory\NativeMemory.hpp">
+      <Filter>Manual Transmission</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GTAVManualTransmission\Gears\Memory\Offsets.hpp">
+      <Filter>Manual Transmission</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GTAVManualTransmission\Gears\Memory\VehicleExtensions.hpp">
+      <Filter>Manual Transmission</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GTAVManualTransmission\Gears\Memory\VehicleFlags.h">
+      <Filter>Manual Transmission</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GTAVManualTransmission\Gears\Util\Logger.hpp">
+      <Filter>External Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GTAVManualTransmission\Gears\Util\Paths.h">
+      <Filter>External Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GTAVManualTransmission\Gears\Util\StringFormat.h">
+      <Filter>External Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="FileVersion.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GTAVMenuBase\menu.h">
+      <Filter>Menu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GTAVMenuBase\menucontrols.h">
+      <Filter>Menu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GTAVMenuBase\menukeyboard.h">
+      <Filter>Menu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GTAVMenuBase\menusettings.h">
+      <Filter>Menu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GTAVMenuBase\menuutils.h">
+      <Filter>Menu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GTAVMenuBase\Scaleform.h">
+      <Filter>Menu</Filter>
+    </ClInclude>
+    <ClInclude Include="scriptSettings.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="scriptMenu.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gearInfo.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GTAVManualTransmission\Gears\Util\UIUtils.h">
+      <Filter>External Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Names.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GTAVManualTransmission\Gears\Util\MathExt.h">
+      <Filter>External Utils</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
