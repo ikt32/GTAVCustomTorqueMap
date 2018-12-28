@@ -8,8 +8,10 @@
 
 #include "script.h"
 #include "Names.h"
+#include "scriptSettings.h"
 
 extern NativeMenu::Menu menu;
+extern ScriptSettings settings;
 
 extern Vehicle currentVehicle;
 extern VehicleExtensions ext;
@@ -131,6 +133,11 @@ void update_optionsmenu() {
     menu.Title("Options");
     menu.Subtitle("");
 
+    menu.BoolOption("Load ratios automatically", settings.AutoLoad,
+        { "Load gear ratio mapping automatically when vehicle"
+            " matches model and license plate." });
+    menu.BoolOption("Fix ratios automatically", settings.AutoFix,
+        { "Fix ratios of the 7th gear and higher when applied by the game." });
 }
 
 void update_menu() {

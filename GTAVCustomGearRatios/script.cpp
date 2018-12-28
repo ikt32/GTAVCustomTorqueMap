@@ -32,18 +32,22 @@ void update_player() {
 }
 
 void main() {
+    logger.SetMinLevel(DEBUG);
+    ext.initOffsets();
+
     logger.Write(INFO, "Script started");
     absoluteModPath = Paths::GetModuleFolder(Paths::GetOurModuleHandle()) + MOD_DIRECTORY;
     settingsGeneralFile = absoluteModPath + "\\settings_general.ini";
     settingsMenuFile = absoluteModPath + "\\settings_menu.ini";
     menu.SetFiles(settingsMenuFile);
 
-    //settings.Read(&carControls);
-    //if (settings.LogLevel > 4) settings.LogLevel = 1;
-    logger.SetMinLevel(LogLevel::DEBUG);
+    settings.Read();
     menu.ReadSettings();
 
-    ext.initOffsets();
+    menu.RegisterOnMain([=] {
+        menu.ReadSettings();
+        settings.Read();
+    });
 
     while (true) {
         update_player();
