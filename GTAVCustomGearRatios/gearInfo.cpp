@@ -72,3 +72,29 @@ GearInfo GearInfo::ParseConfig(const std::string& file) {
         ratios
     );
 }
+
+void GearInfo::SaveConfig(const std::string& file) {
+    xml_document doc;
+
+    xml_node vehicleNode = doc.append_child("Vehicle");
+    xml_node descriptionNode = vehicleNode.append_child("Description");
+    xml_node modelNameNode = vehicleNode.append_child("ModelName");
+    xml_node plateTextNode = vehicleNode.append_child("PlateText");
+    xml_node topGearNode = vehicleNode.append_child("TopGear");
+    xml_node driveMaxVelNode = vehicleNode.append_child("DriveMaxVel");
+
+    descriptionNode.text() = mDescription.c_str();
+    modelNameNode.text() = mModelName.c_str();
+    plateTextNode.text() = mLicensePlate.c_str();
+    topGearNode.text() = fmt("%d", mTopGear).c_str();
+    driveMaxVelNode.text() = fmt("%f", mDriveMaxVel).c_str();
+
+    for (uint8_t gear = 0; gear < mTopGear + 1; ++gear) {
+        vehicleNode.append_child(fmt("Gear%d", gear).c_str()).text() = 
+            fmt("%f", mRatios[gear]).c_str();
+    }
+
+    if (!doc.save_file(file.c_str())) {
+        logger.Write(ERROR, "XML [%s] failed to save", file.c_str());
+    }
+}

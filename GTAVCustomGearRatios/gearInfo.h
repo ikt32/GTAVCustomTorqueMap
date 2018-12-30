@@ -10,6 +10,8 @@ public:
 
     static GearInfo ParseConfig(const std::string& file);
 
+    void SaveConfig(const std::string& file);
+
 //protected:
     std::string mDescription;
     std::string mModelName;

@@ -1,5 +1,7 @@
 #include "scriptMenu.h"
 
+#include <filesystem>
+
 #include <inc/natives.h>
 #include <menu.h>
 
@@ -17,6 +19,8 @@ extern ScriptSettings settings;
 
 extern Vehicle currentVehicle;
 extern VehicleExtensions ext;
+
+extern std::string gearConfigDir;
 
 extern std::vector<GearInfo> gearConfigs;
 
@@ -111,6 +115,52 @@ std::vector<std::string> printGearStatus(Vehicle vehicle, uint8_t tunedGear) {
     return lines;
 }
 
+void promptSave(Vehicle vehicle) {
+    std::string saveFile;
+    std::string description;
+    // TODO: Add-on spawner model name
+    std::string modelName = VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(ENTITY::GET_ENTITY_MODEL(vehicle));
+    std::string licensePlate = VEHICLE::GET_VEHICLE_NUMBER_PLATE_TEXT(vehicle);
+    uint8_t topGear = ext.GetTopGear(vehicle);
+    float driveMaxVel = ext.GetDriveMaxFlatVel(vehicle);
+    std::vector<float> ratios = ext.GetGearRatios(vehicle);
+
+    showNotification("Enter description");
+    GAMEPLAY::DISPLAY_ONSCREEN_KEYBOARD(0, "FMMC_KEY_TIP8", "", "", "", "", "", 64);
+    while (GAMEPLAY::UPDATE_ONSCREEN_KEYBOARD() == 0) WAIT(0);
+    if (!GAMEPLAY::GET_ONSCREEN_KEYBOARD_RESULT()) {
+        showNotification("Cancelled save");
+        return;
+    }
+
+    description = GAMEPLAY::GET_ONSCREEN_KEYBOARD_RESULT();
+    if (description.empty()) {
+        showNotification("No description entered, using default");
+        std::string carName = getFmtModelName(ENTITY::GET_ENTITY_MODEL(vehicle));
+        description = fmt("%s - %d gears - %.0f kph",
+            carName.c_str(), topGear,
+            3.6f * driveMaxVel / ratios[topGear]);
+    }
+
+    std::string saveFileBase = stripInvalidChars(description, '_');
+    saveFile = saveFileBase;
+    uint32_t saveFileSuffix = 0;
+    bool duplicate;
+    do {
+        duplicate = false;
+        for (auto & p : std::filesystem::directory_iterator(gearConfigDir)) {
+            if (p.path().stem() == saveFile) {
+                duplicate = true;
+                saveFile = fmt("%s_%02d", saveFileBase.c_str(), saveFileSuffix++);
+            }
+        }
+    } while (duplicate);
+
+    GearInfo(description, modelName, licensePlate, 
+        topGear, driveMaxVel, ratios).SaveConfig(gearConfigDir + "\\" + saveFile + ".xml");
+    showNotification(fmt("Saved as %s", saveFile));
+}
+
 void update_mainmenu() {
     menu.Title("Custom Gear Ratios");
     menu.Subtitle(std::string("~b~") + DISPLAY_VERSION);
@@ -185,7 +235,7 @@ void update_loadmenu() {
         if (menu.OptionPlus(optionName, std::vector<std::string>(), &selected)) {
             applyConfig(config, currentVehicle);
             showNotification(fmt("[%s] applied to current %s", 
-                config.mDescription.c_str(), modelName.c_str()));
+                config.mDescription.c_str(), getFmtModelName(ENTITY::GET_ENTITY_MODEL(currentVehicle)).c_str()));
         }
         if (selected) {
             menu.OptionPlusPlus(printInfo(config), modelName);
@@ -201,6 +251,18 @@ void update_savemenu() {
     if (!currentVehicle || !ENTITY::DOES_ENTITY_EXIST(currentVehicle)) {
         menu.Option("No vehicle", { "Get in a vehicle to change its gear stuff." });
         return;
+    }
+
+    if (menu.Option("Save as autoload", 
+        { "Save current gear setup for model and license plate.",
+        "It will load automatically when entering a car "
+            "with the same model and plate text."})) {
+        promptSave(currentVehicle);
+    }
+
+    if (menu.Option("Save as generic",
+        { "Save current gear setup without autoload." })) {
+        promptSave(currentVehicle);
     }
 }
 
@@ -224,8 +286,6 @@ void update_menu() {
     if (menu.CurrentMenu("ratiomenu")) { update_ratiomenu(); }
 
     if (menu.CurrentMenu("loadmenu")) { update_loadmenu(); }
-
-    if (menu.CurrentMenu("savemenu")) { update_savemenu(); }
 
     if (menu.CurrentMenu("savemenu")) { update_savemenu(); }
     
