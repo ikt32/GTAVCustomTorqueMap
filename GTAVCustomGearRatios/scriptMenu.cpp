@@ -10,6 +10,7 @@
 #include "script.h"
 #include "scriptSettings.h"
 #include "gearInfo.h"
+#include "../../GTAVManualTransmission/Gears/Util/UIUtils.h"
 
 extern NativeMenu::Menu menu;
 extern ScriptSettings settings;
@@ -27,6 +28,12 @@ void incRatio(float& ratio, float max, float step) {
 void decRatio(float& ratio, float min, float step) {
     if (ratio - step < min) return;
     ratio -= step;
+}
+
+void applyConfig(const GearInfo& config, Vehicle vehicle) {
+    ext.SetTopGear(vehicle, config.mTopGear);
+    ext.SetDriveMaxFlatVel(vehicle, config.mDriveMaxVel);
+    ext.SetGearRatios(vehicle, config.mRatios);
 }
 
 std::vector<std::string> printInfo(const GearInfo& info) {
@@ -149,8 +156,8 @@ void update_ratiomenu() {
         }
 
         menu.OptionPlus(fmt("Gear %d", gear), extra, &sel, 
-                        [=] { incRatio(*reinterpret_cast<float*>(ext.GetGearRatiosAddress(currentVehicle) + gear * sizeof(float)), max, 0.01f); },
-                        [=] { decRatio(*reinterpret_cast<float*>(ext.GetGearRatiosAddress(currentVehicle) + gear * sizeof(float)), min, 0.01f); },
+                        [=] { incRatio(*reinterpret_cast<float*>(ext.GetGearRatioPtr(currentVehicle, gear)), max, 0.01f); },
+                        [=] { decRatio(*reinterpret_cast<float*>(ext.GetGearRatioPtr(currentVehicle, gear)), min, 0.01f); },
                         carName, { "Press left to decrease gear ratio, right to increase gear ratio." });
         if (sel) {
             extra = printGearStatus(currentVehicle, gear);
@@ -174,8 +181,12 @@ void update_loadmenu() {
             GAMEPLAY::GET_HASH_KEY((char*)config.mModelName.c_str()));
         std::string optionName = fmt("%s - %d gears - %.0f kph", 
             modelName.c_str(), config.mTopGear, 
-            config.mRatios[config.mTopGear] * config.mDriveMaxVel);
-        menu.OptionPlus(optionName, std::vector<std::string>(), &selected);
+            3.6f * config.mDriveMaxVel / config.mRatios[config.mTopGear]);
+        if (menu.OptionPlus(optionName, std::vector<std::string>(), &selected)) {
+            applyConfig(config, currentVehicle);
+            showNotification(fmt("[%s] applied to current %s", 
+                config.mDescription.c_str(), modelName.c_str()));
+        }
         if (selected) {
             menu.OptionPlusPlus(printInfo(config), modelName);
         }
