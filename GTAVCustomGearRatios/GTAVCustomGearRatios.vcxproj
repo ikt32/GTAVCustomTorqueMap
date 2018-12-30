@@ -86,7 +86,9 @@
     <ClCompile Include="..\..\GTAVMenuBase\menukeyboard.cpp" />
     <ClCompile Include="..\..\GTAVMenuBase\menusettings.cpp" />
     <ClCompile Include="..\..\GTAVMenuBase\menuutils.cpp" />
+    <ClCompile Include="..\thirdparty\pugixml\pugixml.cpp" />
     <ClCompile Include="FileVersion.cpp" />
+    <ClCompile Include="gearInfo.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="script.cpp" />
     <ClCompile Include="scriptMenu.cpp" />
@@ -109,6 +111,8 @@
     <ClInclude Include="..\..\GTAVMenuBase\menusettings.h" />
     <ClInclude Include="..\..\GTAVMenuBase\menuutils.h" />
     <ClInclude Include="..\..\GTAVMenuBase\Scaleform.h" />
+    <ClInclude Include="..\thirdparty\pugixml\pugiconfig.hpp" />
+    <ClInclude Include="..\thirdparty\pugixml\pugixml.hpp" />
     <ClInclude Include="FileVersion.h" />
     <ClInclude Include="gearInfo.h" />
     <ClInclude Include="Names.h" />

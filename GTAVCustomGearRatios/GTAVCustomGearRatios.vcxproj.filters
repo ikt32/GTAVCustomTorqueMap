@@ -21,6 +21,9 @@
     <Filter Include="Menu">
       <UniqueIdentifier>{3d1002af-79db-40b1-a64b-6cf65d44aa32}</UniqueIdentifier>
     </Filter>
+    <Filter Include="thirdparty">
+      <UniqueIdentifier>{c56fe06f-a7f5-4525-b344-fa52758a5c33}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -76,6 +79,12 @@
     </ClCompile>
     <ClCompile Include="..\..\GTAVManualTransmission\Gears\Util\MathExt.cpp">
       <Filter>External Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="gearInfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\pugixml\pugixml.cpp">
+      <Filter>thirdparty</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -141,6 +150,12 @@
     </ClInclude>
     <ClInclude Include="..\..\GTAVManualTransmission\Gears\Util\MathExt.h">
       <Filter>External Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\pugixml\pugiconfig.hpp">
+      <Filter>thirdparty</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\pugixml\pugixml.hpp">
+      <Filter>thirdparty</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

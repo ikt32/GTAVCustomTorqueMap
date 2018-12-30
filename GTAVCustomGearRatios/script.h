@@ -7,3 +7,4 @@ const char* const MOD_DIRECTORY = "\\CustomGearRatios";
 extern uint8_t g_numGears;
 
 void ScriptMain();
+void parseConfigs();
