@@ -34,5 +34,5 @@ void ScriptSettings::parseSettings() {
     AutoFix = settingsGeneral.GetBoolValue("OPTIONS", "AutoFix", false);
 
     // [DEBUG]
-    Debug = settingsGeneral.GetBoolValue("DEBUG", "LogDebug");
+    Debug = settingsGeneral.GetBoolValue("DEBUG", "LogDebug", false);
 }
