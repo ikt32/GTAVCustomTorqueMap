@@ -56,7 +56,7 @@ GearInfo GearInfo::ParseConfig(const std::string& file) {
 
     uint8_t topGear = topGearNode.text().as_int();
     float driveMaxVel = driveMaxVelNode.text().as_float();
-    std::vector<float> ratios(topGear);
+    std::vector<float> ratios(topGear + 1);
     for (uint8_t gear = 0; gear <= topGear; ++gear) {
         xml_node gearNode = vehicleNode.child(fmt("Gear%d", gear).c_str());
         VERIFY_NODE(gearNode);
