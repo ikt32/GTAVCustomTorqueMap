@@ -62,6 +62,7 @@ std::vector<std::string> printInfo(const GearInfo& info) {
     std::vector<std::string> lines = {
         info.mDescription,
         fmt("For: %s", info.mModelName.c_str()),
+        fmt("Plate: %s", info.mLicensePlate == "undefined" ? "Any" : info.mLicensePlate.c_str()),
         fmt("Top gear: %d", topGear),
         "",
         "Gear ratios:",
@@ -326,10 +327,10 @@ void update_optionsmenu() {
     menu.Subtitle("");
 
     menu.BoolOption("Load ratios automatically", settings.AutoLoad,
-        { "Load gear ratio mapping automatically when vehicle"
-            " matches model and license plate." });
-    menu.BoolOption("Fix ratios automatically", settings.AutoFix,
-        { "Fix ratios of the 7th gear and higher when applied by the game." });
+        { "Load gear ratio mapping automatically when getting into a vehicle"
+            " that matches model and license plate." });
+    //menu.BoolOption("Fix ratios automatically", settings.AutoFix,
+    //    { "Fix ratios of the 7th gear and higher when applied by the game." });
 }
 
 void update_menu() {

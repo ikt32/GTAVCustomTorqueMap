@@ -94,6 +94,7 @@
     <ClCompile Include="scriptMenu.cpp" />
     <ClCompile Include="scriptSettings.cpp" />
     <ClCompile Include="Names.cpp" />
+    <ClCompile Include="StringUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\GTAVManualTransmission\Gears\Memory\NativeMemory.hpp" />
@@ -119,6 +120,7 @@
     <ClInclude Include="script.h" />
     <ClInclude Include="scriptMenu.h" />
     <ClInclude Include="scriptSettings.h" />
+    <ClInclude Include="StringUtils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

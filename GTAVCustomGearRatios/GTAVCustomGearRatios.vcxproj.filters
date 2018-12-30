@@ -86,6 +86,9 @@
     <ClCompile Include="..\thirdparty\pugixml\pugixml.cpp">
       <Filter>thirdparty</Filter>
     </ClCompile>
+    <ClCompile Include="StringUtils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="script.h">
@@ -156,6 +159,9 @@
     </ClInclude>
     <ClInclude Include="..\thirdparty\pugixml\pugixml.hpp">
       <Filter>thirdparty</Filter>
+    </ClInclude>
+    <ClInclude Include="StringUtils.h">
+      <Filter>Utils</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

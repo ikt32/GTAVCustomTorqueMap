@@ -11,10 +11,13 @@
 #include "../../GTAVManualTransmission/Gears/Util/Paths.h"
 #include "../../GTAVManualTransmission/Gears/Memory/VehicleExtensions.hpp"
 #include "../../GTAVManualTransmission/Gears/Util/StringFormat.h"
+#include "../../GTAVManualTransmission/Gears/Util/UIUtils.h"
 
 #include "scriptSettings.h"
 #include "scriptMenu.h"
 #include "gearInfo.h"
+#include "Names.h"
+#include "StringUtils.h"
 
 uint8_t g_numGears;
 
@@ -29,10 +32,13 @@ NativeMenu::Menu menu;
 ScriptSettings settings;
 VehicleExtensions ext;
 
+Vehicle previousVehicle;
 Vehicle currentVehicle;
 
 std::string gearConfigDir;
 std::vector<GearInfo> gearConfigs;
+
+void applyConfig(const GearInfo& config, Vehicle vehicle);
 
 void parseConfigs() {
     gearConfigs.clear();
@@ -51,6 +57,21 @@ void parseConfigs() {
 
 void update_player() {
     currentVehicle = PED::GET_VEHICLE_PED_IS_IN(PLAYER::PLAYER_PED_ID(), false);
+
+    if (ENTITY::DOES_ENTITY_EXIST(currentVehicle) && currentVehicle != previousVehicle) {
+        previousVehicle = currentVehicle;
+        if (settings.AutoLoad) {
+            for(const auto& config : gearConfigs) {
+                bool sameModel = GAMEPLAY::GET_HASH_KEY((char*)config.mModelName.c_str()) == ENTITY::GET_ENTITY_MODEL(currentVehicle);
+                bool samePlate = to_lower(config.mLicensePlate) == to_lower(VEHICLE::GET_VEHICLE_NUMBER_PLATE_TEXT(currentVehicle));
+                if (sameModel && samePlate) {
+                    applyConfig(config, currentVehicle);
+                    showNotification(fmt("[%s] automatically applied to current %s",
+                        config.mDescription.c_str(), getFmtModelName(ENTITY::GET_ENTITY_MODEL(currentVehicle)).c_str()));
+                }
+            }
+        }
+    }
 }
 
 void main() {
@@ -72,6 +93,8 @@ void main() {
         settings.Read();
         parseConfigs();
     });
+
+    parseConfigs();
 
     while (true) {
         update_player();
