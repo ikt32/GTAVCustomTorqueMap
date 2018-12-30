@@ -24,19 +24,32 @@ extern std::string gearConfigDir;
 
 extern std::vector<GearInfo> gearConfigs;
 
-void incRatio(float& ratio, float max, float step) {
-    if (ratio + step > max) return;
-    ratio += step;
+std::string stripInvalidChars(std::string s, char replace) {
+    std::string illegalChars = "\\/:?\"<>|";
+    for (auto it = s.begin(); it < s.end(); ++it) {
+        if (illegalChars.find(*it) != std::string::npos) {
+            *it = replace;
+        }
+    }
+    return s;
 }
 
-void decRatio(float& ratio, float min, float step) {
-    if (ratio - step < min) return;
-    ratio -= step;
+template <typename T>
+void incVal(T& val, const T max, const T step) {
+    if (val + step > max) return;
+    val += step;
+}
+
+template <typename T>
+void decVal(T& val, const T min, const T step) {
+    if (val - step < min) return;
+    val -= step;
 }
 
 void applyConfig(const GearInfo& config, Vehicle vehicle) {
     ext.SetTopGear(vehicle, config.mTopGear);
     ext.SetDriveMaxFlatVel(vehicle, config.mDriveMaxVel);
+    ext.SetInitialDriveMaxFlatVel(vehicle, config.mDriveMaxVel / 1.2f);
     ext.SetGearRatios(vehicle, config.mRatios);
 }
 
@@ -86,6 +99,7 @@ std::vector<std::string> printGearStatus(Vehicle vehicle, uint8_t tunedGear) {
 
     std::vector<std::string> lines = {
         fmt("Top gear: %d", topGear),
+        fmt("Final drive: %.01f kph", maxVel * 3.6f),
         fmt("Current gear: %d", currentGear),
         "",
         "Gear ratios:",
@@ -192,11 +206,53 @@ void update_ratiomenu() {
         return;
     }
 
-    uint8_t topGear = ext.GetTopGear(currentVehicle);
     std::string carName = getFmtModelName(ENTITY::GET_ENTITY_MODEL(currentVehicle));
+
+    // Change top gear
+    {
+        bool sel;
+        uint8_t topGear = ext.GetTopGear(currentVehicle);
+        menu.OptionPlus(fmt("Top gear: < %d >", topGear), {}, &sel,
+            [=]() mutable { 
+                incVal<uint8_t>(topGear, 10, 1);
+                ext.SetTopGear(currentVehicle, topGear); 
+            },
+            [=]() mutable {
+                decVal<uint8_t>(topGear,  1, 1); 
+                ext.SetTopGear(currentVehicle, topGear);
+            },
+            carName, 
+            { "Press left to decrease top gear, right to increase top gear.",
+               "~r~Warning: The default gearbox can't shift down from 9th gear!" });
+        if (sel) {
+            menu.OptionPlusPlus(printGearStatus(currentVehicle, 255), carName);
+        }
+    }
+
+    // Change final drive
+    {
+        bool sel;
+        float driveMaxVel = ext.GetDriveMaxFlatVel(currentVehicle);
+        menu.OptionPlus(fmt("Final drive max: < %.01f kph >", driveMaxVel * 3.6f), {}, &sel,
+            [=]() mutable {
+                incVal<float>(driveMaxVel, 500.0f, 0.36f); 
+                ext.SetDriveMaxFlatVel(currentVehicle, driveMaxVel);
+                ext.SetInitialDriveMaxFlatVel(currentVehicle, driveMaxVel / 1.2f);
+            },
+            [=]() mutable {
+                decVal<float>(driveMaxVel, 1.0f, 0.36f); 
+                ext.SetDriveMaxFlatVel(currentVehicle, driveMaxVel);
+                ext.SetInitialDriveMaxFlatVel(currentVehicle, driveMaxVel / 1.2f);
+            },
+            carName, { "Press left to decrease final drive max velocity, right to increase it." });
+        if (sel) {
+            menu.OptionPlusPlus(printGearStatus(currentVehicle, 255), carName);
+        }
+    }
+
+    uint8_t topGear = ext.GetTopGear(currentVehicle);
     for (uint8_t gear = 0; gear <= topGear; ++gear) {
         bool sel = false;
-        auto extra = std::vector<std::string>();
         float min = 0.01f;
         float max = 10.0f;
 
@@ -205,13 +261,12 @@ void update_ratiomenu() {
             max = -0.01f;
         }
 
-        menu.OptionPlus(fmt("Gear %d", gear), extra, &sel, 
-                        [=] { incRatio(*reinterpret_cast<float*>(ext.GetGearRatioPtr(currentVehicle, gear)), max, 0.01f); },
-                        [=] { decRatio(*reinterpret_cast<float*>(ext.GetGearRatioPtr(currentVehicle, gear)), min, 0.01f); },
+        menu.OptionPlus(fmt("Gear %d", gear), {}, &sel,
+                        [=] { incVal(*reinterpret_cast<float*>(ext.GetGearRatioPtr(currentVehicle, gear)), max, 0.01f); },
+                        [=] { decVal(*reinterpret_cast<float*>(ext.GetGearRatioPtr(currentVehicle, gear)), min, 0.01f); },
                         carName, { "Press left to decrease gear ratio, right to increase gear ratio." });
         if (sel) {
-            extra = printGearStatus(currentVehicle, gear);
-            menu.OptionPlusPlus(extra, carName);
+            menu.OptionPlusPlus(printGearStatus(currentVehicle, gear), carName);
         }
     }
 }
