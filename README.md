@@ -1,16 +1,16 @@
 # Custom Gear Ratios
 
-Script that automatically detects and can load add-on vehicles, instead of needing
-to type the names yourself.
+Script to change car gear ratios in GTA V.
 
 ## Downloads
 
-[GTA5-Mods.com](https://www.gta5-mods.com/scripts/add-on-vehicle-spawner)
+None yet
 
 ## Building
 
 ### Requirements
 * [ScriptHookV SDK by Alexander Blade](http://www.dev-c.com/gtav/scripthookv/)
+* [Manual Transmission](https://github.com/E66666666/GTAVManualTransmission)
 * [GTAVMenuBase](https://github.com/E66666666/GTAVMenuBase)
 
 Download the [ScriptHookV SDK](http://www.dev-c.com/gtav/scripthookv/) and extract its contents to ScriptHookV_SDK.
