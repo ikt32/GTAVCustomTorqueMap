@@ -130,12 +130,12 @@ std::vector<std::string> printGearStatus(Vehicle vehicle, uint8_t tunedGear) {
     return lines;
 }
 
-void promptSave(Vehicle vehicle) {
+void promptSave(Vehicle vehicle, bool autoload) {
     std::string saveFile;
     std::string description;
     // TODO: Add-on spawner model name
     std::string modelName = VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(ENTITY::GET_ENTITY_MODEL(vehicle));
-    std::string licensePlate = VEHICLE::GET_VEHICLE_NUMBER_PLATE_TEXT(vehicle);
+    std::string licensePlate = autoload ? VEHICLE::GET_VEHICLE_NUMBER_PLATE_TEXT(vehicle) : "undefined";
     uint8_t topGear = ext.GetTopGear(vehicle);
     float driveMaxVel = ext.GetDriveMaxFlatVel(vehicle);
     std::vector<float> ratios = ext.GetGearRatios(vehicle);
@@ -313,12 +313,12 @@ void update_savemenu() {
         { "Save current gear setup for model and license plate.",
         "It will load automatically when entering a car "
             "with the same model and plate text."})) {
-        promptSave(currentVehicle);
+        promptSave(currentVehicle, true);
     }
 
     if (menu.Option("Save as generic",
         { "Save current gear setup without autoload." })) {
-        promptSave(currentVehicle);
+        promptSave(currentVehicle, false);
     }
 }
 
