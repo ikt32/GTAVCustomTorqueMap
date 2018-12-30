@@ -181,7 +181,7 @@ void update_mainmenu() {
     menu.Subtitle(std::string("~b~") + DISPLAY_VERSION);
 
     if (!currentVehicle || !ENTITY::DOES_ENTITY_EXIST(currentVehicle)) {
-        menu.Option("No vehicle", { "Get in a vehicle to change its gear stuff." });
+        menu.Option("No vehicle", { "Get in a vehicle to change its gear stats." });
         menu.MenuOption("Options", "optionsmenu", { "Change some preferences." });
         return;
     }
@@ -203,7 +203,7 @@ void update_ratiomenu() {
     menu.Subtitle("");
 
     if (!currentVehicle || !ENTITY::DOES_ENTITY_EXIST(currentVehicle)) {
-        menu.Option("No vehicle", { "Get in a vehicle to change its gear stuff." });
+        menu.Option("No vehicle", { "Get in a vehicle to change its gear stats." });
         return;
     }
 
@@ -277,7 +277,7 @@ void update_loadmenu() {
     menu.Subtitle("");
 
     if (!currentVehicle || !ENTITY::DOES_ENTITY_EXIST(currentVehicle)) {
-        menu.Option("No vehicle", { "Get in a vehicle to change its gear stuff." });
+        menu.Option("No vehicle", { "Get in a vehicle to change its gear stats." });
         return;
     }
 
@@ -305,7 +305,7 @@ void update_savemenu() {
     menu.Subtitle("");
 
     if (!currentVehicle || !ENTITY::DOES_ENTITY_EXIST(currentVehicle)) {
-        menu.Option("No vehicle", { "Get in a vehicle to change its gear stuff." });
+        menu.Option("No vehicle", { "Get in a vehicle to change its gear stats." });
         return;
     }
 

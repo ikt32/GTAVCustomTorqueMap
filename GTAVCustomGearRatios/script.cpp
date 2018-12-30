@@ -75,9 +75,6 @@ void update_player() {
 }
 
 void main() {
-    logger.SetMinLevel(DEBUG);
-    ext.initOffsets();
-
     logger.Write(INFO, "Script started");
     absoluteModPath = Paths::GetModuleFolder(Paths::GetOurModuleHandle()) + MOD_DIRECTORY;
     settingsGeneralFile = absoluteModPath + "\\settings_general.ini";
@@ -88,13 +85,19 @@ void main() {
     settings.Read();
     menu.ReadSettings();
 
+    logger.SetMinLevel(settings.Debug ? DEBUG : INFO);
+    ext.initOffsets();
+    parseConfigs();
+
     menu.RegisterOnMain([=] {
         menu.ReadSettings();
         settings.Read();
         parseConfigs();
     });
 
-    parseConfigs();
+    menu.RegisterOnExit([=] {
+        settings.Save();
+    });
 
     while (true) {
         update_player();

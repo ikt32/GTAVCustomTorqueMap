@@ -15,6 +15,9 @@ public:
     // Fix ratios for odd vehicles
     bool AutoFix;
 
+    // [DEBUG]
+    bool Debug;
+
 private:
     void parseSettings();
 

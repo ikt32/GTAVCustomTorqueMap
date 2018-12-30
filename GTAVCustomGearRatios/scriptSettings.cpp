@@ -14,6 +14,16 @@ void ScriptSettings::Read() {
     parseSettings();
 }
 
+void ScriptSettings::Save() const {
+    CSimpleIniA settings;
+    settings.SetUnicode();
+    settings.LoadFile(settingsGeneralFile.c_str());
+
+    settings.SetBoolValue("OPTIONS", "AutoLoad", AutoLoad);
+
+    settings.SaveFile(settingsGeneralFile.c_str());
+}
+
 void ScriptSettings::parseSettings() {
     CSimpleIniA settingsGeneral;
     settingsGeneral.SetUnicode();
@@ -22,4 +32,7 @@ void ScriptSettings::parseSettings() {
     // [OPTIONS]
     AutoLoad = settingsGeneral.GetBoolValue("OPTIONS", "AutoLoad", true);
     AutoFix = settingsGeneral.GetBoolValue("OPTIONS", "AutoFix", false);
+
+    // [DEBUG]
+    Debug = settingsGeneral.GetBoolValue("DEBUG", "LogDebug");
 }
