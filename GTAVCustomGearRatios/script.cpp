@@ -80,18 +80,21 @@ void main() {
     settingsGeneralFile = absoluteModPath + "\\settings_general.ini";
     settingsMenuFile = absoluteModPath + "\\settings_menu.ini";
     gearConfigDir = absoluteModPath + "\\Configs";
+    
+    settings.SetFiles(settingsGeneralFile);
     menu.SetFiles(settingsMenuFile);
 
     settings.Read();
-    menu.ReadSettings();
-
     logger.SetMinLevel(settings.Debug ? DEBUG : INFO);
+
+    menu.ReadSettings();
     ext.initOffsets();
     parseConfigs();
 
     menu.RegisterOnMain([=] {
         menu.ReadSettings();
         settings.Read();
+        logger.SetMinLevel(settings.Debug ? DEBUG : INFO);
         parseConfigs();
     });
 
