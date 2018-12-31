@@ -19,7 +19,7 @@
 #include "Names.h"
 #include "StringUtils.h"
 
-uint8_t g_numGears;
+uint8_t g_numGears = 8;
 
 std::string absoluteModPath;
 std::string settingsGeneralFile;

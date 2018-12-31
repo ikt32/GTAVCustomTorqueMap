@@ -215,7 +215,7 @@ void update_ratiomenu() {
         uint8_t topGear = ext.GetTopGear(currentVehicle);
         menu.OptionPlus(fmt("Top gear: < %d >", topGear), {}, &sel,
             [=]() mutable { 
-                incVal<uint8_t>(topGear, 10, 1);
+                incVal<uint8_t>(topGear, g_numGears - 1, 1);
                 ext.SetTopGear(currentVehicle, topGear); 
             },
             [=]() mutable {
