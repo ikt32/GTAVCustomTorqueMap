@@ -329,8 +329,8 @@ void update_optionsmenu() {
     menu.BoolOption("Load ratios automatically", settings.AutoLoad,
         { "Load gear ratio mapping automatically when getting into a vehicle"
             " that matches model and license plate." });
-    //menu.BoolOption("Fix ratios automatically", settings.AutoFix,
-    //    { "Fix ratios of the 7th gear and higher when applied by the game." });
+    menu.BoolOption("Enable CVT when 1 gear", settings.EnableCVT,
+        { "Enable CVT simulation when settings numGears to 1 in a non-CVT vehicle." });
 }
 
 void update_menu() {
