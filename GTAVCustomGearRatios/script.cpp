@@ -12,14 +12,13 @@
 #include "../../GTAVManualTransmission/Gears/Memory/VehicleExtensions.hpp"
 #include "../../GTAVManualTransmission/Gears/Util/StringFormat.h"
 #include "../../GTAVManualTransmission/Gears/Util/UIUtils.h"
+#include "../../GTAVManualTransmission/Gears/Util/MathExt.h"
 
 #include "scriptSettings.h"
 #include "scriptMenu.h"
 #include "gearInfo.h"
 #include "Names.h"
 #include "StringUtils.h"
-
-uint8_t g_numGears = 8;
 
 std::string absoluteModPath;
 std::string settingsGeneralFile;
@@ -37,6 +36,9 @@ Vehicle currentVehicle;
 
 std::string gearConfigDir;
 std::vector<GearInfo> gearConfigs;
+
+float cvtMaxRpm = 0.9f;
+float cvtMinRpm = 0.3f;
 
 void applyConfig(const GearInfo& config, Vehicle vehicle);
 
@@ -74,6 +76,19 @@ void update_player() {
     }
 }
 
+void update_cvt() {
+    if (settings.EnableCVT && ENTITY::DOES_ENTITY_EXIST(currentVehicle)) {
+        if (ext.GetTopGear(currentVehicle) == 1) {
+            float defaultMaxFlatVel = ext.GetDriveMaxFlatVel(currentVehicle);
+            float currSpeed = avg(ext.GetTyreSpeeds(currentVehicle));
+            float newRatio = map(currSpeed, 0.0f, defaultMaxFlatVel, 3.33f, 0.9f) * 0.75f * std::clamp(ext.GetThrottleP(currentVehicle), 0.1f, 1.0f);
+            newRatio = std::clamp(newRatio, 0.6f, 3.33f);
+            *ext.GetGearRatioPtr(currentVehicle, 1) = newRatio;
+
+        }
+    }
+}
+
 void main() {
     logger.Write(INFO, "Script started");
     absoluteModPath = Paths::GetModuleFolder(Paths::GetOurModuleHandle()) + MOD_DIRECTORY;
@@ -105,6 +120,7 @@ void main() {
     while (true) {
         update_player();
         update_menu();
+        update_cvt();
         WAIT(0);
     }
 }

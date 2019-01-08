@@ -12,8 +12,8 @@ public:
     // [OPTIONS]
     // Load based on model + plate
     bool AutoLoad;
-    // Fix ratios for odd vehicles
-    bool AutoFix;
+    // Custom CVT when 1 gear active
+    bool EnableCVT;
 
     // [DEBUG]
     bool Debug;

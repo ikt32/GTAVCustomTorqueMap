@@ -53,10 +53,6 @@ BOOL APIENTRY DllMain(HMODULE hInstance, DWORD reason, LPVOID lpReserved) {
                 VehicleExtensions::ChangeVersion(actualVersion);
             }
 
-            if (actualVersion >= G_VER_1_0_1604_0_STEAM) {
-                g_numGears = 11;
-            }
-
             scriptRegister(hInstance, ScriptMain);
 
             logger.Write(INFO, "Script registered");

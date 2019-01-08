@@ -4,7 +4,7 @@
 
 ScriptSettings::ScriptSettings()
     : AutoLoad(true)
-    , AutoFix(false) {}
+    , Debug(false) {}
 
 void ScriptSettings::SetFiles(const std::string &general) {
     settingsGeneralFile = general;
@@ -20,6 +20,7 @@ void ScriptSettings::Save() const {
     settings.LoadFile(settingsGeneralFile.c_str());
 
     settings.SetBoolValue("OPTIONS", "AutoLoad", AutoLoad);
+    settings.SetBoolValue("OPTIONS", "EnableCVT", EnableCVT);
 
     settings.SaveFile(settingsGeneralFile.c_str());
 }
@@ -31,7 +32,7 @@ void ScriptSettings::parseSettings() {
 
     // [OPTIONS]
     AutoLoad = settingsGeneral.GetBoolValue("OPTIONS", "AutoLoad", true);
-    AutoFix = settingsGeneral.GetBoolValue("OPTIONS", "AutoFix", false);
+    EnableCVT = settingsGeneral.GetBoolValue("OPTIONS", "EnableCVT", false);
 
     // [DEBUG]
     Debug = settingsGeneral.GetBoolValue("DEBUG", "LogDebug", false);
