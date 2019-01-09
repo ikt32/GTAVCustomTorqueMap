@@ -16,6 +16,8 @@ public:
     bool AutoLoadGeneric;
     // Custom CVT when 1 gear active
     bool EnableCVT;
+    // Show autoload messages. Always shown in menu interaction.
+    bool AutoNotify;
 
     // [DEBUG]
     bool Debug;

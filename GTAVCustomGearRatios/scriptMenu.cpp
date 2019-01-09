@@ -46,13 +46,15 @@ void decVal(T& val, const T min, const T step) {
     val -= step;
 }
 
-void applyConfig(const GearInfo& config, Vehicle vehicle) {
+void applyConfig(const GearInfo& config, Vehicle vehicle, bool notify) {
     ext.SetTopGear(vehicle, config.mTopGear);
     ext.SetDriveMaxFlatVel(vehicle, config.mDriveMaxVel);
     ext.SetInitialDriveMaxFlatVel(vehicle, config.mDriveMaxVel / 1.2f);
     ext.SetGearRatios(vehicle, config.mRatios);
-    showNotification(fmt("[%s] automatically applied to current %s",
-        config.mDescription.c_str(), getFmtModelName(ENTITY::GET_ENTITY_MODEL(vehicle)).c_str()));
+    if (notify) {
+        showNotification(fmt("[%s] applied to current %s",
+            config.mDescription.c_str(), getFmtModelName(ENTITY::GET_ENTITY_MODEL(vehicle)).c_str()));
+    }
 }
 
 std::vector<std::string> printInfo(const GearInfo& info) {
@@ -306,7 +308,7 @@ void update_loadmenu() {
             modelName.c_str(), config.mTopGear, 
             3.6f * config.mDriveMaxVel / config.mRatios[config.mTopGear]);
         if (menu.OptionPlus(optionName, std::vector<std::string>(), &selected)) {
-            applyConfig(config, currentVehicle);
+            applyConfig(config, currentVehicle, true);
         }
         if (selected) {
             menu.OptionPlusPlus(printInfo(config), modelName);
@@ -350,8 +352,13 @@ void update_optionsmenu() {
     menu.BoolOption("Load ratios automatically", settings.AutoLoad,
         { "Load gear ratio mapping automatically when getting into a vehicle"
             " that matches model and license plate." });
+    menu.BoolOption("Load ratios automatically", settings.AutoLoadGeneric,
+        { "Load gear ratio mapping automatically when getting into a vehicle"
+            " that matches model. Overridden by plate." });
     menu.BoolOption("Enable CVT when 1 gear", settings.EnableCVT,
         { "Enable CVT simulation when settings numGears to 1 in a non-CVT vehicle." });
+    menu.BoolOption("Load ratios automatically", settings.AutoNotify,
+        { "Show a notification when autoload applied a preset." });
 }
 
 void update_menu() {

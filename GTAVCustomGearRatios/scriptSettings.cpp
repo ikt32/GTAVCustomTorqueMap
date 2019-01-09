@@ -20,7 +20,9 @@ void ScriptSettings::Save() const {
     settings.LoadFile(settingsGeneralFile.c_str());
 
     settings.SetBoolValue("OPTIONS", "AutoLoad", AutoLoad);
+    settings.SetBoolValue("OPTIONS", "AutoLoadGeneric", AutoLoadGeneric);
     settings.SetBoolValue("OPTIONS", "EnableCVT", EnableCVT);
+    settings.SetBoolValue("Options", "AutoNotify", AutoNotify);
 
     settings.SaveFile(settingsGeneralFile.c_str());
 }
@@ -32,7 +34,9 @@ void ScriptSettings::parseSettings() {
 
     // [OPTIONS]
     AutoLoad = settingsGeneral.GetBoolValue("OPTIONS", "AutoLoad", true);
+    AutoLoadGeneric = settingsGeneral.GetBoolValue("OPTIONS", "AutoLoadGeneric", true);
     EnableCVT = settingsGeneral.GetBoolValue("OPTIONS", "EnableCVT", false);
+    AutoNotify = settingsGeneral.GetBoolValue("OPTIONS", "AutoNotify", true);
 
     // [DEBUG]
     Debug = settingsGeneral.GetBoolValue("DEBUG", "LogDebug", false);

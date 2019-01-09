@@ -41,7 +41,7 @@ std::vector<GearInfo> gearConfigs;
 float cvtMaxRpm = 0.9f;
 float cvtMinRpm = 0.3f;
 
-void applyConfig(const GearInfo& config, Vehicle vehicle);
+void applyConfig(const GearInfo& config, Vehicle vehicle, bool notify);
 
 void parseConfigs() {
     gearConfigs.clear();
@@ -72,7 +72,7 @@ void update_player() {
                     if (!settings.AutoLoad)
                         break;
                     if (sameModel && samePlate) {
-                        applyConfig(config, currentVehicle);
+                        applyConfig(config, currentVehicle, settings.AutoNotify);
                     }
                     break;
                 }
@@ -80,7 +80,7 @@ void update_player() {
                     if (!settings.AutoLoadGeneric)
                         break;
                     if (sameModel) {
-                        applyConfig(config, currentVehicle);
+                        applyConfig(config, currentVehicle, settings.AutoNotify);
                     }
                     break;
                 }
