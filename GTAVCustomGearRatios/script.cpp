@@ -63,15 +63,28 @@ void update_player() {
 
     if (ENTITY::DOES_ENTITY_EXIST(currentVehicle) && currentVehicle != previousVehicle) {
         previousVehicle = currentVehicle;
-        if (settings.AutoLoad) {
-            for(const auto& config : gearConfigs) {
-                bool sameModel = GAMEPLAY::GET_HASH_KEY((char*)config.mModelName.c_str()) == ENTITY::GET_ENTITY_MODEL(currentVehicle);
-                bool samePlate = to_lower(config.mLicensePlate) == to_lower(VEHICLE::GET_VEHICLE_NUMBER_PLATE_TEXT(currentVehicle));
-                if (sameModel && samePlate) {
-                    applyConfig(config, currentVehicle);
-                    showNotification(fmt("[%s] automatically applied to current %s",
-                        config.mDescription.c_str(), getFmtModelName(ENTITY::GET_ENTITY_MODEL(currentVehicle)).c_str()));
+        for (const auto& config : gearConfigs) {
+            bool sameModel = GAMEPLAY::GET_HASH_KEY((char*)config.mModelName.c_str()) == ENTITY::GET_ENTITY_MODEL(currentVehicle);
+            bool samePlate = to_lower(config.mLicensePlate) == to_lower(VEHICLE::GET_VEHICLE_NUMBER_PLATE_TEXT(currentVehicle));
+
+            switch (config.mLoadType) {
+                case LoadType::Plate: {
+                    if (!settings.AutoLoad)
+                        break;
+                    if (sameModel && samePlate) {
+                        applyConfig(config, currentVehicle);
+                    }
+                    break;
                 }
+                case LoadType::Model: {
+                    if (!settings.AutoLoadGeneric)
+                        break;
+                    if (sameModel) {
+                        applyConfig(config, currentVehicle);
+                    }
+                    break;
+                }
+                case LoadType::None: break;
             }
         }
     }

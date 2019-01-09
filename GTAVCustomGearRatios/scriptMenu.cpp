@@ -51,6 +51,8 @@ void applyConfig(const GearInfo& config, Vehicle vehicle) {
     ext.SetDriveMaxFlatVel(vehicle, config.mDriveMaxVel);
     ext.SetInitialDriveMaxFlatVel(vehicle, config.mDriveMaxVel / 1.2f);
     ext.SetGearRatios(vehicle, config.mRatios);
+    showNotification(fmt("[%s] automatically applied to current %s",
+        config.mDescription.c_str(), getFmtModelName(ENTITY::GET_ENTITY_MODEL(vehicle)).c_str()));
 }
 
 std::vector<std::string> printInfo(const GearInfo& info) {
@@ -59,10 +61,18 @@ std::vector<std::string> printInfo(const GearInfo& info) {
     //float maxVel = (fInitialDriveMaxFlatVel * 1.2f) / 0.9f;
     float maxVel = info.mDriveMaxVel;
 
+    std::string loadType;
+    switch (info.mLoadType) {
+        case LoadType::Plate: loadType = "Plate"; break;
+        case LoadType::Model: loadType = "Model"; break;
+        case LoadType::None: loadType = "None"; break;
+    }
+
     std::vector<std::string> lines = {
         info.mDescription,
         fmt("For: %s", info.mModelName.c_str()),
-        fmt("Plate: %s", info.mLicensePlate == "undefined" ? "Any" : info.mLicensePlate.c_str()),
+        fmt("Plate: %s", info.mLoadType == LoadType::Plate ? "Any" : info.mLicensePlate.c_str()),
+        fmt("Load type: %s", loadType.c_str()),
         fmt("Top gear: %d", topGear),
         "",
         "Gear ratios:",
@@ -130,12 +140,19 @@ std::vector<std::string> printGearStatus(Vehicle vehicle, uint8_t tunedGear) {
     return lines;
 }
 
-void promptSave(Vehicle vehicle, bool autoload) {
+void promptSave(Vehicle vehicle, LoadType loadType) {
     std::string saveFile;
     std::string description;
     // TODO: Add-on spawner model name
     std::string modelName = VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(ENTITY::GET_ENTITY_MODEL(vehicle));
-    std::string licensePlate = autoload ? VEHICLE::GET_VEHICLE_NUMBER_PLATE_TEXT(vehicle) : "undefined";
+    std::string licensePlate;
+
+    switch (loadType) {
+        case LoadType::Plate:   licensePlate = VEHICLE::GET_VEHICLE_NUMBER_PLATE_TEXT(vehicle); break;
+        case LoadType::Model:   licensePlate = LoadName::Model;  break;
+        case LoadType::None:      licensePlate = LoadName::None; break;
+    }
+
     uint8_t topGear = ext.GetTopGear(vehicle);
     float driveMaxVel = ext.GetDriveMaxFlatVel(vehicle);
     std::vector<float> ratios = ext.GetGearRatios(vehicle);
@@ -172,7 +189,7 @@ void promptSave(Vehicle vehicle, bool autoload) {
     } while (duplicate);
 
     GearInfo(description, modelName, licensePlate, 
-        topGear, driveMaxVel, ratios).SaveConfig(gearConfigDir + "\\" + saveFile + ".xml");
+        topGear, driveMaxVel, ratios, loadType).SaveConfig(gearConfigDir + "\\" + saveFile + ".xml");
     showNotification(fmt("Saved as %s", saveFile));
 }
 
@@ -290,8 +307,6 @@ void update_loadmenu() {
             3.6f * config.mDriveMaxVel / config.mRatios[config.mTopGear]);
         if (menu.OptionPlus(optionName, std::vector<std::string>(), &selected)) {
             applyConfig(config, currentVehicle);
-            showNotification(fmt("[%s] applied to current %s", 
-                config.mDescription.c_str(), getFmtModelName(ENTITY::GET_ENTITY_MODEL(currentVehicle)).c_str()));
         }
         if (selected) {
             menu.OptionPlusPlus(printInfo(config), modelName);
@@ -313,12 +328,18 @@ void update_savemenu() {
         { "Save current gear setup for model and license plate.",
         "It will load automatically when entering a car "
             "with the same model and plate text."})) {
-        promptSave(currentVehicle, true);
+        promptSave(currentVehicle, LoadType::Plate);
+    }
+
+    if (menu.Option("Save as generic autoload",
+        { "Save current gear setup with generic autoload."
+            "Overridden by plate-specific autoload." })) {
+        promptSave(currentVehicle, LoadType::Model);
     }
 
     if (menu.Option("Save as generic",
         { "Save current gear setup without autoload." })) {
-        promptSave(currentVehicle, false);
+        promptSave(currentVehicle, LoadType::None);
     }
 }
 

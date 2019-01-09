@@ -16,17 +16,19 @@ GearInfo::GearInfo()
     : mDescription("Default Ctor - parsing error")
     , mTopGear(0)
     , mDriveMaxVel(0)
-    , mParseError(true) {}
+    , mParseError(true)
+    , mLoadType(LoadType::None) {}
 
 GearInfo::GearInfo(std::string description, std::string modelName, std::string licensePlate,
-    uint8_t topGear, float driveMaxVel, std::vector<float> ratios)
+    uint8_t topGear, float driveMaxVel, std::vector<float> ratios, LoadType loadType)
     : mDescription(std::move(description))
     , mModelName(std::move(modelName))
     , mLicensePlate(std::move(licensePlate))
     , mTopGear(topGear)
     , mDriveMaxVel(driveMaxVel)
     , mRatios(std::move(ratios))
-    , mParseError(false) {}
+    , mParseError(false)
+    , mLoadType(loadType) {}
 
 GearInfo GearInfo::ParseConfig(const std::string& file) {
     xml_document doc;
@@ -63,13 +65,21 @@ GearInfo GearInfo::ParseConfig(const std::string& file) {
         ratios[gear] = gearNode.text().as_float();
     }
 
+    LoadType loadType = LoadType::Plate;
+
+    if (plateTextNode.text().as_string() == LoadName::None)
+        loadType = LoadType::None;
+    if (plateTextNode.text().as_string() == LoadName::Model)
+        loadType = LoadType::Model;
+
     return GearInfo(
         descriptionNode.text().as_string(),
         modelNameNode.text().as_string(),
         plateTextNode.text().as_string(),
         topGear,
         driveMaxVel,
-        ratios
+        ratios,
+        loadType
     );
 }
 
