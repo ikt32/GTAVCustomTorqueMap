@@ -143,21 +143,24 @@ std::vector<std::string> printGearStatus(Vehicle vehicle, uint8_t tunedGear) {
 }
 
 void promptSave(Vehicle vehicle, LoadType loadType) {
-    std::string saveFile;
-    std::string description;
-    // TODO: Add-on spawner model name
-    std::string modelName = VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(ENTITY::GET_ENTITY_MODEL(vehicle));
-    std::string licensePlate;
-
-    switch (loadType) {
-        case LoadType::Plate:   licensePlate = VEHICLE::GET_VEHICLE_NUMBER_PLATE_TEXT(vehicle); break;
-        case LoadType::Model:   licensePlate = LoadName::Model;  break;
-        case LoadType::None:      licensePlate = LoadName::None; break;
-    }
-
     uint8_t topGear = ext.GetTopGear(vehicle);
     float driveMaxVel = ext.GetDriveMaxFlatVel(vehicle);
     std::vector<float> ratios = ext.GetGearRatios(vehicle);
+
+    // TODO: Add-on spawner model name
+    std::string modelName = VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(ENTITY::GET_ENTITY_MODEL(vehicle));
+
+    std::string saveFileProto = fmt("%s_%d_%.0fkph", modelName.c_str(), topGear,
+        3.6f * driveMaxVel / ratios[topGear]);
+    std::string saveFileBase;
+    std::string saveFile;
+
+    std::string licensePlate;
+    switch (loadType) {
+        case LoadType::Plate:   licensePlate = VEHICLE::GET_VEHICLE_NUMBER_PLATE_TEXT(vehicle); break;
+        case LoadType::Model:   licensePlate = LoadName::Model;  break;
+        case LoadType::None:    licensePlate = LoadName::None; break;
+    }
 
     showNotification("Enter description");
     GAMEPLAY::DISPLAY_ONSCREEN_KEYBOARD(0, "FMMC_KEY_TIP8", "", "", "", "", "", 64);
@@ -167,17 +170,19 @@ void promptSave(Vehicle vehicle, LoadType loadType) {
         return;
     }
 
-    description = GAMEPLAY::GET_ONSCREEN_KEYBOARD_RESULT();
+    std::string description = GAMEPLAY::GET_ONSCREEN_KEYBOARD_RESULT();
     if (description.empty()) {
         showNotification("No description entered, using default");
         std::string carName = getFmtModelName(ENTITY::GET_ENTITY_MODEL(vehicle));
         description = fmt("%s - %d gears - %.0f kph",
             carName.c_str(), topGear,
             3.6f * driveMaxVel / ratios[topGear]);
+        saveFileBase = stripInvalidChars(fmt("%s_nameless", saveFileProto.c_str()), '_');
+    }
+    else {
+        saveFileBase = stripInvalidChars(fmt("%s_%s", saveFileProto.c_str(), description.c_str()), '_');
     }
 
-    std::string saveFileBase = stripInvalidChars(description, '_');
-    saveFile = saveFileBase;
     uint32_t saveFileSuffix = 0;
     bool duplicate;
     do {
