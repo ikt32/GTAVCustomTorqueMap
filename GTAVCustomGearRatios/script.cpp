@@ -73,6 +73,7 @@ void update_player() {
                         break;
                     if (sameModel && samePlate) {
                         applyConfig(config, currentVehicle, settings.AutoNotify);
+                        return;
                     }
                     break;
                 }
@@ -81,6 +82,7 @@ void update_player() {
                         break;
                     if (sameModel) {
                         applyConfig(config, currentVehicle, settings.AutoNotify);
+                        return;
                     }
                     break;
                 }

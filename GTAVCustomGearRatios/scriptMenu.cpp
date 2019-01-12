@@ -73,7 +73,7 @@ std::vector<std::string> printInfo(const GearInfo& info) {
     std::vector<std::string> lines = {
         info.mDescription,
         fmt("For: %s", info.mModelName.c_str()),
-        fmt("Plate: %s", info.mLoadType == LoadType::Plate ? "Any" : info.mLicensePlate.c_str()),
+        fmt("Plate: %s", info.mLoadType == LoadType::Plate ? info.mLicensePlate.c_str() : "Any"),
         fmt("Load type: %s", loadType.c_str()),
         fmt("Top gear: %d", topGear),
         "",
@@ -184,6 +184,7 @@ void promptSave(Vehicle vehicle, LoadType loadType) {
     }
 
     uint32_t saveFileSuffix = 0;
+    saveFile = saveFileBase;
     bool duplicate;
     do {
         duplicate = false;
@@ -354,15 +355,15 @@ void update_optionsmenu() {
     menu.Title("Options");
     menu.Subtitle("");
 
-    menu.BoolOption("Load ratios automatically", settings.AutoLoad,
+    menu.BoolOption("Autoload ratios (License plate)", settings.AutoLoad,
         { "Load gear ratio mapping automatically when getting into a vehicle"
             " that matches model and license plate." });
-    menu.BoolOption("Load ratios automatically", settings.AutoLoadGeneric,
+    menu.BoolOption("Autoload ratios (Generic)", settings.AutoLoadGeneric,
         { "Load gear ratio mapping automatically when getting into a vehicle"
             " that matches model. Overridden by plate." });
     menu.BoolOption("Enable CVT when 1 gear", settings.EnableCVT,
         { "Enable CVT simulation when settings numGears to 1 in a non-CVT vehicle." });
-    menu.BoolOption("Load ratios automatically", settings.AutoNotify,
+    menu.BoolOption("Autoload notifications", settings.AutoNotify,
         { "Show a notification when autoload applied a preset." });
 }
 
