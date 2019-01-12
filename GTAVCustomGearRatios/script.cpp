@@ -92,13 +92,10 @@ void update_player() {
     }
 }
 
-void update_cvt() {
+void update_cvt() {    
     if (settings.EnableCVT && ENTITY::DOES_ENTITY_EXIST(currentVehicle)) {
-        // TODO: Check CVT flag vs 1-gear
         uint8_t origNumGears = *reinterpret_cast<uint8_t *>(ext.GetHandlingPtr(currentVehicle) + hOffsets.nInitialDriveGears);
-        uint32_t flags = *reinterpret_cast<uint8_t *>(ext.GetHandlingPtr(currentVehicle) + hOffsets.dwStrHandlingFlags);
-        bool cvtFlag = flags & 0x00001000;
-        if (origNumGears > 1 || cvtFlag && ext.GetTopGear(currentVehicle) == 1) {
+        if (origNumGears > 1 && ext.GetTopGear(currentVehicle) == 1) {
             float defaultMaxFlatVel = ext.GetDriveMaxFlatVel(currentVehicle);
             float currSpeed = avg(ext.GetTyreSpeeds(currentVehicle));
             float newRatio = map(currSpeed, 0.0f, defaultMaxFlatVel, 3.33f, 0.9f) * 0.75f * std::clamp(ext.GetThrottleP(currentVehicle), 0.1f, 1.0f);
