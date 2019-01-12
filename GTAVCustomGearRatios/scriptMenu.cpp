@@ -13,6 +13,7 @@
 #include "scriptSettings.h"
 #include "gearInfo.h"
 #include "../../GTAVManualTransmission/Gears/Util/UIUtils.h"
+#include "../../GTAVManualTransmission/Gears/Memory/Offsets.hpp"
 
 extern NativeMenu::Menu menu;
 extern ScriptSettings settings;
@@ -232,10 +233,17 @@ void update_ratiomenu() {
         return;
     }
 
+    uint8_t origNumGears = *reinterpret_cast<uint8_t *>(ext.GetHandlingPtr(currentVehicle) + hOffsets.nInitialDriveGears);
+    uint32_t flags = *reinterpret_cast<uint32_t *>(ext.GetHandlingPtr(currentVehicle) + 0x128); // handling flags, b1604
+    bool cvtFlag = flags & 0x00001000;
+
     std::string carName = getFmtModelName(ENTITY::GET_ENTITY_MODEL(currentVehicle));
 
     // Change top gear
-    {
+    if (cvtFlag) {
+        menu.Option("Vehicle has CVT, can't be edited.", { "Get in a vehicle to change its gear stats." });
+    }
+    else {
         bool sel;
         uint8_t topGear = ext.GetTopGear(currentVehicle);
         menu.OptionPlus(fmt("Top gear: < %d >", topGear), {}, &sel,
