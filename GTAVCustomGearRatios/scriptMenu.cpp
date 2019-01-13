@@ -14,6 +14,7 @@
 #include "gearInfo.h"
 #include "../../GTAVManualTransmission/Gears/Util/UIUtils.h"
 #include "../../GTAVManualTransmission/Gears/Memory/Offsets.hpp"
+#include "../../GTAVManualTransmission/Gears/Util/Logger.hpp"
 
 extern NativeMenu::Menu menu;
 extern ScriptSettings settings;
@@ -24,6 +25,8 @@ extern VehicleExtensions ext;
 extern std::string gearConfigDir;
 
 extern std::vector<GearInfo> gearConfigs;
+extern std::vector<std::pair<Vehicle, GearInfo>> currentConfigs;
+
 
 std::string stripInvalidChars(std::string s, char replace) {
     std::string illegalChars = "\\/:?\"<>|";
@@ -56,6 +59,19 @@ void applyConfig(const GearInfo& config, Vehicle vehicle, bool notify) {
         showNotification(fmt("[%s] applied to current %s",
             config.mDescription.c_str(), getFmtModelName(ENTITY::GET_ENTITY_MODEL(vehicle)).c_str()));
     }
+
+    auto currCfgCombo = std::find_if(currentConfigs.begin(), currentConfigs.end(), [=](const auto& cfg) {return cfg.first == vehicle; });
+
+    if (currCfgCombo != currentConfigs.end()) {
+        auto& currentConfig = currCfgCombo->second;
+        currentConfig.mTopGear = config.mTopGear;
+        currentConfig.mDriveMaxVel = config.mDriveMaxVel;
+        currentConfig.mRatios = config.mRatios;
+    }
+    else {
+        logger.Write(DEBUG, "[Management] 0x%X not found?", vehicle);
+    }
+
 }
 
 std::vector<std::string> printInfo(const GearInfo& info) {
@@ -227,6 +243,7 @@ void update_mainmenu() {
 void update_ratiomenu() {
     menu.Title("Edit ratios");
     menu.Subtitle("");
+    bool anyChanged = false;
 
     if (!currentVehicle || !ENTITY::DOES_ENTITY_EXIST(currentVehicle)) {
         menu.Option("No vehicle", { "Get in a vehicle to change its gear stats." });
@@ -249,11 +266,13 @@ void update_ratiomenu() {
         menu.OptionPlus(fmt("Top gear: < %d >", topGear), {}, &sel,
             [=]() mutable { 
                 incVal<uint8_t>(topGear, g_numGears - 1, 1);
-                ext.SetTopGear(currentVehicle, topGear); 
+                ext.SetTopGear(currentVehicle, topGear);
+                anyChanged = true;
             },
             [=]() mutable {
                 decVal<uint8_t>(topGear,  1, 1); 
                 ext.SetTopGear(currentVehicle, topGear);
+                anyChanged = true;
             },
             carName, 
             { "Press left to decrease top gear, right to increase top gear.",
@@ -272,11 +291,13 @@ void update_ratiomenu() {
                 incVal<float>(driveMaxVel, 500.0f, 0.36f); 
                 ext.SetDriveMaxFlatVel(currentVehicle, driveMaxVel);
                 ext.SetInitialDriveMaxFlatVel(currentVehicle, driveMaxVel / 1.2f);
+                anyChanged = true;
             },
             [=]() mutable {
                 decVal<float>(driveMaxVel, 1.0f, 0.36f); 
                 ext.SetDriveMaxFlatVel(currentVehicle, driveMaxVel);
                 ext.SetInitialDriveMaxFlatVel(currentVehicle, driveMaxVel / 1.2f);
+                anyChanged = true;
             },
             carName, { "Press left to decrease final drive max velocity, right to increase it." });
         if (sel) {
@@ -296,11 +317,32 @@ void update_ratiomenu() {
         }
 
         menu.OptionPlus(fmt("Gear %d", gear), {}, &sel,
-                        [=] { incVal(*reinterpret_cast<float*>(ext.GetGearRatioPtr(currentVehicle, gear)), max, 0.01f); },
-                        [=] { decVal(*reinterpret_cast<float*>(ext.GetGearRatioPtr(currentVehicle, gear)), min, 0.01f); },
-                        carName, { "Press left to decrease gear ratio, right to increase gear ratio." });
+            [=]() mutable {
+                incVal(*reinterpret_cast<float*>(ext.GetGearRatioPtr(currentVehicle, gear)), max, 0.01f);
+                anyChanged = true;
+            },
+            [=]() mutable {
+                decVal(*reinterpret_cast<float*>(ext.GetGearRatioPtr(currentVehicle, gear)), min, 0.01f);
+                anyChanged = true;
+            },
+            carName, { "Press left to decrease gear ratio, right to increase gear ratio." });
         if (sel) {
             menu.OptionPlusPlus(printGearStatus(currentVehicle, gear), carName);
+        }
+    }
+
+    if (anyChanged) {
+        auto currCfgCombo = std::find_if(currentConfigs.begin(), currentConfigs.end(), [=](const auto& cfg) {return cfg.first == currentVehicle; });
+        
+        if (currCfgCombo != currentConfigs.end()) {
+            auto& currentConfig = currCfgCombo->second;
+            currentConfig.mTopGear = ext.GetTopGear(currentVehicle);
+            currentConfig.mDriveMaxVel = ext.GetDriveMaxFlatVel(currentVehicle);
+            currentConfig.mRatios = ext.GetGearRatios(currentVehicle);
+        }
+        else {
+            showNotification("CGR: Something messed up, check log.");
+            logger.Write(ERROR, "Could not find currvehicle %d in list of vehicles?", currentVehicle);
         }
     }
 }

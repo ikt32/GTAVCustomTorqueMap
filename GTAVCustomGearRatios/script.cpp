@@ -20,6 +20,7 @@
 #include "Names.h"
 #include "StringUtils.h"
 #include "../../GTAVManualTransmission/Gears/Memory/Offsets.hpp"
+#include "Timer.h"
 
 std::string absoluteModPath;
 std::string settingsGeneralFile;
@@ -38,8 +39,13 @@ Vehicle currentVehicle;
 std::string gearConfigDir;
 std::vector<GearInfo> gearConfigs;
 
+// Only used to restore changes the game applies, like tuning gearbox etc
+std::vector<std::pair<Vehicle, GearInfo>> currentConfigs;
+
 float cvtMaxRpm = 0.9f;
 float cvtMinRpm = 0.3f;
+
+Timer auxTimer(1000);
 
 void applyConfig(const GearInfo& config, Vehicle vehicle, bool notify);
 
@@ -63,6 +69,20 @@ void update_player() {
 
     if (ENTITY::DOES_ENTITY_EXIST(currentVehicle) && currentVehicle != previousVehicle) {
         previousVehicle = currentVehicle;
+
+        if (std::find_if(currentConfigs.begin(), currentConfigs.end(), [=](const auto& cfg) {return cfg.first == currentVehicle; }) == currentConfigs.end()) {
+            // TODO: Find out why bracket init won't work for GearInfo?
+            currentConfigs.emplace_back(currentVehicle, GearInfo("noconfig",
+                "noconfig",
+                "noconfig",
+                ext.GetTopGear(currentVehicle),
+                ext.GetDriveMaxFlatVel(currentVehicle),
+                ext.GetGearRatios(currentVehicle),
+                LoadType::None)
+            );
+            logger.Write(DEBUG, "[Management] Appended new vehicle: 0x%X", currentVehicle);
+        }
+
         for (const auto& config : gearConfigs) {
             bool sameModel = GAMEPLAY::GET_HASH_KEY((char*)config.mModelName.c_str()) == ENTITY::GET_ENTITY_MODEL(currentVehicle);
             bool samePlate = to_lower(config.mLicensePlate) == to_lower(VEHICLE::GET_VEHICLE_NUMBER_PLATE_TEXT(currentVehicle));
@@ -105,6 +125,47 @@ void update_cvt() {
     }
 }
 
+void update_reapply() {
+    // remove entities that stopped existing
+    currentConfigs.erase(std::remove_if(currentConfigs.begin(), currentConfigs.end(), 
+        [=](const auto& cfgPair) {
+            if (!ENTITY::DOES_ENTITY_EXIST(cfgPair.first)) {
+                logger.Write(DEBUG, "[Management] Erased stale vehicle: 0x%X", cfgPair.first);
+            }
+            return !ENTITY::DOES_ENTITY_EXIST(cfgPair.first);
+        }), currentConfigs.end());
+
+    for (const auto& cfgPair : currentConfigs) {
+        auto vehicle = cfgPair.first;
+        auto config = cfgPair.second;
+        bool topGearChanged = ext.GetTopGear(vehicle) != config.mTopGear;
+        bool driveMaxVelChanged = ext.GetDriveMaxFlatVel(vehicle) != config.mDriveMaxVel;
+        bool anyRatioChanged = false;
+        if (!topGearChanged && !driveMaxVelChanged) {
+            auto extRatios = ext.GetGearRatios(vehicle);
+            for (uint32_t i = 0; i < config.mTopGear; ++i) {
+                if (extRatios[i] != config.mRatios[i]) {
+                    anyRatioChanged = true;
+                    break;
+                }
+            }
+        }
+
+        if (topGearChanged || driveMaxVelChanged || anyRatioChanged) {
+            ext.SetTopGear(vehicle, config.mTopGear);
+            ext.SetDriveMaxFlatVel(vehicle, config.mDriveMaxVel);
+            ext.SetInitialDriveMaxFlatVel(vehicle, config.mDriveMaxVel / 1.2f);
+            ext.SetGearRatios(vehicle, config.mRatios);
+            if (settings.AutoNotify) {
+                showNotification(fmt("Restored %d: \n"
+                    "Top gear = %d\n"
+                    "Top speed = %.0f kph", vehicle, config.mTopGear,
+                    3.6f * config.mDriveMaxVel / config.mRatios[config.mTopGear]));
+            }
+        }
+    }
+}
+
 void main() {
     logger.Write(INFO, "Script started");
     absoluteModPath = Paths::GetModuleFolder(Paths::GetOurModuleHandle()) + MOD_DIRECTORY;
@@ -137,6 +198,10 @@ void main() {
         update_player();
         update_menu();
         update_cvt();
+        if (auxTimer.Expired()) {
+            auxTimer.Reset();
+            update_reapply();
+        }
         WAIT(0);
     }
 }
