@@ -264,12 +264,12 @@ void update_ratiomenu() {
         bool sel;
         uint8_t topGear = ext.GetTopGear(currentVehicle);
         menu.OptionPlus(fmt("Top gear: < %d >", topGear), {}, &sel,
-            [=]() mutable { 
+            [&]() mutable { 
                 incVal<uint8_t>(topGear, g_numGears - 1, 1);
                 ext.SetTopGear(currentVehicle, topGear);
                 anyChanged = true;
             },
-            [=]() mutable {
+            [&]() mutable {
                 decVal<uint8_t>(topGear,  1, 1); 
                 ext.SetTopGear(currentVehicle, topGear);
                 anyChanged = true;
@@ -287,13 +287,13 @@ void update_ratiomenu() {
         bool sel;
         float driveMaxVel = ext.GetDriveMaxFlatVel(currentVehicle);
         menu.OptionPlus(fmt("Final drive max: < %.01f kph >", driveMaxVel * 3.6f), {}, &sel,
-            [=]() mutable {
+            [&]() mutable {
                 incVal<float>(driveMaxVel, 500.0f, 0.36f); 
                 ext.SetDriveMaxFlatVel(currentVehicle, driveMaxVel);
                 ext.SetInitialDriveMaxFlatVel(currentVehicle, driveMaxVel / 1.2f);
                 anyChanged = true;
             },
-            [=]() mutable {
+            [&]() mutable {
                 decVal<float>(driveMaxVel, 1.0f, 0.36f); 
                 ext.SetDriveMaxFlatVel(currentVehicle, driveMaxVel);
                 ext.SetInitialDriveMaxFlatVel(currentVehicle, driveMaxVel / 1.2f);
@@ -317,11 +317,11 @@ void update_ratiomenu() {
         }
 
         menu.OptionPlus(fmt("Gear %d", gear), {}, &sel,
-            [=]() mutable {
+            [&]() mutable {
                 incVal(*reinterpret_cast<float*>(ext.GetGearRatioPtr(currentVehicle, gear)), max, 0.01f);
                 anyChanged = true;
             },
-            [=]() mutable {
+            [&]() mutable {
                 decVal(*reinterpret_cast<float*>(ext.GetGearRatioPtr(currentVehicle, gear)), min, 0.01f);
                 anyChanged = true;
             },
@@ -360,6 +360,7 @@ void update_loadmenu() {
         menu.Option("No saved ratios");
     }
 
+
     for (auto& config : gearConfigs) {
         bool selected;
         std::string modelName = getFmtModelName(
@@ -379,9 +380,8 @@ void update_loadmenu() {
             extras.emplace_back("Press Right to mark for deletion.");
         }
 
-        // TODO: Why doesn't this work? config has same address for all option entries???
         if (menu.OptionPlus(optionName, std::vector<std::string>(), &selected,
-                [=]() mutable { config.mMarkedForDeletion = !config.mMarkedForDeletion; }, 
+                [&]() mutable { config.mMarkedForDeletion = !config.mMarkedForDeletion; },
                 nullptr, modelName, extras)) {
             applyConfig(config, currentVehicle, true);
         }

@@ -84,7 +84,7 @@ void eraseConfigs() {
         showNotification(fmt("Failed to remove %d gear config(s).", error));
     }
     if (settings.AutoNotify && deleted) {
-        showNotification(fmt("Remove %d gear config(s).", deleted));
+        showNotification(fmt("Removed %d gear config(s).", deleted));
     }
 }
 
