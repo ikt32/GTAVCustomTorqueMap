@@ -356,21 +356,39 @@ void update_loadmenu() {
         return;
     }
 
-    for (const auto& config : gearConfigs) {
+    if (gearConfigs.empty()) {
+        menu.Option("No saved ratios");
+    }
+
+    for (auto& config : gearConfigs) {
         bool selected;
         std::string modelName = getFmtModelName(
             GAMEPLAY::GET_HASH_KEY((char*)config.mModelName.c_str()));
         std::string optionName = fmt("%s - %d gears - %.0f kph", 
             modelName.c_str(), config.mTopGear, 
             3.6f * config.mDriveMaxVel / config.mRatios[config.mTopGear]);
-        if (menu.OptionPlus(optionName, std::vector<std::string>(), &selected)) {
+        
+        std::vector<std::string> extras = { "Press Enter/Accept to load." };
+
+        if (config.mMarkedForDeletion) {
+            extras.emplace_back("~r~Marked for deletion. ~s~Press Right again to restore."
+                " File will be removed on menu exit!");
+            optionName = fmt("~r~%s", optionName.c_str());
+        }
+        else {
+            extras.emplace_back("Press Right to mark for deletion.");
+        }
+
+        // TODO: Why doesn't this work? config has same address for all option entries???
+        if (menu.OptionPlus(optionName, std::vector<std::string>(), &selected,
+                [=]() mutable { config.mMarkedForDeletion = !config.mMarkedForDeletion; }, 
+                nullptr, modelName, extras)) {
             applyConfig(config, currentVehicle, true);
         }
         if (selected) {
             menu.OptionPlusPlus(printInfo(config), modelName);
         }
     }
-
 }
 
 void update_savemenu() {

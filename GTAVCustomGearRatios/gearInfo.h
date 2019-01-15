@@ -32,4 +32,8 @@ public:
     std::vector<float> mRatios;
     bool mParseError;
     LoadType mLoadType;
+
+    // For file management
+    bool mMarkedForDeletion;
+    std::string mPath;
 };

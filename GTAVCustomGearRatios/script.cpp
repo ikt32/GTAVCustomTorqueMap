@@ -55,12 +55,36 @@ void parseConfigs() {
         if (p.path().extension() == ".xml") {
             GearInfo info = GearInfo::ParseConfig(p.path().string());
             if (!info.mParseError) {
+                info.mPath = p.path().string();
                 gearConfigs.push_back(info);
             }
             else {
                 logger.Write(ERROR, "%s skipped due to errors", p.path().stem().string().c_str());
             }
         }
+    }
+}
+
+void eraseConfigs() {
+    uint32_t error = 0;
+    uint32_t deleted = 0;
+    for (const auto& config : gearConfigs) {
+        if (config.mMarkedForDeletion) {
+            if (!std::filesystem::remove(config.mPath)) {
+                logger.Write(ERROR, "Failed to remove file %s", config.mPath.c_str());
+                error++;
+            }
+            else {
+                logger.Write(DEBUG, "Removed file %s", config.mPath.c_str());
+                deleted++;
+            }
+        }
+    }
+    if (error) {
+        showNotification(fmt("Failed to remove %d gear config(s).", error));
+    }
+    if (settings.AutoNotify && deleted) {
+        showNotification(fmt("Remove %d gear config(s).", deleted));
     }
 }
 
@@ -192,6 +216,7 @@ void main() {
 
     menu.RegisterOnExit([=] {
         settings.Save();
+        eraseConfigs();
     });
 
     while (true) {

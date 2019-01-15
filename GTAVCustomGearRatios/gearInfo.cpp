@@ -17,7 +17,8 @@ GearInfo::GearInfo()
     , mTopGear(0)
     , mDriveMaxVel(0)
     , mParseError(true)
-    , mLoadType(LoadType::None) {}
+    , mLoadType(LoadType::None)
+    , mMarkedForDeletion(true) {}
 
 GearInfo::GearInfo(std::string description, std::string modelName, std::string licensePlate,
     uint8_t topGear, float driveMaxVel, std::vector<float> ratios, LoadType loadType)
@@ -28,7 +29,8 @@ GearInfo::GearInfo(std::string description, std::string modelName, std::string l
     , mDriveMaxVel(driveMaxVel)
     , mRatios(std::move(ratios))
     , mParseError(false)
-    , mLoadType(loadType) {}
+    , mLoadType(loadType)
+    , mMarkedForDeletion(false) {}
 
 GearInfo GearInfo::ParseConfig(const std::string& file) {
     xml_document doc;
