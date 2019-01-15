@@ -207,14 +207,14 @@ void main() {
     ext.initOffsets();
     parseConfigs();
 
-    menu.RegisterOnMain([=] {
+    menu.RegisterOnMain([&] {
         menu.ReadSettings();
         settings.Read();
         logger.SetMinLevel(settings.Debug ? DEBUG : INFO);
         parseConfigs();
     });
 
-    menu.RegisterOnExit([=] {
+    menu.RegisterOnExit([&] {
         settings.Save();
         eraseConfigs();
     });
