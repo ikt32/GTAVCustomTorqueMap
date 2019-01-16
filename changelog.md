@@ -13,7 +13,8 @@
 * Disable gear ratio changes for real CVT cars
   * Cars that have the CVT handling flag set only have one gear and the game doesn't shift up, so changing the ratios won't have any effect.
 * Add an option to enable or disable notifications
-* Fix an issue where the save prompt reads an enter too early
+* Fix an issue where the save prompt reads an enter too early, closing it too early
+* Fix an issue where DriveForce is overwritten, causing cars to lose all power
 * Change how filenames are generated
 
 ## v1.0.0
