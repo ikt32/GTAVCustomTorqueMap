@@ -4,6 +4,10 @@
 
 ScriptSettings::ScriptSettings()
     : AutoLoad(true)
+    , AutoLoadGeneric(true)
+    , RestoreRatios(true)
+    , EnableCVT(false)
+    , AutoNotify(true)
     , Debug(false) {}
 
 void ScriptSettings::SetFiles(const std::string &general) {
@@ -21,6 +25,7 @@ void ScriptSettings::Save() const {
 
     settings.SetBoolValue("OPTIONS", "AutoLoad", AutoLoad);
     settings.SetBoolValue("OPTIONS", "AutoLoadGeneric", AutoLoadGeneric);
+    settings.SetBoolValue("OPTIONS", "RestoreRatios", RestoreRatios);
     settings.SetBoolValue("OPTIONS", "EnableCVT", EnableCVT);
     settings.SetBoolValue("Options", "AutoNotify", AutoNotify);
 
@@ -28,16 +33,17 @@ void ScriptSettings::Save() const {
 }
 
 void ScriptSettings::parseSettings() {
-    CSimpleIniA settingsGeneral;
-    settingsGeneral.SetUnicode();
-    settingsGeneral.LoadFile(settingsGeneralFile.c_str());
+    CSimpleIniA settings;
+    settings.SetUnicode();
+    settings.LoadFile(settingsGeneralFile.c_str());
 
     // [OPTIONS]
-    AutoLoad = settingsGeneral.GetBoolValue("OPTIONS", "AutoLoad", true);
-    AutoLoadGeneric = settingsGeneral.GetBoolValue("OPTIONS", "AutoLoadGeneric", true);
-    EnableCVT = settingsGeneral.GetBoolValue("OPTIONS", "EnableCVT", false);
-    AutoNotify = settingsGeneral.GetBoolValue("OPTIONS", "AutoNotify", true);
+    AutoLoad = settings.GetBoolValue("OPTIONS", "AutoLoad", true);
+    AutoLoadGeneric = settings.GetBoolValue("OPTIONS", "AutoLoadGeneric", true);
+    RestoreRatios = settings.GetBoolValue("OPTIONS", "RestoreRatios", true);
+    EnableCVT = settings.GetBoolValue("OPTIONS", "EnableCVT", false);
+    AutoNotify = settings.GetBoolValue("OPTIONS", "AutoNotify", true);
 
     // [DEBUG]
-    Debug = settingsGeneral.GetBoolValue("DEBUG", "LogDebug", false);
+    Debug = settings.GetBoolValue("DEBUG", "LogDebug", false);
 }

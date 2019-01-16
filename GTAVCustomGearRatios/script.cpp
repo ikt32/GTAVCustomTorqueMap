@@ -159,6 +159,10 @@ void update_reapply() {
             return !ENTITY::DOES_ENTITY_EXIST(cfgPair.first);
         }), currentConfigs.end());
 
+    // Skip actually checking and setting ratios, but do keep updating the list.
+    if (!settings.RestoreRatios)
+        return;
+
     for (const auto& cfgPair : currentConfigs) {
         auto vehicle = cfgPair.first;
         auto config = cfgPair.second;

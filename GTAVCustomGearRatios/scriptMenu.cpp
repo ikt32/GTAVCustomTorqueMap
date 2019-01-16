@@ -6,15 +6,16 @@
 #include <menu.h>
 
 #include "../../GTAVManualTransmission/Gears/Memory/VehicleExtensions.hpp"
+#include "../../GTAVManualTransmission/Gears/Memory/Offsets.hpp"
+#include "../../GTAVManualTransmission/Gears/Util/Logger.hpp"
 #include "../../GTAVManualTransmission/Gears/Util/StringFormat.h"
+#include "../../GTAVManualTransmission/Gears/Util/UIUtils.h"
 
 #include "Names.h"
 #include "script.h"
 #include "scriptSettings.h"
 #include "gearInfo.h"
-#include "../../GTAVManualTransmission/Gears/Util/UIUtils.h"
-#include "../../GTAVManualTransmission/Gears/Memory/Offsets.hpp"
-#include "../../GTAVManualTransmission/Gears/Util/Logger.hpp"
+
 
 extern NativeMenu::Menu menu;
 extern ScriptSettings settings;
@@ -430,6 +431,9 @@ void update_optionsmenu() {
     menu.BoolOption("Autoload ratios (Generic)", settings.AutoLoadGeneric,
         { "Load gear ratio mapping automatically when getting into a vehicle"
             " that matches model. Overridden by plate." });
+    menu.BoolOption("Override game ratio changes", settings.RestoreRatios,
+        { "Restores user-set ratios when the game changes them,"
+            " for example gearbox upgrades in LSC." });
     menu.BoolOption("Autoload notifications", settings.AutoNotify,
         { "Show a notification when autoload applied a preset." });
     menu.BoolOption("Enable CVT when 1 gear", settings.EnableCVT,
