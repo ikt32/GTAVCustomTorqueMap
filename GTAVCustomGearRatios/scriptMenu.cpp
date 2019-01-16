@@ -180,7 +180,8 @@ void promptSave(Vehicle vehicle, LoadType loadType) {
     }
 
     showNotification("Enter description");
-    GAMEPLAY::DISPLAY_ONSCREEN_KEYBOARD(0, "FMMC_KEY_TIP8", "", "", "", "", "", 64);
+    WAIT(0);
+    GAMEPLAY::DISPLAY_ONSCREEN_KEYBOARD(UNK::_GET_CURRENT_LANGUAGE_ID() == 0, "FMMC_KEY_TIP8", "", "", "", "", "", 64);
     while (GAMEPLAY::UPDATE_ONSCREEN_KEYBOARD() == 0) WAIT(0);
     if (!GAMEPLAY::GET_ONSCREEN_KEYBOARD_RESULT()) {
         showNotification("Cancelled save");
