@@ -63,7 +63,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\..\ScriptHookV_SDK;..\..\GTAVMenuBase;$(SolutionDir)thirdparty</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\ScriptHookV_SDK;..\..\GTAVMenuBase;$(SolutionDir)thirdparty;$(SolutionDir)thirdparty\fmt\include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;NOMINMAX;NOGDI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -76,18 +76,19 @@
   <ItemGroup>
     <ClCompile Include="..\..\GTAVManualTransmission\Gears\Memory\NativeMemory.cpp" />
     <ClCompile Include="..\..\GTAVManualTransmission\Gears\Memory\VehicleExtensions.cpp" />
+    <ClCompile Include="..\..\GTAVManualTransmission\Gears\Util\FileVersion.cpp" />
     <ClCompile Include="..\..\GTAVManualTransmission\Gears\Util\Logger.cpp" />
     <ClCompile Include="..\..\GTAVManualTransmission\Gears\Util\MathExt.cpp" />
     <ClCompile Include="..\..\GTAVManualTransmission\Gears\Util\Paths.cpp" />
-    <ClCompile Include="..\..\GTAVManualTransmission\Gears\Util\StringFormat.cpp" />
     <ClCompile Include="..\..\GTAVManualTransmission\Gears\Util\UIUtils.cpp" />
     <ClCompile Include="..\..\GTAVMenuBase\menu.cpp" />
     <ClCompile Include="..\..\GTAVMenuBase\menucontrols.cpp" />
     <ClCompile Include="..\..\GTAVMenuBase\menukeyboard.cpp" />
     <ClCompile Include="..\..\GTAVMenuBase\menusettings.cpp" />
     <ClCompile Include="..\..\GTAVMenuBase\menuutils.cpp" />
+    <ClCompile Include="..\thirdparty\fmt\src\format.cc" />
+    <ClCompile Include="..\thirdparty\fmt\src\posix.cc" />
     <ClCompile Include="..\thirdparty\pugixml\pugixml.cpp" />
-    <ClCompile Include="FileVersion.cpp" />
     <ClCompile Include="gearInfo.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="script.cpp" />
@@ -102,10 +103,10 @@
     <ClInclude Include="..\..\GTAVManualTransmission\Gears\Memory\Offsets.hpp" />
     <ClInclude Include="..\..\GTAVManualTransmission\Gears\Memory\VehicleExtensions.hpp" />
     <ClInclude Include="..\..\GTAVManualTransmission\Gears\Memory\VehicleFlags.h" />
+    <ClInclude Include="..\..\GTAVManualTransmission\Gears\Util\FileVersion.h" />
     <ClInclude Include="..\..\GTAVManualTransmission\Gears\Util\Logger.hpp" />
     <ClInclude Include="..\..\GTAVManualTransmission\Gears\Util\MathExt.h" />
     <ClInclude Include="..\..\GTAVManualTransmission\Gears\Util\Paths.h" />
-    <ClInclude Include="..\..\GTAVManualTransmission\Gears\Util\StringFormat.h" />
     <ClInclude Include="..\..\GTAVManualTransmission\Gears\Util\UIUtils.h" />
     <ClInclude Include="..\..\GTAVMenuBase\menu.h" />
     <ClInclude Include="..\..\GTAVMenuBase\menucontrols.h" />
@@ -115,7 +116,6 @@
     <ClInclude Include="..\..\GTAVMenuBase\Scaleform.h" />
     <ClInclude Include="..\thirdparty\pugixml\pugiconfig.hpp" />
     <ClInclude Include="..\thirdparty\pugixml\pugixml.hpp" />
-    <ClInclude Include="FileVersion.h" />
     <ClInclude Include="gearInfo.h" />
     <ClInclude Include="Names.h" />
     <ClInclude Include="script.h" />

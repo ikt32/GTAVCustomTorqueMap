@@ -3,8 +3,8 @@
 #include <filesystem>
 
 #include "script.h"
-#include "FileVersion.h"
 
+#include "../../GTAVManualTransmission/Gears/Util/FileVersion.h"
 #include "../../GTAVManualTransmission/Gears/Util/Paths.h"
 #include "../../GTAVManualTransmission/Gears/Util/Logger.hpp"
 #include "../../GTAVManualTransmission/Gears/Memory/Versions.h"
@@ -33,7 +33,7 @@ BOOL APIENTRY DllMain(HMODULE hInstance, DWORD reason, LPVOID lpReserved) {
                 logger.Write(WARN, "Unsupported game version! Update your game.");
             }
 
-            int exeVersion = getExeInfo();
+            SVersion exeVersion = getExeInfo();
             int actualVersion = findNextLowest(ExeVersionMap, exeVersion);
             if (scriptingVersion % 2) {
                 scriptingVersion--;

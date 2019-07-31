@@ -1,7 +1,7 @@
 #include "script.h"
 
 #include <filesystem>
-
+#include <fmt/core.h>
 #include <inc/main.h>
 #include <inc/natives.h>
 
@@ -81,10 +81,10 @@ void eraseConfigs() {
         }
     }
     if (error) {
-        showNotification(fmt("Failed to remove %d gear config(s).", error));
+        showNotification(fmt::format("Failed to remove {} gear config(s).", error));
     }
     if (settings.AutoNotify && deleted) {
-        showNotification(fmt("Removed %d gear config(s).", deleted));
+        showNotification(fmt::format("Removed {} gear config(s).", deleted));
     }
 }
 
@@ -185,9 +185,9 @@ void update_reapply() {
             ext.SetInitialDriveMaxFlatVel(vehicle, config.mDriveMaxVel / 1.2f);
             ext.SetGearRatios(vehicle, config.mRatios);
             if (settings.AutoNotify) {
-                showNotification(fmt("Restored %d: \n"
-                    "Top gear = %d\n"
-                    "Top speed = %.0f kph", vehicle, config.mTopGear,
+                showNotification(fmt::format("Restored {}: \n"
+                    "Top gear = {}\n"
+                    "Top speed = {:.0f} kph", vehicle, config.mTopGear,
                     3.6f * config.mDriveMaxVel / config.mRatios[config.mTopGear]));
             }
         }

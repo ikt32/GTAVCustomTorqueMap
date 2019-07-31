@@ -1,14 +1,13 @@
 #include "scriptMenu.h"
 
 #include <filesystem>
-
+#include <fmt/core.h>
 #include <inc/natives.h>
 #include <menu.h>
 
 #include "../../GTAVManualTransmission/Gears/Memory/VehicleExtensions.hpp"
 #include "../../GTAVManualTransmission/Gears/Memory/Offsets.hpp"
 #include "../../GTAVManualTransmission/Gears/Util/Logger.hpp"
-#include "../../GTAVManualTransmission/Gears/Util/StringFormat.h"
 #include "../../GTAVManualTransmission/Gears/Util/UIUtils.h"
 
 #include "Names.h"
@@ -57,7 +56,7 @@ void applyConfig(const GearInfo& config, Vehicle vehicle, bool notify) {
     ext.SetInitialDriveMaxFlatVel(vehicle, config.mDriveMaxVel / 1.2f);
     ext.SetGearRatios(vehicle, config.mRatios);
     if (notify) {
-        showNotification(fmt("[%s] applied to current %s",
+        showNotification(fmt::format("[{}] applied to current {}",
             config.mDescription.c_str(), getFmtModelName(ENTITY::GET_ENTITY_MODEL(vehicle)).c_str()));
     }
 
@@ -90,10 +89,10 @@ std::vector<std::string> printInfo(const GearInfo& info) {
 
     std::vector<std::string> lines = {
         info.mDescription,
-        fmt("For: %s", info.mModelName.c_str()),
-        fmt("Plate: %s", info.mLoadType == LoadType::Plate ? info.mLicensePlate.c_str() : "Any"),
-        fmt("Load type: %s", loadType.c_str()),
-        fmt("Top gear: %d", topGear),
+        fmt::format("For: {}", info.mModelName.c_str()),
+        fmt::format("Plate: {}", info.mLoadType == LoadType::Plate ? info.mLicensePlate.c_str() : "Any"),
+        fmt::format("Load type: {}", loadType.c_str()),
+        fmt::format("Top gear: {}", topGear),
         "",
         "Gear ratios:",
     };
@@ -113,9 +112,9 @@ std::vector<std::string> printInfo(const GearInfo& info) {
             prefix = "3rd";
         }
         else {
-            prefix = fmt("%dth", i);
+            prefix = fmt::format("{}th", i);
         }
-        lines.push_back(fmt("%s: %.02f (rev limit: %.0f kph)",
+        lines.push_back(fmt::format("{}: {:.02f} (rev limit: {:.0f} kph)",
             prefix.c_str(), ratios[i], 3.6f * maxVel / ratios[i]));
     }
 
@@ -129,9 +128,9 @@ std::vector<std::string> printGearStatus(Vehicle vehicle, uint8_t tunedGear) {
     auto ratios = ext.GetGearRatios(vehicle);
 
     std::vector<std::string> lines = {
-        fmt("Top gear: %d", topGear),
-        fmt("Final drive: %.01f kph", maxVel * 3.6f),
-        fmt("Current gear: %d", currentGear),
+        fmt::format("Top gear: {}", topGear),
+        fmt::format("Final drive: {:.01f} kph", maxVel * 3.6f),
+        fmt::format("Current gear: {}", currentGear),
         "",
         "Gear ratios:",
     };
@@ -151,9 +150,9 @@ std::vector<std::string> printGearStatus(Vehicle vehicle, uint8_t tunedGear) {
             prefix = "3rd";
         }
         else {
-            prefix = fmt("%dth", i);
+            prefix = fmt::format("{}th", i);
         }
-        lines.push_back(fmt("%s%s: %.02f (rev limit: %.0f kph)", i == tunedGear ? "~b~" : "",
+        lines.push_back(fmt::format("{}{}: {:.02f} (rev limit: {:.0f} kph)", i == tunedGear ? "~b~" : "",
             prefix.c_str(), ratios[i], 3.6f * maxVel / ratios[i]));
     }
 
@@ -168,7 +167,7 @@ void promptSave(Vehicle vehicle, LoadType loadType) {
     // TODO: Add-on spawner model name
     std::string modelName = VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(ENTITY::GET_ENTITY_MODEL(vehicle));
 
-    std::string saveFileProto = fmt("%s_%d_%.0fkph", modelName.c_str(), topGear,
+    std::string saveFileProto = fmt::format("{}_{}_{:.0f}kph", modelName.c_str(), topGear,
         3.6f * driveMaxVel / ratios[topGear]);
     std::string saveFileBase;
     std::string saveFile;
@@ -193,13 +192,13 @@ void promptSave(Vehicle vehicle, LoadType loadType) {
     if (description.empty()) {
         showNotification("No description entered, using default");
         std::string carName = getFmtModelName(ENTITY::GET_ENTITY_MODEL(vehicle));
-        description = fmt("%s - %d gears - %.0f kph",
+        description = fmt::format("{} - {} gears - {:.0f} kph",
             carName.c_str(), topGear,
             3.6f * driveMaxVel / ratios[topGear]);
-        saveFileBase = stripInvalidChars(fmt("%s_nameless", saveFileProto.c_str()), '_');
+        saveFileBase = stripInvalidChars(fmt::format("{}_nameless", saveFileProto.c_str()), '_');
     }
     else {
-        saveFileBase = stripInvalidChars(fmt("%s_%s", saveFileProto.c_str(), description.c_str()), '_');
+        saveFileBase = stripInvalidChars(fmt::format("{}_{}", saveFileProto.c_str(), description.c_str()), '_');
     }
 
     uint32_t saveFileSuffix = 0;
@@ -210,14 +209,14 @@ void promptSave(Vehicle vehicle, LoadType loadType) {
         for (auto & p : std::filesystem::directory_iterator(gearConfigDir)) {
             if (p.path().stem() == saveFile) {
                 duplicate = true;
-                saveFile = fmt("%s_%02d", saveFileBase.c_str(), saveFileSuffix++);
+                saveFile = fmt::format("{}_{:02d}", saveFileBase.c_str(), saveFileSuffix++);
             }
         }
     } while (duplicate);
 
     GearInfo(description, modelName, licensePlate, 
         topGear, driveMaxVel, ratios, loadType).SaveConfig(gearConfigDir + "\\" + saveFile + ".xml");
-    showNotification(fmt("Saved as %s", saveFile));
+    showNotification(fmt::format("Saved as {}", saveFile));
 }
 
 void update_mainmenu() {
@@ -265,7 +264,7 @@ void update_ratiomenu() {
     else {
         bool sel;
         uint8_t topGear = ext.GetTopGear(currentVehicle);
-        menu.OptionPlus(fmt("Top gear: < %d >", topGear), {}, &sel,
+        menu.OptionPlus(fmt::format("Top gear: < {} >", topGear), {}, &sel,
             [&]() mutable { 
                 incVal<uint8_t>(topGear, g_numGears - 1, 1);
                 ext.SetTopGear(currentVehicle, topGear);
@@ -288,7 +287,7 @@ void update_ratiomenu() {
     {
         bool sel;
         float driveMaxVel = ext.GetDriveMaxFlatVel(currentVehicle);
-        menu.OptionPlus(fmt("Final drive max: < %.01f kph >", driveMaxVel * 3.6f), {}, &sel,
+        menu.OptionPlus(fmt::format("Final drive max: < {:.01f} kph >", driveMaxVel * 3.6f), {}, &sel,
             [&]() mutable {
                 incVal<float>(driveMaxVel, 500.0f, 0.36f); 
                 ext.SetDriveMaxFlatVel(currentVehicle, driveMaxVel);
@@ -318,7 +317,7 @@ void update_ratiomenu() {
             max = -0.01f;
         }
 
-        menu.OptionPlus(fmt("Gear %d", gear), {}, &sel,
+        menu.OptionPlus(fmt::format("Gear {}", gear), {}, &sel,
             [&]() mutable {
                 incVal(*reinterpret_cast<float*>(ext.GetGearRatioPtr(currentVehicle, gear)), max, 0.01f);
                 anyChanged = true;
@@ -344,7 +343,7 @@ void update_ratiomenu() {
         }
         else {
             showNotification("CGR: Something messed up, check log.");
-            logger.Write(ERROR, "Could not find currvehicle %d in list of vehicles?", currentVehicle);
+            logger.Write(ERROR, "Could not find currvehicle {} in list of vehicles?", currentVehicle);
         }
     }
 }
@@ -367,7 +366,7 @@ void update_loadmenu() {
         bool selected;
         std::string modelName = getFmtModelName(
             GAMEPLAY::GET_HASH_KEY((char*)config.mModelName.c_str()));
-        std::string optionName = fmt("%s - %d gears - %.0f kph", 
+        std::string optionName = fmt::format("{} - {} gears - {:.0f} kph", 
             modelName.c_str(), config.mTopGear, 
             3.6f * config.mDriveMaxVel / config.mRatios[config.mTopGear]);
         
@@ -376,7 +375,7 @@ void update_loadmenu() {
         if (config.mMarkedForDeletion) {
             extras.emplace_back("~r~Marked for deletion. ~s~Press Right again to restore."
                 " File will be removed on menu exit!");
-            optionName = fmt("~r~%s", optionName.c_str());
+            optionName = fmt::format("~r~{}", optionName.c_str());
         }
         else {
             extras.emplace_back("Press Right to mark for deletion.");

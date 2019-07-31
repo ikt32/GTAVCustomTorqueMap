@@ -1,13 +1,14 @@
 #include "gearInfo.h"
-#include <pugixml/pugixml.hpp>
 #include <utility>
+#include <pugixml/pugixml.hpp>
+#include <fmt/core.h>
+
 #include "../../GTAVManualTransmission/Gears/Util/Logger.hpp"
-#include "../../GTAVManualTransmission/Gears/Util/StringFormat.h"
 
 using namespace pugi;
 
 #define VERIFY_NODE(node) \
-    if (!node) {\
+    if (!(node)) {\
         logger.Write(ERROR, "[XML %s] Missing node %s", file.c_str(), #node);\
         return GearInfo();\
     }
@@ -62,7 +63,7 @@ GearInfo GearInfo::ParseConfig(const std::string& file) {
     float driveMaxVel = driveMaxVelNode.text().as_float();
     std::vector<float> ratios(topGear + 1);
     for (uint8_t gear = 0; gear <= topGear; ++gear) {
-        xml_node gearNode = vehicleNode.child(fmt("Gear%d", gear).c_str());
+        xml_node gearNode = vehicleNode.child(fmt::format("Gear{}", gear).c_str());
         VERIFY_NODE(gearNode);
         ratios[gear] = gearNode.text().as_float();
     }
@@ -98,12 +99,12 @@ void GearInfo::SaveConfig(const std::string& file) {
     descriptionNode.text() = mDescription.c_str();
     modelNameNode.text() = mModelName.c_str();
     plateTextNode.text() = mLicensePlate.c_str();
-    topGearNode.text() = fmt("%d", mTopGear).c_str();
-    driveMaxVelNode.text() = fmt("%f", mDriveMaxVel).c_str();
+    topGearNode.text() = fmt::format("{}", mTopGear).c_str();
+    driveMaxVelNode.text() = fmt::format("{}", mDriveMaxVel).c_str();
 
     for (uint8_t gear = 0; gear < mTopGear + 1; ++gear) {
-        vehicleNode.append_child(fmt("Gear%d", gear).c_str()).text() = 
-            fmt("%f", mRatios[gear]).c_str();
+        vehicleNode.append_child(fmt::format("Gear{}", gear).c_str()).text() = 
+            fmt::format("{}", mRatios[gear]).c_str();
     }
 
     if (!doc.save_file(file.c_str())) {

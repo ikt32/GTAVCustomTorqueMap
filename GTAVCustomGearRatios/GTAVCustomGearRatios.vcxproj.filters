@@ -44,12 +44,6 @@
     <ClCompile Include="..\..\GTAVManualTransmission\Gears\Util\Paths.cpp">
       <Filter>External Utils</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\GTAVManualTransmission\Gears\Util\StringFormat.cpp">
-      <Filter>External Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="FileVersion.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\GTAVMenuBase\menu.cpp">
       <Filter>Menu</Filter>
     </ClCompile>
@@ -92,6 +86,15 @@
     <ClCompile Include="Timer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\GTAVManualTransmission\Gears\Util\FileVersion.cpp">
+      <Filter>External Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\fmt\src\posix.cc">
+      <Filter>thirdparty</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\fmt\src\format.cc">
+      <Filter>thirdparty</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="script.h">
@@ -114,12 +117,6 @@
     </ClInclude>
     <ClInclude Include="..\..\GTAVManualTransmission\Gears\Util\Paths.h">
       <Filter>External Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\GTAVManualTransmission\Gears\Util\StringFormat.h">
-      <Filter>External Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="FileVersion.h">
-      <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="..\..\GTAVMenuBase\menu.h">
       <Filter>Menu</Filter>
@@ -168,6 +165,9 @@
     </ClInclude>
     <ClInclude Include="Timer.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GTAVManualTransmission\Gears\Util\FileVersion.h">
+      <Filter>External Utils</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
