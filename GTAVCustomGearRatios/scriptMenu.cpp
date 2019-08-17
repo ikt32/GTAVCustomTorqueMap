@@ -114,7 +114,7 @@ std::vector<std::string> printInfo(const GearInfo& info) {
         else {
             prefix = fmt::format("{}th", i);
         }
-        lines.push_back(fmt::format("{}: {:.02f} (rev limit: {:.0f} kph)",
+        lines.push_back(fmt::format("{}: {:.2f} (rev limit: {:.0f} kph)",
             prefix.c_str(), ratios[i], 3.6f * maxVel / ratios[i]));
     }
 
@@ -129,7 +129,7 @@ std::vector<std::string> printGearStatus(Vehicle vehicle, uint8_t tunedGear) {
 
     std::vector<std::string> lines = {
         fmt::format("Top gear: {}", topGear),
-        fmt::format("Final drive: {:.01f} kph", maxVel * 3.6f),
+        fmt::format("Final drive: {:.1f} kph", maxVel * 3.6f),
         fmt::format("Current gear: {}", currentGear),
         "",
         "Gear ratios:",
@@ -152,7 +152,7 @@ std::vector<std::string> printGearStatus(Vehicle vehicle, uint8_t tunedGear) {
         else {
             prefix = fmt::format("{}th", i);
         }
-        lines.push_back(fmt::format("{}{}: {:.02f} (rev limit: {:.0f} kph)", i == tunedGear ? "~b~" : "",
+        lines.push_back(fmt::format("{}{}: {:.2f} (rev limit: {:.0f} kph)", i == tunedGear ? "~b~" : "",
             prefix.c_str(), ratios[i], 3.6f * maxVel / ratios[i]));
     }
 
@@ -287,7 +287,7 @@ void update_ratiomenu() {
     {
         bool sel;
         float driveMaxVel = ext.GetDriveMaxFlatVel(currentVehicle);
-        menu.OptionPlus(fmt::format("Final drive max: < {:.01f} kph >", driveMaxVel * 3.6f), {}, &sel,
+        menu.OptionPlus(fmt::format("Final drive max: < {:.1f} kph >", driveMaxVel * 3.6f), {}, &sel,
             [&]() mutable {
                 incVal<float>(driveMaxVel, 500.0f, 0.36f); 
                 ext.SetDriveMaxFlatVel(currentVehicle, driveMaxVel);
