@@ -10,14 +10,12 @@
 #include "../../GTAVManualTransmission/Gears/Util/Logger.hpp"
 #include "../../GTAVManualTransmission/Gears/Util/Paths.h"
 #include "../../GTAVManualTransmission/Gears/Memory/VehicleExtensions.hpp"
-#include "../../GTAVManualTransmission/Gears/Util/StringFormat.h"
 #include "../../GTAVManualTransmission/Gears/Util/UIUtils.h"
 #include "../../GTAVManualTransmission/Gears/Util/MathExt.h"
 
 #include "scriptSettings.h"
 #include "scriptMenu.h"
 #include "gearInfo.h"
-#include "Names.h"
 #include "StringUtils.h"
 #include "../../GTAVManualTransmission/Gears/Memory/Offsets.hpp"
 #include "Timer.h"
@@ -208,6 +206,7 @@ void main() {
     logger.SetMinLevel(settings.Debug ? DEBUG : INFO);
 
     menu.ReadSettings();
+    menu.Initialize();
     ext.initOffsets();
     parseConfigs();
 

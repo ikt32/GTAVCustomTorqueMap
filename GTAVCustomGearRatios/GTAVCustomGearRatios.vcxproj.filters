@@ -95,6 +95,9 @@
     <ClCompile Include="..\thirdparty\fmt\src\format.cc">
       <Filter>thirdparty</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\GTAVMenuBase\menumemutils.cpp">
+      <Filter>Menu</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="script.h">
@@ -168,6 +171,9 @@
     </ClInclude>
     <ClInclude Include="..\..\GTAVManualTransmission\Gears\Util\FileVersion.h">
       <Filter>External Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GTAVMenuBase\menumemutils.hpp">
+      <Filter>Menu</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
