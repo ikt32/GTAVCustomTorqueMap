@@ -7,9 +7,9 @@
 
 using namespace pugi;
 
-#define VERIFY_NODE(node) \
+#define VERIFY_NODE(file, node, name) \
     if (!(node)) {\
-        logger.Write(ERROR, "[XML %s] Missing node %s", file.c_str(), #node);\
+        logger.Write(ERROR, "[XML %s] Missing node [%s]", (file), (name));\
         return GearInfo();\
     }
 
@@ -45,26 +45,35 @@ GearInfo GearInfo::ParseConfig(const std::string& file) {
     }
 
     xml_node vehicleNode = doc.child("Vehicle");
-    VERIFY_NODE(vehicleNode);
+    VERIFY_NODE(file.c_str(), vehicleNode, "Vehicle");
 
-    xml_node descriptionNode = vehicleNode.child("Description");
+    std::string nodeName = "Description";
+    xml_node descriptionNode = vehicleNode.child(nodeName.c_str());
+    VERIFY_NODE(file.c_str(), descriptionNode, nodeName.c_str());
+
+    nodeName = "ModelName";
     xml_node modelNameNode = vehicleNode.child("ModelName");
-    xml_node plateTextNode = vehicleNode.child("PlateText");
-    xml_node topGearNode = vehicleNode.child("TopGear");
-    xml_node driveMaxVelNode = vehicleNode.child("DriveMaxVel");
+    VERIFY_NODE(file.c_str(), modelNameNode, "ModelName");
 
-    VERIFY_NODE(descriptionNode);
-    VERIFY_NODE(modelNameNode);
-    VERIFY_NODE(plateTextNode);
-    VERIFY_NODE(topGearNode);
-    VERIFY_NODE(driveMaxVelNode);
+    nodeName = "PlateText";
+    xml_node plateTextNode = vehicleNode.child("PlateText");
+    VERIFY_NODE(file.c_str(), plateTextNode, "PlateText");
+
+    nodeName = "TopGear";
+    xml_node topGearNode = vehicleNode.child("TopGear");
+    VERIFY_NODE(file.c_str(), topGearNode, "TopGear");
+
+    nodeName = "DriveMaxVel";
+    xml_node driveMaxVelNode = vehicleNode.child("DriveMaxVel");
+    VERIFY_NODE(file.c_str(), driveMaxVelNode, "DriveMaxVel");
 
     uint8_t topGear = topGearNode.text().as_int();
     float driveMaxVel = driveMaxVelNode.text().as_float();
     std::vector<float> ratios(topGear + 1);
     for (uint8_t gear = 0; gear <= topGear; ++gear) {
-        xml_node gearNode = vehicleNode.child(fmt::format("Gear{}", gear).c_str());
-        VERIFY_NODE(gearNode);
+        nodeName = fmt::format("Gear{}", gear);
+        xml_node gearNode = vehicleNode.child(nodeName.c_str());
+        VERIFY_NODE(file.c_str(), gearNode, nodeName.c_str());
         ratios[gear] = gearNode.text().as_float();
     }
 
