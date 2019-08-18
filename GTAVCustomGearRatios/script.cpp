@@ -93,7 +93,6 @@ void update_player() {
         previousVehicle = currentVehicle;
 
         if (std::find_if(currentConfigs.begin(), currentConfigs.end(), [=](const auto& cfg) {return cfg.first == currentVehicle; }) == currentConfigs.end()) {
-            // TODO: Find out why bracket init won't work for GearInfo?
             currentConfigs.emplace_back(currentVehicle, GearInfo("noconfig",
                 "noconfig",
                 "noconfig",
