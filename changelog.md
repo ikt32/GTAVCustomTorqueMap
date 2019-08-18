@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.0.2
+
+* Add an option to set gear ratios to optimized defaults
+* Update menu usage
+* Fix an issue where a missing node was reported with an unidentifiably name
+
 ## v1.0.1
 
 * Add generic auto-loading for models
