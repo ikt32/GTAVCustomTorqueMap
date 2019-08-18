@@ -27,6 +27,10 @@ extern std::string gearConfigDir;
 extern std::vector<GearInfo> gearConfigs;
 extern std::vector<std::pair<Vehicle, GearInfo>> currentConfigs;
 
+template <typename T>
+T map(T x, T in_min, T in_max, T out_min, T out_max) {
+    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
 
 std::string stripInvalidChars(std::string s, char replace) {
     std::string illegalChars = "\\/:?\"<>|";
@@ -329,6 +333,27 @@ void update_ratiomenu() {
             carName, { "Press left to decrease gear ratio, right to increase gear ratio." });
         if (sel) {
             menu.OptionPlusPlus(printGearStatus(currentVehicle, gear), carName);
+        }
+    }
+
+    // Apply a default curve
+    // Curve based on https://www.desmos.com/calculator/2fncxrhrvi, where points are the 6 gears.
+    {
+        bool sel;
+        bool changed = menu.OptionPlus(fmt::format("Optimized defaults"), {}, &sel,
+            nullptr, nullptr, carName, { "Set ratios based on an approximation of the default curve.",
+                "~r~Overwrites~w~ the ratios visible on the right!" });
+        if (changed) {
+            *reinterpret_cast<float*>(ext.GetGearRatioPtr(currentVehicle, 0)) = -3.33f;
+            for (uint8_t gear = 1; gear <= topGear; ++gear) {
+                double gearRatio = map(static_cast<double>(gear), 1.0, static_cast<double>(topGear), 0.0, 1.0);
+                float magicVal = static_cast<float>(2.5 * pow(0.018, gearRatio) + 0.83333333);
+                *reinterpret_cast<float*>(ext.GetGearRatioPtr(currentVehicle, gear)) = magicVal;
+            }
+            anyChanged = true;
+        }
+        if (sel) {
+            menu.OptionPlusPlus(printGearStatus(currentVehicle, 255), carName);
         }
     }
 
