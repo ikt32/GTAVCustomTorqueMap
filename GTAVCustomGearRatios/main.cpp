@@ -2,6 +2,8 @@
 
 #include <filesystem>
 
+
+#include "Constants.h"
 #include "script.h"
 
 #include "Util/FileVersion.h"
@@ -60,7 +62,7 @@ void resolveVersion() {
 }
 
 BOOL APIENTRY DllMain(HMODULE hInstance, DWORD reason, LPVOID lpReserved) {
-    const std::string modPath = Paths::GetModuleFolder(hInstance) + MOD_DIRECTORY;
+    const std::string modPath = Paths::GetModuleFolder(hInstance) + Constants::ModDir;
     const std::string logFile = modPath + "\\" + Paths::GetModuleNameWithoutExtension(hInstance) + ".log";
 
     if (!fs::is_directory(modPath) || !fs::exists(modPath)) {
@@ -73,7 +75,7 @@ BOOL APIENTRY DllMain(HMODULE hInstance, DWORD reason, LPVOID lpReserved) {
     switch (reason) {
         case DLL_PROCESS_ATTACH: {
             logger.Clear();
-            logger.Write(INFO, "Custom Gear Ratios %s (build %s)", DISPLAY_VERSION, __DATE__);
+            logger.Write(INFO, "Custom Gear Ratios %s (built %s %s)", Constants::DisplayVersion, __DATE__, __TIME__);
             resolveVersion();
 
             scriptRegister(hInstance, ScriptMain);

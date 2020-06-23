@@ -95,10 +95,9 @@
     <ClCompile Include="Util\Logger.cpp" />
     <ClCompile Include="Util\Paths.cpp" />
     <ClCompile Include="Util\ScriptUtils.cpp" />
-    <ClCompile Include="Util\TimeHelper.cpp" />
+    <ClCompile Include="Util\Strings.cpp" />
     <ClCompile Include="Util\Timer.cpp" />
     <ClCompile Include="Util\UIUtils.cpp" />
-    <ClCompile Include="Util\Util.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\thirdparty\GTAVMenuBase\InstructionalButton.h" />
@@ -126,14 +125,11 @@
     <ClInclude Include="Util\FileVersion.h" />
     <ClInclude Include="Util\Logger.hpp" />
     <ClInclude Include="Util\MathExt.h" />
-    <ClInclude Include="Util\MiscEnums.h" />
     <ClInclude Include="Util\Paths.h" />
     <ClInclude Include="Util\ScriptUtils.h" />
-    <ClInclude Include="Util\TimeHelper.hpp" />
+    <ClInclude Include="Util\Strings.h" />
     <ClInclude Include="Util\Timer.h" />
     <ClInclude Include="Util\UIUtils.h" />
-    <ClInclude Include="Util\Util.hpp" />
-    <ClInclude Include="Util\ValueTimer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

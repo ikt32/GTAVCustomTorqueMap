@@ -5,15 +5,18 @@
 #include <inc/natives.h>
 #include <menu.h>
 
+#include "Constants.h"
 #include "Memory/VehicleExtensions.hpp"
 #include "Memory/Offsets.hpp"
 #include "Util/Logger.hpp"
 #include "Util/UIUtils.h"
+#include "Util/MathExt.h"
 
 #include "script.h"
 #include "scriptSettings.h"
 #include "gearInfo.h"
 #include "Util/ScriptUtils.h"
+#include "Util/Strings.h"
 
 
 extern NativeMenu::Menu menu;
@@ -26,21 +29,6 @@ extern std::string gearConfigDir;
 
 extern std::vector<GearInfo> gearConfigs;
 extern std::vector<std::pair<Vehicle, GearInfo>> currentConfigs;
-
-template <typename T>
-T map(T x, T in_min, T in_max, T out_min, T out_max) {
-    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
-}
-
-std::string stripInvalidChars(std::string s, char replace) {
-    std::string illegalChars = "\\/:?\"<>|";
-    for (auto it = s.begin(); it < s.end(); ++it) {
-        if (illegalChars.find(*it) != std::string::npos) {
-            *it = replace;
-        }
-    }
-    return s;
-}
 
 template <typename T>
 void incVal(T& val, const T max, const T step) {
@@ -60,7 +48,7 @@ void applyConfig(const GearInfo& config, Vehicle vehicle, bool notify) {
     ext.SetInitialDriveMaxFlatVel(vehicle, config.mDriveMaxVel / 1.2f);
     ext.SetGearRatios(vehicle, config.mRatios);
     if (notify) {
-        showNotification(fmt::format("[{}] applied to current {}",
+        UI::Notify(INFO, fmt::format("[{}] applied to current {}",
             config.mDescription.c_str(), Util::GetFormattedVehicleModelName(vehicle).c_str()));
     }
 
@@ -183,26 +171,27 @@ void promptSave(Vehicle vehicle, LoadType loadType) {
         case LoadType::None:    licensePlate = LoadName::None; break;
     }
 
-    showNotification("Enter description");
+    UI::Notify(INFO, "Enter description");
     WAIT(0);
     GAMEPLAY::DISPLAY_ONSCREEN_KEYBOARD(UNK::_GET_CURRENT_LANGUAGE_ID() == 0, "FMMC_KEY_TIP8", "", "", "", "", "", 64);
     while (GAMEPLAY::UPDATE_ONSCREEN_KEYBOARD() == 0) WAIT(0);
     if (!GAMEPLAY::GET_ONSCREEN_KEYBOARD_RESULT()) {
-        showNotification("Cancelled save");
+        UI::Notify(INFO, "Cancelled save");
         return;
     }
 
     std::string description = GAMEPLAY::GET_ONSCREEN_KEYBOARD_RESULT();
+    std::string illegalChars = "\\/:?\"<>|";
     if (description.empty()) {
-        showNotification("No description entered, using default");
+        UI::Notify(INFO, "No description entered, using default");
         std::string carName = Util::GetFormattedVehicleModelName(vehicle);
         description = fmt::format("{} - {} gears - {:.0f} kph",
             carName.c_str(), topGear,
             3.6f * driveMaxVel / ratios[topGear]);
-        saveFileBase = stripInvalidChars(fmt::format("{}_nameless", saveFileProto.c_str()), '_');
+        saveFileBase = StrUtil::replace_chars(fmt::format("{}_nameless", saveFileProto.c_str()), illegalChars, '_');
     }
     else {
-        saveFileBase = stripInvalidChars(fmt::format("{}_{}", saveFileProto.c_str(), description.c_str()), '_');
+        saveFileBase = StrUtil::replace_chars(fmt::format("{}_{}", saveFileProto.c_str(), description.c_str()), illegalChars, '_');
     }
 
     uint32_t saveFileSuffix = 0;
@@ -220,12 +209,12 @@ void promptSave(Vehicle vehicle, LoadType loadType) {
 
     GearInfo(description, modelName, licensePlate, 
         topGear, driveMaxVel, ratios, loadType).SaveConfig(gearConfigDir + "\\" + saveFile + ".xml");
-    showNotification(fmt::format("Saved as {}", saveFile));
+    UI::Notify(INFO, fmt::format("Saved as {}", saveFile));
 }
 
 void update_mainmenu() {
     menu.Title("Custom Gear Ratios");
-    menu.Subtitle(std::string("~b~") + DISPLAY_VERSION);
+    menu.Subtitle(std::string("~b~") + Constants::DisplayVersion);
 
     if (!currentVehicle || !ENTITY::DOES_ENTITY_EXIST(currentVehicle)) {
         menu.Option("No vehicle", { "Get in a vehicle to change its gear stats." });
@@ -367,7 +356,7 @@ void update_ratiomenu() {
             currentConfig.mRatios = ext.GetGearRatios(currentVehicle);
         }
         else {
-            showNotification("CGR: Something messed up, check log.");
+            UI::Notify(INFO, "Something messed up, check log.");
             logger.Write(ERROR, "Could not find currvehicle {} in list of vehicles?", currentVehicle);
         }
     }
@@ -390,7 +379,7 @@ void update_loadmenu() {
     for (auto& config : gearConfigs) {
         bool selected;
         std::string modelName = Util::GetFormattedModelName(
-            GAMEPLAY::GET_HASH_KEY((char*)config.mModelName.c_str()));
+            GAMEPLAY::GET_HASH_KEY(config.mModelName.c_str()));
         std::string optionName = fmt::format("{} - {} gears - {:.0f} kph", 
             modelName.c_str(), config.mTopGear, 
             3.6f * config.mDriveMaxVel / config.mRatios[config.mTopGear]);

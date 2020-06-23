@@ -18,11 +18,12 @@
 
 #include <filesystem>
 
-
-#include "../../GTAVManualTransmission/Gears/Memory/Offsets.hpp"
+#include "Constants.h"
+#include "Memory/Offsets.hpp"
 #include "Util/MathExt.h"
 #include "Util/Paths.h"
-#include "Util/Util.hpp"
+#include "Util/Strings.h"
+#include "Util/UIUtils.h"
 
 std::string absoluteModPath;
 std::string settingsGeneralFile;
@@ -110,8 +111,8 @@ void update_player() {
         }
 
         for (const auto& config : gearConfigs) {
-            bool sameModel = GAMEPLAY::GET_HASH_KEY((char*)config.mModelName.c_str()) == ENTITY::GET_ENTITY_MODEL(currentVehicle);
-            bool samePlate = StrUtil::toLower(config.mLicensePlate) == StrUtil::toLower(VEHICLE::GET_VEHICLE_NUMBER_PLATE_TEXT(currentVehicle));
+            bool sameModel = GAMEPLAY::GET_HASH_KEY(config.mModelName.c_str()) == ENTITY::GET_ENTITY_MODEL(currentVehicle);
+            bool samePlate = StrUtil::to_lower(config.mLicensePlate) == StrUtil::to_lower(VEHICLE::GET_VEHICLE_NUMBER_PLATE_TEXT(currentVehicle));
 
             switch (config.mLoadType) {
                 case LoadType::Plate: {
@@ -198,7 +199,7 @@ void update_reapply() {
 
 void main() {
     logger.Write(INFO, "Script started");
-    absoluteModPath = Paths::GetModuleFolder(Paths::GetOurModuleHandle()) + MOD_DIRECTORY;
+    absoluteModPath = Paths::GetModuleFolder(Paths::GetOurModuleHandle()) + Constants::ModDir;
     settingsGeneralFile = absoluteModPath + "\\settings_general.ini";
     settingsMenuFile = absoluteModPath + "\\settings_menu.ini";
     gearConfigDir = absoluteModPath + "\\Configs";

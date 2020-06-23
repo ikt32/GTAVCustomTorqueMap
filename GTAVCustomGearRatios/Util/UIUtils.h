@@ -17,7 +17,10 @@ void showDebugInfo3D(Vector3 location, const std::vector<std::string> &textLines
 void showDebugInfo3DColors(Vector3 location, const std::vector<std::pair<std::string, Util::ColorI>> &textLines,
     const Util::ColorI& backgroundColor = Util::ColorsI::TransparentGray);
 
-void showNotification(const std::string &message, int *prevNotification = nullptr);
-void showSubtitle(const std::string &message, int duration = 2500);
+namespace UI {
+    void NotifyRaw(const std::string& message, int* prevNotification = nullptr);
+    void Notify(int level, const std::string& message);
+    void Notify(int level, const std::string& message, bool removePrevious);
 
-void drawSphere(Vector3 p, float scale, const Util::ColorI& c);
+    float GetStringWidth(const std::string& text, float scale, int font);
+}

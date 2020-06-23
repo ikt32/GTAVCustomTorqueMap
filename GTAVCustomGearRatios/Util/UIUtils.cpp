@@ -5,15 +5,32 @@
 #include "fmt/format.h"
 #include <algorithm>
 
+#include "../Constants.h"
+
 namespace {
-    float getStringWidth(const std::string& text, float scale, int font) {
-        UI::_BEGIN_TEXT_COMMAND_WIDTH("STRING");
-        UI::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(text.c_str());
-        UI::SET_TEXT_FONT(font);
-        UI::SET_TEXT_SCALE(scale, scale);
-        return UI::_END_TEXT_COMMAND_GET_WIDTH(true);
-    }
+    int notificationHandle = 0;
 }
+
+void UI::Notify(int level, const std::string& message) {
+    Notify(level, message, true);
+}
+
+void UI::Notify(int, const std::string& message, bool removePrevious) {
+    int* notifHandleAddr = nullptr;
+    if (removePrevious) {
+        notifHandleAddr = &notificationHandle;
+    }
+    NotifyRaw(fmt::format("{}\n{}", Constants::NotificationPrefix, message), notifHandleAddr);
+}
+
+float UI::GetStringWidth(const std::string& text, float scale, int font) {
+    UI::_BEGIN_TEXT_COMMAND_WIDTH("STRING");
+    UI::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(text.c_str());
+    UI::SET_TEXT_FONT(font);
+    UI::SET_TEXT_SCALE(scale, scale);
+    return UI::_END_TEXT_COMMAND_GET_WIDTH(true);
+}
+
 
 void showText(float x, float y, float scale, const std::string &text, 
     int font, const Util::ColorI &rgba, bool outline) {
@@ -38,7 +55,7 @@ void showDebugInfo3D(Vector3 location, const std::vector<std::string> &textLines
     float szX = 0.060f;
     for (const auto& line : textLines) {
         showText(0, 0 + height * static_cast<float>(i), 0.2f, line, 0, fontColor, true);
-        float currWidth = getStringWidth(line, 0.2f, 0);
+        float currWidth = UI::GetStringWidth(line, 0.2f, 0);
         if (currWidth > szX) {
             szX = currWidth;
         }
@@ -61,7 +78,7 @@ void showDebugInfo3DColors(Vector3 location, const std::vector<std::pair<std::st
     float szX = 0.060f;
     for (const auto& line : textLines) {
         showText(0, 0 + height * static_cast<float>(i), 0.2f, line.first, 0, line.second, true);
-        float currWidth = getStringWidth(line.first, 0.2f, 0);
+        float currWidth = UI::GetStringWidth(line.first, 0.2f, 0);
         if (currWidth > szX) {
             szX = currWidth;
         }
@@ -74,7 +91,7 @@ void showDebugInfo3DColors(Vector3 location, const std::vector<std::pair<std::st
     GRAPHICS::CLEAR_DRAW_ORIGIN();
 }
 
-void showNotification(const std::string &message, int *prevNotification) {
+void UI::NotifyRaw(const std::string &message, int *prevNotification) {
     if (prevNotification != nullptr && *prevNotification != 0) {
         UI::_REMOVE_NOTIFICATION(*prevNotification);
     }

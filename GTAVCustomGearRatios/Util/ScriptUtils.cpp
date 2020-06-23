@@ -4,23 +4,7 @@
 #include "MathExt.h"
 #include "UIUtils.h"
 #include "inc/natives.h"
-#include "fmt/format.h"
 
-namespace {
-    int notificationHandle = 0;
-}
-
-void UI::Notify(int level, const std::string& message) {
-    Notify(level, message, true);
-}
-
-void UI::Notify(int, const std::string& message, bool removePrevious) {
-    int* notifHandleAddr = nullptr;
-    if (removePrevious) {
-        notifHandleAddr = &notificationHandle;
-    }
-    showNotification(fmt::format("{}\n{}", Constants::NotificationPrefix, message), notifHandleAddr);
-}
 
 bool Util::PlayerAvailable(Player player, Ped playerPed) {
     if (!PLAYER::IS_PLAYER_CONTROL_ON(player) ||
