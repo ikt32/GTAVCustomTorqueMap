@@ -60,7 +60,7 @@ GearInfo GearInfo::ParseConfig(const std::string& file) {
     nodeName = "ModelHash";
     xml_node modelHashNode = vehicleNode.child("ModelHash");
     if (!modelHashNode) {
-        logger.Write(WARN, "[XML %s] Missing node [%s]", (file), nodeName.c_str()); \
+        logger.Write(WARN, "[XML %s] Missing node [%s]", file.c_str(), nodeName.c_str()); \
     }
 
     nodeName = "PlateText";
