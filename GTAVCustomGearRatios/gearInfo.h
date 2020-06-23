@@ -1,5 +1,5 @@
 #pragma once
-#include <inc/types.h>
+#include <inc/natives.h>
 #include <string>
 #include <vector>
 
@@ -19,12 +19,13 @@ struct GearInfo {
     static void SaveConfig(const GearInfo& gearInfo, const std::string& file);
 
     GearInfo();
-    GearInfo(std::string description, std::string modelName, std::string licensePlate,
+    GearInfo(std::string description, std::string modelName, Hash hash, std::string licensePlate,
         uint8_t topGear, float driveMaxVel, std::vector<float> ratios, enum class LoadType loadType);
 
 
     std::string Description;
     std::string ModelName;
+    Hash ModelHash;
     std::string LicensePlate;
     uint8_t TopGear;
     float DriveMaxVel;

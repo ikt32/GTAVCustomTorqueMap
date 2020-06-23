@@ -3,7 +3,7 @@
 #include <pugixml/pugixml.hpp>
 #include <fmt/core.h>
 
-#include "../../GTAVManualTransmission/Gears/Util/Logger.hpp"
+#include "Util/Logger.hpp"
 
 using namespace pugi;
 
@@ -15,16 +15,18 @@ using namespace pugi;
 
 GearInfo::GearInfo()
     : Description("Default Ctor - parsing error")
+    , ModelHash(0)
     , TopGear(0)
     , DriveMaxVel(0)
     , ParseError(true)
     , LoadType(LoadType::None)
     , MarkedForDeletion(true) {}
 
-GearInfo::GearInfo(std::string description, std::string modelName, std::string licensePlate,
-    uint8_t topGear, float driveMaxVel, std::vector<float> ratios, enum class LoadType loadType)
+GearInfo::GearInfo(std::string description, std::string modelName, Hash hash, std::string licensePlate,
+                   uint8_t topGear, float driveMaxVel, std::vector<float> ratios, enum class LoadType loadType)
     : Description(std::move(description))
     , ModelName(std::move(modelName))
+    , ModelHash(hash)
     , LicensePlate(std::move(licensePlate))
     , TopGear(topGear)
     , DriveMaxVel(driveMaxVel)
@@ -54,6 +56,12 @@ GearInfo GearInfo::ParseConfig(const std::string& file) {
     nodeName = "ModelName";
     xml_node modelNameNode = vehicleNode.child("ModelName");
     VERIFY_NODE(file.c_str(), modelNameNode, "ModelName");
+
+    nodeName = "ModelHash";
+    xml_node modelHashNode = vehicleNode.child("ModelHash");
+    if (!modelHashNode) {
+        logger.Write(WARN, "[XML %s] Missing node [%s]", (file), nodeName.c_str()); \
+    }
 
     nodeName = "PlateText";
     xml_node plateTextNode = vehicleNode.child("PlateText");
@@ -87,6 +95,7 @@ GearInfo GearInfo::ParseConfig(const std::string& file) {
     return GearInfo(
         descriptionNode.text().as_string(),
         modelNameNode.text().as_string(),
+        modelHashNode ? modelHashNode.text().as_uint() : 0,
         plateTextNode.text().as_string(),
         topGear,
         driveMaxVel,
@@ -101,12 +110,14 @@ void GearInfo::SaveConfig(const GearInfo& gearInfo, const std::string& file) {
     xml_node vehicleNode = doc.append_child("Vehicle");
     xml_node descriptionNode = vehicleNode.append_child("Description");
     xml_node modelNameNode = vehicleNode.append_child("ModelName");
+    xml_node modelHashNode = vehicleNode.append_child("ModelHash");
     xml_node plateTextNode = vehicleNode.append_child("PlateText");
     xml_node topGearNode = vehicleNode.append_child("TopGear");
     xml_node driveMaxVelNode = vehicleNode.append_child("DriveMaxVel");
 
     descriptionNode.text() = gearInfo.Description.c_str();
     modelNameNode.text() = gearInfo.ModelName.c_str();
+    modelHashNode.text() = gearInfo.ModelHash;
     plateTextNode.text() = gearInfo.LicensePlate.c_str();
     topGearNode.text() = fmt::format("{}", gearInfo.TopGear).c_str();
     driveMaxVelNode.text() = fmt::format("{}", gearInfo.DriveMaxVel).c_str();

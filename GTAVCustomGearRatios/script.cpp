@@ -101,6 +101,7 @@ void update_player() {
         if (std::find_if(currentConfigs.begin(), currentConfigs.end(), [=](const auto& cfg) {return cfg.first == currentVehicle; }) == currentConfigs.end()) {
             currentConfigs.emplace_back(currentVehicle, GearInfo("noconfig",
                 "noconfig",
+                0,
                 "noconfig",
                 ext.GetTopGear(currentVehicle),
                 ext.GetDriveMaxFlatVel(currentVehicle),
@@ -112,6 +113,8 @@ void update_player() {
 
         for (const auto& config : gearConfigs) {
             bool sameModel = GAMEPLAY::GET_HASH_KEY(config.ModelName.c_str()) == ENTITY::GET_ENTITY_MODEL(currentVehicle);
+            if (!sameModel)
+                sameModel = config.ModelHash == ENTITY::GET_ENTITY_MODEL(currentVehicle);
             bool samePlate = StrUtil::to_lower(config.LicensePlate) == StrUtil::to_lower(VEHICLE::GET_VEHICLE_NUMBER_PLATE_TEXT(currentVehicle));
 
             switch (config.LoadType) {

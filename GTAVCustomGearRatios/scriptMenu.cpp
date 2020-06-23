@@ -156,7 +156,6 @@ void promptSave(Vehicle vehicle, LoadType loadType) {
     float driveMaxVel = ext.GetDriveMaxFlatVel(vehicle);
     std::vector<float> ratios = ext.GetGearRatios(vehicle);
 
-    // TODO: Add-on spawner model name
     std::string modelName = VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(ENTITY::GET_ENTITY_MODEL(vehicle));
 
     std::string saveFileProto = fmt::format("{}_{}_{:.0f}kph", modelName.c_str(), topGear,
@@ -207,7 +206,7 @@ void promptSave(Vehicle vehicle, LoadType loadType) {
         }
     } while (duplicate);
 
-    GearInfo gearInfo(description, modelName, licensePlate,
+    GearInfo gearInfo(description, modelName, ENTITY::GET_ENTITY_MODEL(vehicle), licensePlate,
         topGear, driveMaxVel, ratios, loadType);
     GearInfo::SaveConfig(gearInfo, gearConfigDir + "\\" + saveFile + ".xml");
     UI::Notify(INFO, fmt::format("Saved as {}", saveFile));
@@ -381,6 +380,11 @@ void update_loadmenu() {
         bool selected;
         std::string modelName = Util::GetFormattedModelName(
             GAMEPLAY::GET_HASH_KEY(config.ModelName.c_str()));
+
+        if (modelName == "CARNOTFOUND") {
+            modelName = Util::GetFormattedModelName(config.ModelHash);
+        }
+
         std::string optionName = fmt::format("{} - {} gears - {:.0f} kph", 
             modelName.c_str(), config.TopGear, 
             3.6f * config.DriveMaxVel / config.Ratios[config.TopGear]);
