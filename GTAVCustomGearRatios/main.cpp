@@ -4,13 +4,60 @@
 
 #include "script.h"
 
-#include "../../GTAVManualTransmission/Gears/Util/FileVersion.h"
-#include "../../GTAVManualTransmission/Gears/Util/Paths.h"
-#include "../../GTAVManualTransmission/Gears/Util/Logger.hpp"
-#include "../../GTAVManualTransmission/Gears/Memory/Versions.h"
-#include "../../GTAVManualTransmission/Gears/Memory/VehicleExtensions.hpp"
+#include "Util/FileVersion.h"
+#include "Util/Paths.h"
+#include "Util/Logger.hpp"
+#include "Memory/Versions.h"
+#include "Memory/VehicleExtensions.hpp"
 
 namespace fs = std::filesystem;
+
+void resolveVersion() {
+    int shvVersion = getGameVersion();
+
+    logger.Write(INFO, "SHV API Game version: %s (%d)", eGameVersionToString(shvVersion).c_str(), shvVersion);
+    // Also prints the other stuff, annoyingly.
+    SVersion exeVersion = getExeInfo();
+
+    if (shvVersion < G_VER_1_0_877_1_STEAM) {
+        logger.Write(WARN, "Outdated game version! Update your game.");
+    }
+
+    // Version we *explicitly* support
+    std::vector<int> exeVersionsSupp = findNextLowest(ExeVersionMap, exeVersion);
+    if (exeVersionsSupp.empty() || exeVersionsSupp.size() == 1 && exeVersionsSupp[0] == -1) {
+        logger.Write(ERROR, "Failed to find a corresponding game version.");
+        logger.Write(WARN, "    Using SHV API version [%s] (%d)",
+            eGameVersionToString(shvVersion).c_str(), shvVersion);
+        return;
+    }
+
+    int highestSupportedVersion = *std::max_element(std::begin(exeVersionsSupp), std::end(exeVersionsSupp));
+    if (shvVersion > highestSupportedVersion) {
+        logger.Write(WARN, "Game newer than last supported version");
+        logger.Write(WARN, "    You might experience instabilities or crashes");
+        logger.Write(WARN, "    Using SHV API version [%s] (%d)",
+            eGameVersionToString(shvVersion).c_str(), shvVersion);
+        return;
+    }
+
+    int lowestSupportedVersion = *std::min_element(std::begin(exeVersionsSupp), std::end(exeVersionsSupp));
+    if (shvVersion < lowestSupportedVersion) {
+        logger.Write(WARN, "SHV API reported lower version than actual EXE version.");
+        logger.Write(WARN, "    EXE version     [%s] (%d)",
+            eGameVersionToString(lowestSupportedVersion).c_str(), lowestSupportedVersion);
+        logger.Write(WARN, "    SHV API version [%s] (%d)",
+            eGameVersionToString(shvVersion).c_str(), shvVersion);
+        logger.Write(WARN, "    Using EXE version, or highest supported version [%s] (%d)",
+            eGameVersionToString(lowestSupportedVersion).c_str(), lowestSupportedVersion);
+        // Actually need to change stuff
+        VehicleExtensions::ChangeVersion(lowestSupportedVersion);
+        return;
+    }
+
+    logger.Write(DEBUG, "Using offsets based on SHV API version [%s] (%d)",
+        eGameVersionToString(shvVersion).c_str(), shvVersion);
+}
 
 BOOL APIENTRY DllMain(HMODULE hInstance, DWORD reason, LPVOID lpReserved) {
     const std::string modPath = Paths::GetModuleFolder(hInstance) + MOD_DIRECTORY;
@@ -25,36 +72,11 @@ BOOL APIENTRY DllMain(HMODULE hInstance, DWORD reason, LPVOID lpReserved) {
 
     switch (reason) {
         case DLL_PROCESS_ATTACH: {
-            int scriptingVersion = getGameVersion();
             logger.Clear();
-            logger.Write(INFO, "GTAVCustomGearRatios %s (build %s)", DISPLAY_VERSION, __DATE__);
-            logger.Write(INFO, "Game version " + eGameVersionToString(scriptingVersion));
-            if (scriptingVersion < G_VER_1_0_877_1_STEAM) {
-                logger.Write(WARN, "Unsupported game version! Update your game.");
-            }
-
-            SVersion exeVersion = getExeInfo();
-            int actualVersion = findNextLowest(ExeVersionMap, exeVersion);
-            if (scriptingVersion % 2) {
-                scriptingVersion--;
-            }
-            if (actualVersion != scriptingVersion) {
-                logger.Write(WARN, "Version mismatch!");
-                logger.Write(WARN, "    Detected: %s", eGameVersionToString(actualVersion).c_str());
-                logger.Write(WARN, "    Reported: %s", eGameVersionToString(scriptingVersion).c_str());
-                if (actualVersion == -1) {
-                    logger.Write(WARN, "Version detection failed");
-                    logger.Write(WARN, "    Using reported version (%s)", eGameVersionToString(scriptingVersion).c_str());
-                    actualVersion = scriptingVersion;
-                }
-                else {
-                    logger.Write(WARN, "Using detected version (%s)", eGameVersionToString(actualVersion).c_str());
-                }
-                VehicleExtensions::ChangeVersion(actualVersion);
-            }
+            logger.Write(INFO, "Custom Gear Ratios %s (build %s)", DISPLAY_VERSION, __DATE__);
+            resolveVersion();
 
             scriptRegister(hInstance, ScriptMain);
-
             logger.Write(INFO, "Script registered");
             break;
         }

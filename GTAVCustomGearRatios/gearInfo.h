@@ -1,5 +1,6 @@
 #pragma once
 #include <inc/types.h>
+#include <string>
 #include <vector>
 
 enum class LoadType {

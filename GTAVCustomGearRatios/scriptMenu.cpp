@@ -5,15 +5,15 @@
 #include <inc/natives.h>
 #include <menu.h>
 
-#include "../../GTAVManualTransmission/Gears/Memory/VehicleExtensions.hpp"
-#include "../../GTAVManualTransmission/Gears/Memory/Offsets.hpp"
-#include "../../GTAVManualTransmission/Gears/Util/Logger.hpp"
-#include "../../GTAVManualTransmission/Gears/Util/UIUtils.h"
+#include "Memory/VehicleExtensions.hpp"
+#include "Memory/Offsets.hpp"
+#include "Util/Logger.hpp"
+#include "Util/UIUtils.h"
 
-#include "Names.h"
 #include "script.h"
 #include "scriptSettings.h"
 #include "gearInfo.h"
+#include "Util/ScriptUtils.h"
 
 
 extern NativeMenu::Menu menu;
@@ -61,7 +61,7 @@ void applyConfig(const GearInfo& config, Vehicle vehicle, bool notify) {
     ext.SetGearRatios(vehicle, config.mRatios);
     if (notify) {
         showNotification(fmt::format("[{}] applied to current {}",
-            config.mDescription.c_str(), getFmtModelName(ENTITY::GET_ENTITY_MODEL(vehicle)).c_str()));
+            config.mDescription.c_str(), Util::GetFormattedVehicleModelName(vehicle).c_str()));
     }
 
     auto currCfgCombo = std::find_if(currentConfigs.begin(), currentConfigs.end(), [=](const auto& cfg) {return cfg.first == vehicle; });
@@ -195,7 +195,7 @@ void promptSave(Vehicle vehicle, LoadType loadType) {
     std::string description = GAMEPLAY::GET_ONSCREEN_KEYBOARD_RESULT();
     if (description.empty()) {
         showNotification("No description entered, using default");
-        std::string carName = getFmtModelName(ENTITY::GET_ENTITY_MODEL(vehicle));
+        std::string carName = Util::GetFormattedVehicleModelName(vehicle);
         description = fmt::format("{} - {} gears - {:.0f} kph",
             carName.c_str(), topGear,
             3.6f * driveMaxVel / ratios[topGear]);
@@ -234,7 +234,7 @@ void update_mainmenu() {
     }
 
     auto extra = printGearStatus(currentVehicle, 255);
-    menu.OptionPlus("Gearbox status", extra, nullptr, nullptr, nullptr, getFmtModelName(ENTITY::GET_ENTITY_MODEL(currentVehicle)));
+    menu.OptionPlus("Gearbox status", extra, nullptr, nullptr, nullptr, Util::GetFormattedVehicleModelName(currentVehicle));
 
     menu.MenuOption("Edit ratios", "ratiomenu");
     if (menu.MenuOption("Load ratios", "loadmenu")) {
@@ -259,7 +259,7 @@ void update_ratiomenu() {
     uint32_t flags = *reinterpret_cast<uint32_t *>(ext.GetHandlingPtr(currentVehicle) + 0x128); // handling flags, b1604
     bool cvtFlag = flags & 0x00001000;
 
-    std::string carName = getFmtModelName(ENTITY::GET_ENTITY_MODEL(currentVehicle));
+    std::string carName = Util::GetFormattedVehicleModelName(currentVehicle);
 
     // Change top gear
     if (cvtFlag) {
@@ -389,7 +389,7 @@ void update_loadmenu() {
 
     for (auto& config : gearConfigs) {
         bool selected;
-        std::string modelName = getFmtModelName(
+        std::string modelName = Util::GetFormattedModelName(
             GAMEPLAY::GET_HASH_KEY((char*)config.mModelName.c_str()));
         std::string optionName = fmt::format("{} - {} gears - {:.0f} kph", 
             modelName.c_str(), config.mTopGear, 

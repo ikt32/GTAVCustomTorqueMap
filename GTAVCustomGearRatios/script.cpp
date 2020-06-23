@@ -1,24 +1,28 @@
 #include "script.h"
-
-#include <filesystem>
-#include <fmt/core.h>
-#include <inc/main.h>
-#include <inc/natives.h>
-
-#include <menu.h>
-
-#include "../../GTAVManualTransmission/Gears/Util/Logger.hpp"
-#include "../../GTAVManualTransmission/Gears/Util/Paths.h"
-#include "../../GTAVManualTransmission/Gears/Memory/VehicleExtensions.hpp"
-#include "../../GTAVManualTransmission/Gears/Util/UIUtils.h"
-#include "../../GTAVManualTransmission/Gears/Util/MathExt.h"
-
 #include "scriptSettings.h"
 #include "scriptMenu.h"
 #include "gearInfo.h"
-#include "StringUtils.h"
+
+#include "Memory/VehicleExtensions.hpp"
+
+#include "Util/Timer.h"
+#include "Util/Logger.hpp"
+#include "Util/ScriptUtils.h"
+
+#include <menu.h>
+
+#include <inc/main.h>
+#include <inc/natives.h>
+
+#include <fmt/core.h>
+
+#include <filesystem>
+
+
 #include "../../GTAVManualTransmission/Gears/Memory/Offsets.hpp"
-#include "Timer.h"
+#include "Util/MathExt.h"
+#include "Util/Paths.h"
+#include "Util/Util.hpp"
 
 std::string absoluteModPath;
 std::string settingsGeneralFile;
@@ -29,13 +33,14 @@ std::string settingsMenuFile;
 NativeMenu::Menu menu;
 
 ScriptSettings settings;
-VehicleExtensions ext;
 
 Vehicle previousVehicle;
 Vehicle currentVehicle;
 
 std::string gearConfigDir;
 std::vector<GearInfo> gearConfigs;
+
+VehicleExtensions ext;
 
 // Only used to restore changes the game applies, like tuning gearbox etc
 std::vector<std::pair<Vehicle, GearInfo>> currentConfigs;
@@ -49,7 +54,7 @@ void applyConfig(const GearInfo& config, Vehicle vehicle, bool notify);
 
 void parseConfigs() {
     gearConfigs.clear();
-    for (auto & p : std::filesystem::directory_iterator(gearConfigDir)) {
+    for (const auto& p : std::filesystem::directory_iterator(gearConfigDir)) {
         if (p.path().extension() == ".xml") {
             GearInfo info = GearInfo::ParseConfig(p.path().string());
             if (!info.mParseError) {
@@ -79,10 +84,10 @@ void eraseConfigs() {
         }
     }
     if (error) {
-        showNotification(fmt::format("Failed to remove {} gear config(s).", error));
+        UI::Notify(INFO, fmt::format("Failed to remove {} gear config(s).", error));
     }
     if (settings.AutoNotify && deleted) {
-        showNotification(fmt::format("Removed {} gear config(s).", deleted));
+        UI::Notify(INFO, fmt::format("Removed {} gear config(s).", deleted));
     }
 }
 
@@ -106,7 +111,7 @@ void update_player() {
 
         for (const auto& config : gearConfigs) {
             bool sameModel = GAMEPLAY::GET_HASH_KEY((char*)config.mModelName.c_str()) == ENTITY::GET_ENTITY_MODEL(currentVehicle);
-            bool samePlate = to_lower(config.mLicensePlate) == to_lower(VEHICLE::GET_VEHICLE_NUMBER_PLATE_TEXT(currentVehicle));
+            bool samePlate = StrUtil::toLower(config.mLicensePlate) == StrUtil::toLower(VEHICLE::GET_VEHICLE_NUMBER_PLATE_TEXT(currentVehicle));
 
             switch (config.mLoadType) {
                 case LoadType::Plate: {
@@ -182,7 +187,7 @@ void update_reapply() {
             ext.SetInitialDriveMaxFlatVel(vehicle, config.mDriveMaxVel / 1.2f);
             ext.SetGearRatios(vehicle, config.mRatios);
             if (settings.AutoNotify) {
-                showNotification(fmt::format("Restored {}: \n"
+                UI::Notify(INFO, fmt::format("Restored {}: \n"
                     "Top gear = {}\n"
                     "Top speed = {:.0f} kph", vehicle, config.mTopGear,
                     3.6f * config.mDriveMaxVel / config.mRatios[config.mTopGear]));
