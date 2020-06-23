@@ -12,29 +12,27 @@ enum class LoadType {
 namespace LoadName {
     static std::string Model   = "autoload_model";
     static std::string None    = "undefined";
-};
+}
 
-class GearInfo {
-public:
+struct GearInfo {
+    static GearInfo ParseConfig(const std::string& file);
+    static void SaveConfig(const GearInfo& gearInfo, const std::string& file);
+
     GearInfo();
     GearInfo(std::string description, std::string modelName, std::string licensePlate,
-        uint8_t topGear, float driveMaxVel, std::vector<float> ratios, LoadType loadType);
+        uint8_t topGear, float driveMaxVel, std::vector<float> ratios, enum class LoadType loadType);
 
-    static GearInfo ParseConfig(const std::string& file);
 
-    void SaveConfig(const std::string& file);
-
-//protected:
-    std::string mDescription;
-    std::string mModelName;
-    std::string mLicensePlate;
-    uint8_t mTopGear;
-    float mDriveMaxVel;
-    std::vector<float> mRatios;
-    bool mParseError;
-    LoadType mLoadType;
+    std::string Description;
+    std::string ModelName;
+    std::string LicensePlate;
+    uint8_t TopGear;
+    float DriveMaxVel;
+    std::vector<float> Ratios;
+    bool ParseError;
+    enum class LoadType LoadType;
 
     // For file management
-    bool mMarkedForDeletion;
-    std::string mPath;
+    bool MarkedForDeletion;
+    std::string Path;
 };

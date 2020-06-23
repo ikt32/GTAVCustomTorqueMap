@@ -43,22 +43,22 @@ void decVal(T& val, const T min, const T step) {
 }
 
 void applyConfig(const GearInfo& config, Vehicle vehicle, bool notify) {
-    ext.SetTopGear(vehicle, config.mTopGear);
-    ext.SetDriveMaxFlatVel(vehicle, config.mDriveMaxVel);
-    ext.SetInitialDriveMaxFlatVel(vehicle, config.mDriveMaxVel / 1.2f);
-    ext.SetGearRatios(vehicle, config.mRatios);
+    ext.SetTopGear(vehicle, config.TopGear);
+    ext.SetDriveMaxFlatVel(vehicle, config.DriveMaxVel);
+    ext.SetInitialDriveMaxFlatVel(vehicle, config.DriveMaxVel / 1.2f);
+    ext.SetGearRatios(vehicle, config.Ratios);
     if (notify) {
         UI::Notify(INFO, fmt::format("[{}] applied to current {}",
-            config.mDescription.c_str(), Util::GetFormattedVehicleModelName(vehicle).c_str()));
+            config.Description.c_str(), Util::GetFormattedVehicleModelName(vehicle).c_str()));
     }
 
     auto currCfgCombo = std::find_if(currentConfigs.begin(), currentConfigs.end(), [=](const auto& cfg) {return cfg.first == vehicle; });
 
     if (currCfgCombo != currentConfigs.end()) {
         auto& currentConfig = currCfgCombo->second;
-        currentConfig.mTopGear = config.mTopGear;
-        currentConfig.mDriveMaxVel = config.mDriveMaxVel;
-        currentConfig.mRatios = config.mRatios;
+        currentConfig.TopGear = config.TopGear;
+        currentConfig.DriveMaxVel = config.DriveMaxVel;
+        currentConfig.Ratios = config.Ratios;
     }
     else {
         logger.Write(DEBUG, "[Management] 0x%X not found?", vehicle);
@@ -67,22 +67,22 @@ void applyConfig(const GearInfo& config, Vehicle vehicle, bool notify) {
 }
 
 std::vector<std::string> printInfo(const GearInfo& info) {
-    uint8_t topGear = info.mTopGear;
-    auto ratios = info.mRatios;
+    uint8_t topGear = info.TopGear;
+    auto ratios = info.Ratios;
     //float maxVel = (fInitialDriveMaxFlatVel * 1.2f) / 0.9f;
-    float maxVel = info.mDriveMaxVel;
+    float maxVel = info.DriveMaxVel;
 
     std::string loadType;
-    switch (info.mLoadType) {
+    switch (info.LoadType) {
         case LoadType::Plate: loadType = "Plate"; break;
         case LoadType::Model: loadType = "Model"; break;
         case LoadType::None: loadType = "None"; break;
     }
 
     std::vector<std::string> lines = {
-        info.mDescription,
-        fmt::format("For: {}", info.mModelName.c_str()),
-        fmt::format("Plate: {}", info.mLoadType == LoadType::Plate ? info.mLicensePlate.c_str() : "Any"),
+        info.Description,
+        fmt::format("For: {}", info.ModelName.c_str()),
+        fmt::format("Plate: {}", info.LoadType == LoadType::Plate ? info.LicensePlate.c_str() : "Any"),
         fmt::format("Load type: {}", loadType.c_str()),
         fmt::format("Top gear: {}", topGear),
         "",
@@ -199,7 +199,7 @@ void promptSave(Vehicle vehicle, LoadType loadType) {
     bool duplicate;
     do {
         duplicate = false;
-        for (auto & p : std::filesystem::directory_iterator(gearConfigDir)) {
+        for (const auto& p : std::filesystem::directory_iterator(gearConfigDir)) {
             if (p.path().stem() == saveFile) {
                 duplicate = true;
                 saveFile = fmt::format("{}_{:02d}", saveFileBase.c_str(), saveFileSuffix++);
@@ -207,8 +207,9 @@ void promptSave(Vehicle vehicle, LoadType loadType) {
         }
     } while (duplicate);
 
-    GearInfo(description, modelName, licensePlate, 
-        topGear, driveMaxVel, ratios, loadType).SaveConfig(gearConfigDir + "\\" + saveFile + ".xml");
+    GearInfo gearInfo(description, modelName, licensePlate,
+        topGear, driveMaxVel, ratios, loadType);
+    GearInfo::SaveConfig(gearInfo, gearConfigDir + "\\" + saveFile + ".xml");
     UI::Notify(INFO, fmt::format("Saved as {}", saveFile));
 }
 
@@ -351,9 +352,9 @@ void update_ratiomenu() {
         
         if (currCfgCombo != currentConfigs.end()) {
             auto& currentConfig = currCfgCombo->second;
-            currentConfig.mTopGear = ext.GetTopGear(currentVehicle);
-            currentConfig.mDriveMaxVel = ext.GetDriveMaxFlatVel(currentVehicle);
-            currentConfig.mRatios = ext.GetGearRatios(currentVehicle);
+            currentConfig.TopGear = ext.GetTopGear(currentVehicle);
+            currentConfig.DriveMaxVel = ext.GetDriveMaxFlatVel(currentVehicle);
+            currentConfig.Ratios = ext.GetGearRatios(currentVehicle);
         }
         else {
             UI::Notify(INFO, "Something messed up, check log.");
@@ -379,14 +380,14 @@ void update_loadmenu() {
     for (auto& config : gearConfigs) {
         bool selected;
         std::string modelName = Util::GetFormattedModelName(
-            GAMEPLAY::GET_HASH_KEY(config.mModelName.c_str()));
+            GAMEPLAY::GET_HASH_KEY(config.ModelName.c_str()));
         std::string optionName = fmt::format("{} - {} gears - {:.0f} kph", 
-            modelName.c_str(), config.mTopGear, 
-            3.6f * config.mDriveMaxVel / config.mRatios[config.mTopGear]);
+            modelName.c_str(), config.TopGear, 
+            3.6f * config.DriveMaxVel / config.Ratios[config.TopGear]);
         
         std::vector<std::string> extras = { "Press Enter/Accept to load." };
 
-        if (config.mMarkedForDeletion) {
+        if (config.MarkedForDeletion) {
             extras.emplace_back("~r~Marked for deletion. ~s~Press Right again to restore."
                 " File will be removed on menu exit!");
             optionName = fmt::format("~r~{}", optionName.c_str());
@@ -396,7 +397,7 @@ void update_loadmenu() {
         }
 
         if (menu.OptionPlus(optionName, std::vector<std::string>(), &selected,
-                [&]() mutable { config.mMarkedForDeletion = !config.mMarkedForDeletion; },
+                [&]() mutable { config.MarkedForDeletion = !config.MarkedForDeletion; },
                 nullptr, modelName, extras)) {
             applyConfig(config, currentVehicle, true);
         }

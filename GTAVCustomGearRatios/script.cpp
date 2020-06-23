@@ -58,8 +58,8 @@ void parseConfigs() {
     for (const auto& p : std::filesystem::directory_iterator(gearConfigDir)) {
         if (p.path().extension() == ".xml") {
             GearInfo info = GearInfo::ParseConfig(p.path().string());
-            if (!info.mParseError) {
-                info.mPath = p.path().string();
+            if (!info.ParseError) {
+                info.Path = p.path().string();
                 gearConfigs.push_back(info);
             }
             else {
@@ -73,13 +73,13 @@ void eraseConfigs() {
     uint32_t error = 0;
     uint32_t deleted = 0;
     for (const auto& config : gearConfigs) {
-        if (config.mMarkedForDeletion) {
-            if (!std::filesystem::remove(config.mPath)) {
-                logger.Write(ERROR, "Failed to remove file %s", config.mPath.c_str());
+        if (config.MarkedForDeletion) {
+            if (!std::filesystem::remove(config.Path)) {
+                logger.Write(ERROR, "Failed to remove file %s", config.Path.c_str());
                 error++;
             }
             else {
-                logger.Write(DEBUG, "Removed file %s", config.mPath.c_str());
+                logger.Write(DEBUG, "Removed file %s", config.Path.c_str());
                 deleted++;
             }
         }
@@ -111,10 +111,10 @@ void update_player() {
         }
 
         for (const auto& config : gearConfigs) {
-            bool sameModel = GAMEPLAY::GET_HASH_KEY(config.mModelName.c_str()) == ENTITY::GET_ENTITY_MODEL(currentVehicle);
-            bool samePlate = StrUtil::to_lower(config.mLicensePlate) == StrUtil::to_lower(VEHICLE::GET_VEHICLE_NUMBER_PLATE_TEXT(currentVehicle));
+            bool sameModel = GAMEPLAY::GET_HASH_KEY(config.ModelName.c_str()) == ENTITY::GET_ENTITY_MODEL(currentVehicle);
+            bool samePlate = StrUtil::to_lower(config.LicensePlate) == StrUtil::to_lower(VEHICLE::GET_VEHICLE_NUMBER_PLATE_TEXT(currentVehicle));
 
-            switch (config.mLoadType) {
+            switch (config.LoadType) {
                 case LoadType::Plate: {
                     if (!settings.AutoLoad)
                         break;
@@ -169,13 +169,13 @@ void update_reapply() {
     for (const auto& cfgPair : currentConfigs) {
         auto vehicle = cfgPair.first;
         auto config = cfgPair.second;
-        bool topGearChanged = ext.GetTopGear(vehicle) != config.mTopGear;
-        bool driveMaxVelChanged = ext.GetDriveMaxFlatVel(vehicle) != config.mDriveMaxVel;
+        bool topGearChanged = ext.GetTopGear(vehicle) != config.TopGear;
+        bool driveMaxVelChanged = ext.GetDriveMaxFlatVel(vehicle) != config.DriveMaxVel;
         bool anyRatioChanged = false;
         if (!topGearChanged && !driveMaxVelChanged) {
             auto extRatios = ext.GetGearRatios(vehicle);
-            for (uint32_t i = 0; i < config.mTopGear; ++i) {
-                if (extRatios[i] != config.mRatios[i]) {
+            for (uint32_t i = 0; i < config.TopGear; ++i) {
+                if (extRatios[i] != config.Ratios[i]) {
                     anyRatioChanged = true;
                     break;
                 }
@@ -183,15 +183,15 @@ void update_reapply() {
         }
 
         if (topGearChanged || driveMaxVelChanged || anyRatioChanged) {
-            ext.SetTopGear(vehicle, config.mTopGear);
-            ext.SetDriveMaxFlatVel(vehicle, config.mDriveMaxVel);
-            ext.SetInitialDriveMaxFlatVel(vehicle, config.mDriveMaxVel / 1.2f);
-            ext.SetGearRatios(vehicle, config.mRatios);
+            ext.SetTopGear(vehicle, config.TopGear);
+            ext.SetDriveMaxFlatVel(vehicle, config.DriveMaxVel);
+            ext.SetInitialDriveMaxFlatVel(vehicle, config.DriveMaxVel / 1.2f);
+            ext.SetGearRatios(vehicle, config.Ratios);
             if (settings.AutoNotify) {
                 UI::Notify(INFO, fmt::format("Restored {}: \n"
                     "Top gear = {}\n"
-                    "Top speed = {:.0f} kph", vehicle, config.mTopGear,
-                    3.6f * config.mDriveMaxVel / config.mRatios[config.mTopGear]));
+                    "Top speed = {:.0f} kph", vehicle, config.TopGear,
+                    3.6f * config.DriveMaxVel / config.Ratios[config.TopGear]));
             }
         }
     }

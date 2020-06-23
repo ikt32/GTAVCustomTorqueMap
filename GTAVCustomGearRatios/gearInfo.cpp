@@ -14,24 +14,24 @@ using namespace pugi;
     }
 
 GearInfo::GearInfo()
-    : mDescription("Default Ctor - parsing error")
-    , mTopGear(0)
-    , mDriveMaxVel(0)
-    , mParseError(true)
-    , mLoadType(LoadType::None)
-    , mMarkedForDeletion(true) {}
+    : Description("Default Ctor - parsing error")
+    , TopGear(0)
+    , DriveMaxVel(0)
+    , ParseError(true)
+    , LoadType(LoadType::None)
+    , MarkedForDeletion(true) {}
 
 GearInfo::GearInfo(std::string description, std::string modelName, std::string licensePlate,
-    uint8_t topGear, float driveMaxVel, std::vector<float> ratios, LoadType loadType)
-    : mDescription(std::move(description))
-    , mModelName(std::move(modelName))
-    , mLicensePlate(std::move(licensePlate))
-    , mTopGear(topGear)
-    , mDriveMaxVel(driveMaxVel)
-    , mRatios(std::move(ratios))
-    , mParseError(false)
-    , mLoadType(loadType)
-    , mMarkedForDeletion(false) {}
+    uint8_t topGear, float driveMaxVel, std::vector<float> ratios, enum class LoadType loadType)
+    : Description(std::move(description))
+    , ModelName(std::move(modelName))
+    , LicensePlate(std::move(licensePlate))
+    , TopGear(topGear)
+    , DriveMaxVel(driveMaxVel)
+    , Ratios(std::move(ratios))
+    , ParseError(false)
+    , LoadType(loadType)
+    , MarkedForDeletion(false) {}
 
 GearInfo GearInfo::ParseConfig(const std::string& file) {
     xml_document doc;
@@ -77,7 +77,7 @@ GearInfo GearInfo::ParseConfig(const std::string& file) {
         ratios[gear] = gearNode.text().as_float();
     }
 
-    LoadType loadType = LoadType::Plate;
+    enum class LoadType loadType = LoadType::Plate;
 
     if (plateTextNode.text().as_string() == LoadName::None)
         loadType = LoadType::None;
@@ -95,7 +95,7 @@ GearInfo GearInfo::ParseConfig(const std::string& file) {
     );
 }
 
-void GearInfo::SaveConfig(const std::string& file) {
+void GearInfo::SaveConfig(const GearInfo& gearInfo, const std::string& file) {
     xml_document doc;
 
     xml_node vehicleNode = doc.append_child("Vehicle");
@@ -105,15 +105,15 @@ void GearInfo::SaveConfig(const std::string& file) {
     xml_node topGearNode = vehicleNode.append_child("TopGear");
     xml_node driveMaxVelNode = vehicleNode.append_child("DriveMaxVel");
 
-    descriptionNode.text() = mDescription.c_str();
-    modelNameNode.text() = mModelName.c_str();
-    plateTextNode.text() = mLicensePlate.c_str();
-    topGearNode.text() = fmt::format("{}", mTopGear).c_str();
-    driveMaxVelNode.text() = fmt::format("{}", mDriveMaxVel).c_str();
+    descriptionNode.text() = gearInfo.Description.c_str();
+    modelNameNode.text() = gearInfo.ModelName.c_str();
+    plateTextNode.text() = gearInfo.LicensePlate.c_str();
+    topGearNode.text() = fmt::format("{}", gearInfo.TopGear).c_str();
+    driveMaxVelNode.text() = fmt::format("{}", gearInfo.DriveMaxVel).c_str();
 
-    for (uint8_t gear = 0; gear < mTopGear + 1; ++gear) {
+    for (uint8_t gear = 0; gear < gearInfo.TopGear + 1; ++gear) {
         vehicleNode.append_child(fmt::format("Gear{}", gear).c_str()).text() = 
-            fmt::format("{}", mRatios[gear]).c_str();
+            fmt::format("{}", gearInfo.Ratios[gear]).c_str();
     }
 
     if (!doc.save_file(file.c_str())) {
