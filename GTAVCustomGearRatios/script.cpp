@@ -129,7 +129,7 @@ void update_player() {
         }
 
         for (const auto& config : gearConfigs) {
-            bool sameModel = GAMEPLAY::GET_HASH_KEY(config.ModelName.c_str()) == ENTITY::GET_ENTITY_MODEL(currentVehicle);
+            bool sameModel = MISC::GET_HASH_KEY(config.ModelName.c_str()) == ENTITY::GET_ENTITY_MODEL(currentVehicle);
             if (!sameModel)
                 sameModel = config.ModelHash == ENTITY::GET_ENTITY_MODEL(currentVehicle);
             bool samePlate = StrUtil::to_lower(config.LicensePlate) == StrUtil::to_lower(VEHICLE::GET_VEHICLE_NUMBER_PLATE_TEXT(currentVehicle));

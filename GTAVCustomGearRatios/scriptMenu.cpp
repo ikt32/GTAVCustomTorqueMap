@@ -172,14 +172,14 @@ void promptSave(Vehicle vehicle, LoadType loadType) {
 
     UI::Notify(INFO, "Enter description");
     WAIT(0);
-    GAMEPLAY::DISPLAY_ONSCREEN_KEYBOARD(UNK::_GET_CURRENT_LANGUAGE_ID() == 0, "FMMC_KEY_TIP8", "", "", "", "", "", 64);
-    while (GAMEPLAY::UPDATE_ONSCREEN_KEYBOARD() == 0) WAIT(0);
-    if (!GAMEPLAY::GET_ONSCREEN_KEYBOARD_RESULT()) {
+    MISC::DISPLAY_ONSCREEN_KEYBOARD(LOCALIZATION::GET_CURRENT_LANGUAGE() == 0, "FMMC_KEY_TIP8", "", "", "", "", "", 64);
+    while (MISC::UPDATE_ONSCREEN_KEYBOARD() == 0) WAIT(0);
+    if (!MISC::GET_ONSCREEN_KEYBOARD_RESULT()) {
         UI::Notify(INFO, "Cancelled save");
         return;
     }
 
-    std::string description = GAMEPLAY::GET_ONSCREEN_KEYBOARD_RESULT();
+    std::string description = MISC::GET_ONSCREEN_KEYBOARD_RESULT();
     std::string illegalChars = "\\/:?\"<>|";
     if (description.empty()) {
         UI::Notify(INFO, "No description entered, using default");
@@ -379,7 +379,7 @@ void update_loadmenu() {
     for (auto& config : gearConfigs) {
         bool selected;
         std::string modelName = Util::GetFormattedModelName(
-            GAMEPLAY::GET_HASH_KEY(config.ModelName.c_str()));
+            MISC::GET_HASH_KEY(config.ModelName.c_str()));
 
         if (modelName == "CARNOTFOUND") {
             modelName = Util::GetFormattedModelName(config.ModelHash);
