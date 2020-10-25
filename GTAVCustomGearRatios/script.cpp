@@ -54,8 +54,25 @@ Timer auxTimer(1000);
 void applyConfig(const GearInfo& config, Vehicle vehicle, bool notify);
 
 void parseConfigs() {
+    namespace fs = std::filesystem;
     gearConfigs.clear();
-    for (const auto& p : std::filesystem::directory_iterator(gearConfigDir)) {
+
+    if (!(fs::exists(fs::path(gearConfigDir)) && fs::is_directory(fs::path(gearConfigDir)))) {
+        logger.Write(ERROR, "Directory [%s] not found, creating an empty one.", gearConfigDir.c_str());
+
+        try {
+            fs::create_directory(fs::path(gearConfigDir));
+        }
+        catch (std::exception& ex) {
+            logger.Write(FATAL, "Directory [%s] couldn't be created, exception: %s.",
+                gearConfigDir.c_str(),
+                ex.what());
+            logger.Write(FATAL, "Directory [%s] couldn't be created, skipping config loading.", gearConfigDir.c_str());
+            return;
+        }
+    }
+
+    for (const auto& p : fs::directory_iterator(gearConfigDir)) {
         if (p.path().extension() == ".xml") {
             GearInfo info = GearInfo::ParseConfig(p.path().string());
             if (!info.ParseError) {
