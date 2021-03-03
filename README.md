@@ -31,7 +31,13 @@ The file name is not used, so you can put whatever you want there.
 
 The description is what's used to display the configuration in-game in the menu.
 
-The ModelName is used to match the vehicle model for auto-loading. The same with PlateText.
+The `ModelName` is used to match the vehicle model for auto-loading.
+
+The following applies for `PlateText`:
+
+* `autoload_model`: Loads the config for all vehicles with this model.
+* `undefined`: Doesn't automatically load the config.
+* Any other string: Matches the plate text to only load for specific vehicles.
 
 Unit for `DriveMaxVel` is in m/s (like the game internally), so take care of that fact when editing manually. This is basically the final drive thing.
 
