@@ -455,7 +455,7 @@ void update_optionsmenu() {
     menu.BoolOption("Autoload notifications", settings.AutoNotify,
         { "Show a notification when autoload applied a preset." });
     menu.BoolOption("Enable CVT when 1 gear", settings.EnableCVT,
-        { "Enable CVT simulation when settings numGears to 1 in a non-CVT vehicle." });
+        { "Enable custom CVT when setting number of gears to 1 in a car that doesn't come with CVT." });
     menu.BoolOption("Enable for NPCs", settings.EnableNPC,
         { "Enables custom gear ratios for NPCs." });
 }
