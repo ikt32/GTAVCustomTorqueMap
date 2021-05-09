@@ -132,7 +132,8 @@ void update_player() {
             bool sameModel = MISC::GET_HASH_KEY(config.ModelName.c_str()) == ENTITY::GET_ENTITY_MODEL(currentVehicle);
             if (!sameModel)
                 sameModel = config.ModelHash == ENTITY::GET_ENTITY_MODEL(currentVehicle);
-            bool samePlate = StrUtil::to_lower(config.LicensePlate) == StrUtil::to_lower(VEHICLE::GET_VEHICLE_NUMBER_PLATE_TEXT(currentVehicle));
+            const char* plateText = VEHICLE::GET_VEHICLE_NUMBER_PLATE_TEXT(currentVehicle);
+            bool samePlate = plateText && StrUtil::to_lower(config.LicensePlate) == StrUtil::to_lower(plateText);
 
             switch (config.LoadType) {
                 case LoadType::Plate: {
@@ -220,11 +221,6 @@ void update_reapply() {
 int npcUpdateInterval = 1000;
 int lastUpdate = 0;
 
-struct SNPCVehicle {
-    Vehicle Vehicle;
-    std::vector<float> GearRatios;
-};
-
 void UpdateRatios(Vehicle vehicle, const GearInfo& config) {
     VExt::SetTopGear(vehicle, config.TopGear);
     VExt::SetDriveMaxFlatVel(vehicle, config.DriveMaxVel);
@@ -254,7 +250,8 @@ void update_npc() {
 
             // Apply plate-specific and continue
             auto foundConfigModelAndPlate = std::find_if(gearConfigs.begin(), gearConfigs.end(), [&](const GearInfo& other) {
-                bool samePlate = StrUtil::to_lower(other.LicensePlate) == StrUtil::to_lower(VEHICLE::GET_VEHICLE_NUMBER_PLATE_TEXT(currentVehicle));
+                const char* plateNpc = VEHICLE::GET_VEHICLE_NUMBER_PLATE_TEXT(vehicle);
+                bool samePlate = plateNpc && StrUtil::to_lower(other.LicensePlate) == StrUtil::to_lower(plateNpc);
                 auto model = ENTITY::GET_ENTITY_MODEL(vehicle);
                 bool sameModel = MISC::GET_HASH_KEY(other.ModelName.c_str()) == model ||
                     other.ModelHash == model;
@@ -274,6 +271,7 @@ void update_npc() {
 
                 return sameModel;
             });
+
             if (foundConfigModel != gearConfigs.end()) {
                 applyConfig(*foundConfigModel, vehicle, false);
             }
