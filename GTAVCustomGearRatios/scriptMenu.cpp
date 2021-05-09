@@ -42,7 +42,7 @@ void decVal(T& val, const T min, const T step) {
     val -= step;
 }
 
-void applyConfig(const GearInfo& config, Vehicle vehicle, bool notify) {
+void applyConfig(const GearInfo& config, Vehicle vehicle, bool notify, bool updateCurrent) {
     ext.SetTopGear(vehicle, config.TopGear);
     ext.SetDriveMaxFlatVel(vehicle, config.DriveMaxVel);
     ext.SetInitialDriveMaxFlatVel(vehicle, config.DriveMaxVel / 1.2f);
@@ -52,18 +52,19 @@ void applyConfig(const GearInfo& config, Vehicle vehicle, bool notify) {
             config.Description.c_str(), Util::GetFormattedVehicleModelName(vehicle).c_str()));
     }
 
-    auto currCfgCombo = std::find_if(currentConfigs.begin(), currentConfigs.end(), [=](const auto& cfg) {return cfg.first == vehicle; });
+    if (updateCurrent) {
+        auto currCfgCombo = std::find_if(currentConfigs.begin(), currentConfigs.end(), [=](const auto& cfg) {return cfg.first == vehicle; });
 
-    if (currCfgCombo != currentConfigs.end()) {
-        auto& currentConfig = currCfgCombo->second;
-        currentConfig.TopGear = config.TopGear;
-        currentConfig.DriveMaxVel = config.DriveMaxVel;
-        currentConfig.Ratios = config.Ratios;
+        if (currCfgCombo != currentConfigs.end()) {
+            auto& currentConfig = currCfgCombo->second;
+            currentConfig.TopGear = config.TopGear;
+            currentConfig.DriveMaxVel = config.DriveMaxVel;
+            currentConfig.Ratios = config.Ratios;
+        }
+        else {
+            logger.Write(DEBUG, "[Management] 0x%X not found?", vehicle);
+        }
     }
-    else {
-        logger.Write(DEBUG, "[Management] 0x%X not found?", vehicle);
-    }
-
 }
 
 std::vector<std::string> printInfo(const GearInfo& info) {
@@ -403,7 +404,7 @@ void update_loadmenu() {
         if (menu.OptionPlus(optionName, std::vector<std::string>(), &selected,
                 [&]() mutable { config.MarkedForDeletion = !config.MarkedForDeletion; },
                 nullptr, modelName, extras)) {
-            applyConfig(config, currentVehicle, true);
+            applyConfig(config, currentVehicle, true, true);
         }
         if (selected) {
             menu.OptionPlusPlus(printInfo(config), modelName);

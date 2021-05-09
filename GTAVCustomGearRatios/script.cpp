@@ -51,7 +51,7 @@ float cvtMinRpm = 0.3f;
 
 Timer auxTimer(1000);
 
-void applyConfig(const GearInfo& config, Vehicle vehicle, bool notify);
+void applyConfig(const GearInfo& config, Vehicle vehicle, bool notify, bool updateCurrent);
 
 void parseConfigs() {
     namespace fs = std::filesystem;
@@ -140,7 +140,7 @@ void update_player() {
                     if (!settings.AutoLoad)
                         break;
                     if (sameModel && samePlate) {
-                        applyConfig(config, currentVehicle, settings.AutoNotify);
+                        applyConfig(config, currentVehicle, settings.AutoNotify, true);
                         return;
                     }
                     break;
@@ -149,7 +149,7 @@ void update_player() {
                     if (!settings.AutoLoadGeneric)
                         break;
                     if (sameModel) {
-                        applyConfig(config, currentVehicle, settings.AutoNotify);
+                        applyConfig(config, currentVehicle, settings.AutoNotify, true);
                         return;
                     }
                     break;
@@ -259,7 +259,7 @@ void update_npc() {
             });
 
             if (foundConfigModelAndPlate != gearConfigs.end()) {
-                applyConfig(*foundConfigModelAndPlate, vehicle, false);
+                applyConfig(*foundConfigModelAndPlate, vehicle, false, false);
                 continue;
             }
 
@@ -273,7 +273,7 @@ void update_npc() {
             });
 
             if (foundConfigModel != gearConfigs.end()) {
-                applyConfig(*foundConfigModel, vehicle, false);
+                applyConfig(*foundConfigModel, vehicle, false, false);
             }
         }
     }
