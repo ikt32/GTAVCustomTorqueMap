@@ -28,6 +28,7 @@ void ScriptSettings::Save() const {
     settings.SetBoolValue("OPTIONS", "RestoreRatios", RestoreRatios);
     settings.SetBoolValue("OPTIONS", "EnableCVT", EnableCVT);
     settings.SetBoolValue("Options", "AutoNotify", AutoNotify);
+    settings.SetBoolValue("Options", "EnableNPC", EnableNPC);
 
     settings.SaveFile(settingsGeneralFile.c_str());
 }
@@ -43,6 +44,7 @@ void ScriptSettings::parseSettings() {
     RestoreRatios = settings.GetBoolValue("OPTIONS", "RestoreRatios", true);
     EnableCVT = settings.GetBoolValue("OPTIONS", "EnableCVT", false);
     AutoNotify = settings.GetBoolValue("OPTIONS", "AutoNotify", true);
+    EnableNPC = settings.GetBoolValue("OPTIONS", "EnableNPC", false);
 
     // [DEBUG]
     Debug = settings.GetBoolValue("DEBUG", "LogDebug", false);

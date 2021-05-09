@@ -217,6 +217,70 @@ void update_reapply() {
     }
 }
 
+int npcUpdateInterval = 1000;
+int lastUpdate = 0;
+
+struct SNPCVehicle {
+    Vehicle Vehicle;
+    std::vector<float> GearRatios;
+};
+
+void UpdateRatios(Vehicle vehicle, const GearInfo& config) {
+    VExt::SetTopGear(vehicle, config.TopGear);
+    VExt::SetDriveMaxFlatVel(vehicle, config.DriveMaxVel);
+    VExt::SetInitialDriveMaxFlatVel(vehicle, config.DriveMaxVel / 1.2f);
+    VExt::SetGearRatios(vehicle, config.Ratios);
+}
+
+void update_npc() {
+    if (!settings.EnableNPC)
+        return;
+
+    if (MISC::GET_GAME_TIMER() > lastUpdate + npcUpdateInterval) {
+        lastUpdate = MISC::GET_GAME_TIMER();
+
+        std::vector<Vehicle> npcVehicles(1024);
+        int numVehicles = worldGetAllVehicles(npcVehicles.data(), 1024);
+        npcVehicles.resize(numVehicles);
+
+        for (const auto& vehicle : npcVehicles) {
+            // Skip vehicles being managed already
+            auto managedConfigIt = std::find_if(currentConfigs.begin(), currentConfigs.end(), [&](const auto& cfgPair) {
+                return vehicle == cfgPair.first;
+            });
+
+            if (managedConfigIt != currentConfigs.end())
+                continue;
+
+            // Apply plate-specific and continue
+            auto foundConfigModelAndPlate = std::find_if(gearConfigs.begin(), gearConfigs.end(), [&](const GearInfo& other) {
+                bool samePlate = StrUtil::to_lower(other.LicensePlate) == StrUtil::to_lower(VEHICLE::GET_VEHICLE_NUMBER_PLATE_TEXT(currentVehicle));
+                auto model = ENTITY::GET_ENTITY_MODEL(vehicle);
+                bool sameModel = MISC::GET_HASH_KEY(other.ModelName.c_str()) == model ||
+                    other.ModelHash == model;
+                return samePlate && sameModel;
+            });
+
+            if (foundConfigModelAndPlate != gearConfigs.end()) {
+                applyConfig(*foundConfigModelAndPlate, vehicle, false);
+                continue;
+            }
+
+            // Or apply model generic if there's no matching plate - if there's a plate.
+            auto foundConfigModel = std::find_if(gearConfigs.begin(), gearConfigs.end(), [&](const GearInfo& other) {
+                auto model = ENTITY::GET_ENTITY_MODEL(vehicle);
+                bool sameModel = MISC::GET_HASH_KEY(other.ModelName.c_str()) == model ||
+                    other.ModelHash == model;
+
+                return sameModel;
+            });
+            if (foundConfigModel != gearConfigs.end()) {
+                applyConfig(*foundConfigModel, vehicle, false);
+            }
+        }
+    }
+}
+
 void main() {
     logger.Write(INFO, "Script started");
     absoluteModPath = Paths::GetModuleFolder(Paths::GetOurModuleHandle()) + Constants::ModDir;
@@ -249,6 +313,7 @@ void main() {
 
     while (true) {
         update_player();
+        update_npc();
         update_menu();
         update_cvt();
         if (auxTimer.Expired()) {

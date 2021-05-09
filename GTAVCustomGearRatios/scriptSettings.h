@@ -20,8 +20,8 @@ public:
     bool EnableCVT;
     // Show autoload messages. Always shown in menu interaction.
     bool AutoNotify;
-
-
+    // Enable for NPC
+    bool EnableNPC;
 
     // [DEBUG]
     bool Debug;
