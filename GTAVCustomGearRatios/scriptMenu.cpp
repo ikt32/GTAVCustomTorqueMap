@@ -457,7 +457,7 @@ void update_optionsmenu() {
     menu.BoolOption("Enable CVT when 1 gear", settings.EnableCVT,
         { "Enable custom CVT when setting number of gears to 1 in a car that doesn't come with CVT." });
     menu.BoolOption("Enable for NPCs", settings.EnableNPC,
-        { "Enables custom gear ratios for NPCs." });
+        { "Enables custom gear ratios for NPCs. Autoload configuration is used to select ratios." });
 }
 
 void update_menu() {
