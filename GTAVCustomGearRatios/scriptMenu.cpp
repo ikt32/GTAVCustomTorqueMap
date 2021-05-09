@@ -259,7 +259,7 @@ void update_ratiomenu() {
         uint8_t topGear = ext.GetTopGear(currentVehicle);
         menu.OptionPlus(fmt::format("Top gear: < {} >", topGear), {}, &sel,
             [&]() mutable { 
-                incVal<uint8_t>(topGear, g_numGears - 1, 1);
+                incVal<uint8_t>(topGear, VehicleExtensions::GearsAvailable() - 1, 1);
                 ext.SetTopGear(currentVehicle, topGear);
                 anyChanged = true;
             },

@@ -25,6 +25,8 @@
 #include "Util/Strings.h"
 #include "Util/UIUtils.h"
 
+using VExt = VehicleExtensions;
+
 std::string absoluteModPath;
 std::string settingsGeneralFile;
 std::string settingsWheelFile;
@@ -40,8 +42,6 @@ Vehicle currentVehicle;
 
 std::string gearConfigDir;
 std::vector<GearInfo> gearConfigs;
-
-VehicleExtensions ext;
 
 // Only used to restore changes the game applies, like tuning gearbox etc
 std::vector<std::pair<Vehicle, GearInfo>> currentConfigs;
@@ -120,9 +120,9 @@ void update_player() {
                 "noconfig",
                 0,
                 "noconfig",
-                ext.GetTopGear(currentVehicle),
-                ext.GetDriveMaxFlatVel(currentVehicle),
-                ext.GetGearRatios(currentVehicle),
+                VExt::GetTopGear(currentVehicle),
+                VExt::GetDriveMaxFlatVel(currentVehicle),
+                VExt::GetGearRatios(currentVehicle),
                 LoadType::None)
             );
             logger.Write(DEBUG, "[Management] Appended new vehicle: 0x%X", currentVehicle);
@@ -161,13 +161,13 @@ void update_player() {
 
 void update_cvt() {    
     if (settings.EnableCVT && ENTITY::DOES_ENTITY_EXIST(currentVehicle)) {
-        uint8_t origNumGears = *reinterpret_cast<uint8_t *>(ext.GetHandlingPtr(currentVehicle) + hOffsets.nInitialDriveGears);
-        if (origNumGears > 1 && ext.GetTopGear(currentVehicle) == 1) {
-            float defaultMaxFlatVel = ext.GetDriveMaxFlatVel(currentVehicle);
-            float currSpeed = avg(ext.GetTyreSpeeds(currentVehicle));
-            float newRatio = map(currSpeed, 0.0f, defaultMaxFlatVel, 3.33f, 0.9f) * 0.75f * std::clamp(ext.GetThrottleP(currentVehicle), 0.1f, 1.0f);
+        uint8_t origNumGears = *reinterpret_cast<uint8_t *>(VExt::GetHandlingPtr(currentVehicle) + hOffsets.nInitialDriveGears);
+        if (origNumGears > 1 && VExt::GetTopGear(currentVehicle) == 1) {
+            float defaultMaxFlatVel = VExt::GetDriveMaxFlatVel(currentVehicle);
+            float currSpeed = avg(VExt::GetTyreSpeeds(currentVehicle));
+            float newRatio = map(currSpeed, 0.0f, defaultMaxFlatVel, 3.33f, 0.9f) * 0.75f * std::clamp(VExt::GetThrottleP(currentVehicle), 0.1f, 1.0f);
             newRatio = std::clamp(newRatio, 0.6f, 3.33f);
-            *ext.GetGearRatioPtr(currentVehicle, 1) = newRatio;
+            *VExt::GetGearRatioPtr(currentVehicle, 1) = newRatio;
         }
     }
 }
@@ -189,11 +189,11 @@ void update_reapply() {
     for (const auto& cfgPair : currentConfigs) {
         auto vehicle = cfgPair.first;
         auto config = cfgPair.second;
-        bool topGearChanged = ext.GetTopGear(vehicle) != config.TopGear;
-        bool driveMaxVelChanged = ext.GetDriveMaxFlatVel(vehicle) != config.DriveMaxVel;
+        bool topGearChanged = VExt::GetTopGear(vehicle) != config.TopGear;
+        bool driveMaxVelChanged = VExt::GetDriveMaxFlatVel(vehicle) != config.DriveMaxVel;
         bool anyRatioChanged = false;
         if (!topGearChanged && !driveMaxVelChanged) {
-            auto extRatios = ext.GetGearRatios(vehicle);
+            auto extRatios = VExt::GetGearRatios(vehicle);
             for (uint32_t i = 0; i < config.TopGear; ++i) {
                 if (extRatios[i] != config.Ratios[i]) {
                     anyRatioChanged = true;
@@ -203,10 +203,10 @@ void update_reapply() {
         }
 
         if (topGearChanged || driveMaxVelChanged || anyRatioChanged) {
-            ext.SetTopGear(vehicle, config.TopGear);
-            ext.SetDriveMaxFlatVel(vehicle, config.DriveMaxVel);
-            ext.SetInitialDriveMaxFlatVel(vehicle, config.DriveMaxVel / 1.2f);
-            ext.SetGearRatios(vehicle, config.Ratios);
+            VExt::SetTopGear(vehicle, config.TopGear);
+            VExt::SetDriveMaxFlatVel(vehicle, config.DriveMaxVel);
+            VExt::SetInitialDriveMaxFlatVel(vehicle, config.DriveMaxVel / 1.2f);
+            VExt::SetGearRatios(vehicle, config.Ratios);
             if (settings.AutoNotify) {
                 UI::Notify(INFO, fmt::format("Restored {}: \n"
                     "Top gear = {}\n"
@@ -232,7 +232,7 @@ void main() {
 
     menu.ReadSettings();
     menu.Initialize();
-    ext.initOffsets();
+    VExt::Init();
     parseConfigs();
 
     menu.RegisterOnMain([&] {
