@@ -20,9 +20,9 @@ public:
     bool EnableCVT;
     
     struct {
-        float LowRatio = 3.3; // 1st gear
-        float HighRatio = 0.9; // top gear
-        float Factor = 0.75;
+        float LowRatio = 3.3f; // 1st gear
+        float HighRatio = 0.9f; // top gear
+        float Factor = 0.75f;
     } CVT;
 
     // Show autoload messages. Always shown in menu interaction.
