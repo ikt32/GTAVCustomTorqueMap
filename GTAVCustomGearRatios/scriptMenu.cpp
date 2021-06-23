@@ -42,6 +42,58 @@ void decVal(T& val, const T min, const T step) {
     val -= step;
 }
 
+bool GetKbEntryFloat(float& val) {
+    UI::Notify(INFO, "Enter value");
+    MISC::DISPLAY_ONSCREEN_KEYBOARD(LOCALIZATION::GET_CURRENT_LANGUAGE() == 0, "FMMC_KEY_TIP8", "",
+        fmt::format("{:f}", val).c_str(), "", "", "", 64);
+    while (MISC::UPDATE_ONSCREEN_KEYBOARD() == 0) {
+        WAIT(0);
+    }
+    if (!MISC::GET_ONSCREEN_KEYBOARD_RESULT()) {
+        UI::Notify(INFO, "Cancelled value entry");
+        return false;
+    }
+
+    std::string floatStr = MISC::GET_ONSCREEN_KEYBOARD_RESULT();
+    if (floatStr.empty()) {
+        UI::Notify(INFO, "Cancelled value entry");
+        return false;
+    }
+
+    char* pEnd;
+    float parsedValue = strtof(floatStr.c_str(), &pEnd);
+
+    if (parsedValue == 0.0f && *pEnd != 0) {
+        UI::Notify(INFO, "Failed to parse entry.");
+        return false;
+    }
+
+    val = parsedValue;
+    return true;
+}
+
+std::string GetKbEntryString(const std::string& existingString) {
+    std::string val;
+    UI::Notify(INFO, "Enter value");
+    MISC::DISPLAY_ONSCREEN_KEYBOARD(LOCALIZATION::GET_CURRENT_LANGUAGE() == 0, "FMMC_KEY_TIP8", "",
+        existingString.c_str(), "", "", "", 64);
+    while (MISC::UPDATE_ONSCREEN_KEYBOARD() == 0) {
+        WAIT(0);
+    }
+    if (!MISC::GET_ONSCREEN_KEYBOARD_RESULT()) {
+        UI::Notify(INFO, "Cancelled value entry");
+        return {};
+    }
+
+    std::string enteredVal = MISC::GET_ONSCREEN_KEYBOARD_RESULT();
+    if (enteredVal.empty()) {
+        UI::Notify(INFO, "Cancelled value entry");
+        return {};
+    }
+
+    return enteredVal;
+}
+
 void applyConfig(const GearInfo& config, Vehicle vehicle, bool notify, bool updateCurrent) {
     ext.SetTopGear(vehicle, config.TopGear);
     ext.SetDriveMaxFlatVel(vehicle, config.DriveMaxVel);
@@ -280,23 +332,34 @@ void update_ratiomenu() {
     // Change final drive
     {
         bool sel;
+        const float min = 1.0f;
+        const float max = 1000.0f;
+
         float driveMaxVel = ext.GetDriveMaxFlatVel(currentVehicle);
-        menu.OptionPlus(fmt::format("Final drive max: < {:.1f} kph >", driveMaxVel * 3.6f), {}, &sel,
+        bool triggered = menu.OptionPlus(fmt::format("Final drive max: < {:.1f} kph >", driveMaxVel * 3.6f), {}, &sel,
             [&]() mutable {
-                incVal<float>(driveMaxVel, 500.0f, 0.36f); 
+                incVal<float>(driveMaxVel, max, 0.36f);
                 ext.SetDriveMaxFlatVel(currentVehicle, driveMaxVel);
                 ext.SetInitialDriveMaxFlatVel(currentVehicle, driveMaxVel / 1.2f);
                 anyChanged = true;
             },
             [&]() mutable {
-                decVal<float>(driveMaxVel, 1.0f, 0.36f); 
+                decVal<float>(driveMaxVel, min, 0.36f);
                 ext.SetDriveMaxFlatVel(currentVehicle, driveMaxVel);
                 ext.SetInitialDriveMaxFlatVel(currentVehicle, driveMaxVel / 1.2f);
                 anyChanged = true;
             },
-            carName, { "Press left to decrease final drive max velocity, right to increase it." });
+            carName, { "Select to type final drive in kph. Press left to decrease, right to increase." });
         if (sel) {
             menu.OptionPlusPlus(printGearStatus(currentVehicle, 255), carName);
+        }
+
+        float newSpeed = ext.GetDriveMaxFlatVel(currentVehicle) * 3.6f;
+        if (triggered && GetKbEntryFloat(newSpeed)) {
+            newSpeed = std::clamp(newSpeed, min, max);
+            ext.SetDriveMaxFlatVel(currentVehicle, newSpeed / 3.6f);
+            ext.SetInitialDriveMaxFlatVel(currentVehicle, (newSpeed / 3.6f) / 1.2f);
+            anyChanged = true;
         }
     }
 
@@ -310,15 +373,15 @@ void update_ratiomenu() {
     else {
         for (uint8_t gear = 0; gear <= topGear; ++gear) {
             bool sel = false;
-            float min = 0.01f;
+            float min = 0.10f;
             float max = 10.0f;
 
             if (gear == 0) {
                 min = -10.0f;
-                max = -0.01f;
+                max = -0.10f;
             }
 
-            menu.OptionPlus(fmt::format("Gear {}", gear), {}, &sel,
+            bool triggered = menu.OptionPlus(fmt::format("Gear {}", gear), {}, &sel,
                 [&]() mutable {
                     incVal(*reinterpret_cast<float*>(ext.GetGearRatioPtr(currentVehicle, gear)), max, 0.01f);
                     anyChanged = true;
@@ -327,9 +390,16 @@ void update_ratiomenu() {
                     decVal(*reinterpret_cast<float*>(ext.GetGearRatioPtr(currentVehicle, gear)), min, 0.01f);
                     anyChanged = true;
                 },
-                    carName, { "Press left to decrease gear ratio, right to increase gear ratio." });
+                    carName, { "Select to type gear ratio. Press left to decrease, right to increase." });
             if (sel) {
                 menu.OptionPlusPlus(printGearStatus(currentVehicle, gear), carName);
+            }
+
+            float newRatio = *ext.GetGearRatioPtr(currentVehicle, gear);
+            if (triggered && GetKbEntryFloat(newRatio)) {
+                newRatio = std::clamp(newRatio, min, max);
+                *reinterpret_cast<float*>(ext.GetGearRatioPtr(currentVehicle, gear)) = newRatio;
+                anyChanged = true;
             }
         }
     }
