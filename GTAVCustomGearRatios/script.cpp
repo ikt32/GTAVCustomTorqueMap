@@ -162,12 +162,15 @@ void update_player() {
 
 void update_cvt() {    
     if (settings.EnableCVT && ENTITY::DOES_ENTITY_EXIST(currentVehicle)) {
-        uint8_t origNumGears = *reinterpret_cast<uint8_t *>(VExt::GetHandlingPtr(currentVehicle) + hOffsets.nInitialDriveGears);
-        if (origNumGears > 1 && VExt::GetTopGear(currentVehicle) == 1) {
+        bool handlingCvt = *reinterpret_cast<uint8_t*>(VExt::GetHandlingPtr(currentVehicle) + hOffsets1604.dwStrHandlingFlags) & 0x00001000;
+        if (VExt::GetTopGear(currentVehicle) == 1) {
             float defaultMaxFlatVel = VExt::GetDriveMaxFlatVel(currentVehicle);
             float currSpeed = avg(VExt::GetTyreSpeeds(currentVehicle));
-            float newRatio = map(currSpeed, 0.0f, defaultMaxFlatVel, 3.33f, 0.9f) * 0.75f * std::clamp(VExt::GetThrottleP(currentVehicle), 0.1f, 1.0f);
-            newRatio = std::clamp(newRatio, 0.6f, 3.33f);
+            float newRatio = 
+                map(currSpeed, 0.0f, defaultMaxFlatVel, settings.CVT.LowRatio, settings.CVT.HighRatio) * 
+                settings.CVT.Factor * 
+                std::clamp(VExt::GetThrottleP(currentVehicle), 0.1f, 1.0f);
+            //newRatio = std::clamp(newRatio, 0.6f, 3.33f);
             *VExt::GetGearRatioPtr(currentVehicle, 1) = newRatio;
         }
     }

@@ -301,28 +301,36 @@ void update_ratiomenu() {
     }
 
     uint8_t topGear = ext.GetTopGear(currentVehicle);
-    for (uint8_t gear = 0; gear <= topGear; ++gear) {
-        bool sel = false;
-        float min = 0.01f;
-        float max = 10.0f;
 
-        if (gear == 0) {
-            min = -10.0f;
-            max = -0.01f;
-        }
+    if (topGear == 1 && settings.EnableCVT) {
+        menu.FloatOption("Low range ratio", settings.CVT.LowRatio, 0.0f, 10.0f, 0.05f);
+        menu.FloatOption("High range ratio", settings.CVT.HighRatio, 0.0f, 10.0f, 0.05f);
+        menu.FloatOption("Factor", settings.CVT.Factor, 0.0f, 10.0f, 0.05f);
+    }
+    else {
+        for (uint8_t gear = 0; gear <= topGear; ++gear) {
+            bool sel = false;
+            float min = 0.01f;
+            float max = 10.0f;
 
-        menu.OptionPlus(fmt::format("Gear {}", gear), {}, &sel,
-            [&]() mutable {
-                incVal(*reinterpret_cast<float*>(ext.GetGearRatioPtr(currentVehicle, gear)), max, 0.01f);
-                anyChanged = true;
-            },
-            [&]() mutable {
-                decVal(*reinterpret_cast<float*>(ext.GetGearRatioPtr(currentVehicle, gear)), min, 0.01f);
-                anyChanged = true;
-            },
-            carName, { "Press left to decrease gear ratio, right to increase gear ratio." });
-        if (sel) {
-            menu.OptionPlusPlus(printGearStatus(currentVehicle, gear), carName);
+            if (gear == 0) {
+                min = -10.0f;
+                max = -0.01f;
+            }
+
+            menu.OptionPlus(fmt::format("Gear {}", gear), {}, &sel,
+                [&]() mutable {
+                    incVal(*reinterpret_cast<float*>(ext.GetGearRatioPtr(currentVehicle, gear)), max, 0.01f);
+                    anyChanged = true;
+                },
+                [&]() mutable {
+                    decVal(*reinterpret_cast<float*>(ext.GetGearRatioPtr(currentVehicle, gear)), min, 0.01f);
+                    anyChanged = true;
+                },
+                    carName, { "Press left to decrease gear ratio, right to increase gear ratio." });
+            if (sel) {
+                menu.OptionPlusPlus(printGearStatus(currentVehicle, gear), carName);
+            }
         }
     }
 

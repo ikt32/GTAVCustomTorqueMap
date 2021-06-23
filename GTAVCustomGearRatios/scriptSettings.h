@@ -18,6 +18,13 @@ public:
     bool RestoreRatios;
     // Custom CVT when 1 gear active
     bool EnableCVT;
+    
+    struct {
+        float LowRatio = 3.3; // 1st gear
+        float HighRatio = 0.9; // top gear
+        float Factor = 0.75;
+    } CVT;
+
     // Show autoload messages. Always shown in menu interaction.
     bool AutoNotify;
     // Enable for NPC
