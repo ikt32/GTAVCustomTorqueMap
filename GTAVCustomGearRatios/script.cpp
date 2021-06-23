@@ -132,6 +132,10 @@ void update_player() {
             bool sameModel = MISC::GET_HASH_KEY(config.ModelName.c_str()) == ENTITY::GET_ENTITY_MODEL(currentVehicle);
             if (!sameModel)
                 sameModel = config.ModelHash == ENTITY::GET_ENTITY_MODEL(currentVehicle);
+
+            if (!sameModel)
+                continue;
+
             const char* plateText = VEHICLE::GET_VEHICLE_NUMBER_PLATE_TEXT(currentVehicle);
             bool samePlate = plateText && StrUtil::to_lower(config.LicensePlate) == StrUtil::to_lower(plateText);
 
