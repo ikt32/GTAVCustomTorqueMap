@@ -109,6 +109,36 @@ void eraseConfigs() {
     }
 }
 
+void tryApplyConfig(Vehicle vehicle, bool autoNotify, bool updateCurrent) {
+    auto foundConfigModelAndPlate = std::find_if(gearConfigs.begin(), gearConfigs.end(), [&](const GearInfo& other) {
+        const char* plateNpc = VEHICLE::GET_VEHICLE_NUMBER_PLATE_TEXT(vehicle);
+        bool samePlate = plateNpc && StrUtil::loose_match(other.LicensePlate, plateNpc);
+        auto model = ENTITY::GET_ENTITY_MODEL(vehicle);
+        bool sameModel = MISC::GET_HASH_KEY(other.ModelName.c_str()) == model ||
+            other.ModelHash == model;
+        return samePlate && sameModel;
+        });
+
+    if (foundConfigModelAndPlate != gearConfigs.end()) {
+        // Apply plate-specific
+        applyConfig(*foundConfigModelAndPlate, vehicle, autoNotify, updateCurrent);
+    }
+    else {
+        // Or apply model generic if there's no matching plate.
+        auto foundConfigModel = std::find_if(gearConfigs.begin(), gearConfigs.end(), [&](const GearInfo& other) {
+            auto model = ENTITY::GET_ENTITY_MODEL(vehicle);
+            bool sameModel = MISC::GET_HASH_KEY(other.ModelName.c_str()) == model ||
+                other.ModelHash == model;
+
+            return sameModel && other.LoadType == LoadType::Model;
+            });
+
+        if (foundConfigModel != gearConfigs.end()) {
+            applyConfig(*foundConfigModel, vehicle, autoNotify, updateCurrent);
+        }
+    }
+}
+
 void update_player() {
     currentVehicle = PED::GET_VEHICLE_PED_IS_IN(PLAYER::PLAYER_PED_ID(), false);
 
@@ -128,39 +158,7 @@ void update_player() {
             logger.Write(DEBUG, "[Management] Appended new vehicle: 0x%X", currentVehicle);
         }
 
-        for (const auto& config : gearConfigs) {
-            bool sameModel = MISC::GET_HASH_KEY(config.ModelName.c_str()) == ENTITY::GET_ENTITY_MODEL(currentVehicle);
-            if (!sameModel)
-                sameModel = config.ModelHash == ENTITY::GET_ENTITY_MODEL(currentVehicle);
-
-            if (!sameModel)
-                continue;
-
-            const char* plateText = VEHICLE::GET_VEHICLE_NUMBER_PLATE_TEXT(currentVehicle);
-            bool samePlate = plateText && StrUtil::to_lower(config.LicensePlate) == StrUtil::to_lower(plateText);
-
-            switch (config.LoadType) {
-                case LoadType::Plate: {
-                    if (!settings.AutoLoad)
-                        break;
-                    if (sameModel && samePlate) {
-                        applyConfig(config, currentVehicle, settings.AutoNotify, true);
-                        return;
-                    }
-                    break;
-                }
-                case LoadType::Model: {
-                    if (!settings.AutoLoadGeneric)
-                        break;
-                    if (sameModel) {
-                        applyConfig(config, currentVehicle, settings.AutoNotify, true);
-                        return;
-                    }
-                    break;
-                }
-                case LoadType::None: break;
-            }
-        }
+        tryApplyConfig(currentVehicle, settings.AutoNotify, true);
     }
 }
 
@@ -255,33 +253,7 @@ void update_npc() {
             if (managedConfigIt != currentConfigs.end())
                 continue;
 
-            // Apply plate-specific and continue
-            auto foundConfigModelAndPlate = std::find_if(gearConfigs.begin(), gearConfigs.end(), [&](const GearInfo& other) {
-                const char* plateNpc = VEHICLE::GET_VEHICLE_NUMBER_PLATE_TEXT(vehicle);
-                bool samePlate = plateNpc && StrUtil::to_lower(other.LicensePlate) == StrUtil::to_lower(plateNpc);
-                auto model = ENTITY::GET_ENTITY_MODEL(vehicle);
-                bool sameModel = MISC::GET_HASH_KEY(other.ModelName.c_str()) == model ||
-                    other.ModelHash == model;
-                return samePlate && sameModel;
-            });
-
-            if (foundConfigModelAndPlate != gearConfigs.end()) {
-                applyConfig(*foundConfigModelAndPlate, vehicle, false, false);
-                continue;
-            }
-
-            // Or apply model generic if there's no matching plate - if there's a plate.
-            auto foundConfigModel = std::find_if(gearConfigs.begin(), gearConfigs.end(), [&](const GearInfo& other) {
-                auto model = ENTITY::GET_ENTITY_MODEL(vehicle);
-                bool sameModel = MISC::GET_HASH_KEY(other.ModelName.c_str()) == model ||
-                    other.ModelHash == model;
-
-                return sameModel;
-            });
-
-            if (foundConfigModel != gearConfigs.end()) {
-                applyConfig(*foundConfigModel, vehicle, false, false);
-            }
+            tryApplyConfig(vehicle, false, false);
         }
     }
 }

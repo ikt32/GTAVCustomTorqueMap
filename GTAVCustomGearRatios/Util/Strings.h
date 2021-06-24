@@ -21,6 +21,9 @@ namespace StrUtil {
 
     std::string replace_chars(std::string s, std::string replaceChars, char replacement);
 
+    // Ignores leading/trailing spaces and case
+    bool loose_match(std::string a, std::string b);
+
     constexpr unsigned long joaat(const char* s) {
         unsigned long hash = 0;
         for (; *s != '\0'; ++s) {
