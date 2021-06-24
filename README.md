@@ -37,21 +37,12 @@ The following applies for `PlateText`:
 
 * `autoload_model`: Loads the config for all vehicles with this model.
 * `undefined`: Doesn't automatically load the config.
-* Any other string: Matches the plate text to only load for specific vehicles.
+* Any other string: Matches the plate text to only load for specific model + plate combinations. Will override definitions for the model with `autoload_model`.
 
 Unit for `DriveMaxVel` is in m/s (like the game internally), so take care of that fact when editing manually. This is basically the final drive thing.
 
 When not enough `GearX` entries are provided for the `TopGear`, the file is not loaded.
 
-## Building
+## Notes
 
-### Requirements
-* [ScriptHookV SDK by Alexander Blade](http://www.dev-c.com/gtav/scripthookv/)
-* [Manual Transmission](https://github.com/E66666666/GTAVManualTransmission)
-* [GTAVMenuBase](https://github.com/E66666666/GTAVMenuBase)
-
-Download the [ScriptHookV SDK](http://www.dev-c.com/gtav/scripthookv/) and extract its contents to ScriptHookV_SDK.
-
-Clone this repository to the same folder ScriptHookV_SDK was extracted so you have ScriptHookV_SDK and GTAVManualTransmission in the same folder. If you get build errors about missing functions, update your [natives.h](hhttps://raw.githubusercontent.com/E66666666/GTAVMenuBase/master/thirdparty/scripthookv-sdk-updates/natives.h).
-
-Clone my [GTAVMenuBase](https://github.com/E66666666/GTAVMenuBase) to the same folder you're gonna clone this to.
+Gear ratios are changed by the gearbox tuning and other scripts that call `MODIFY_VEHICLE_TOP_SPEED`. The script tries to revert back to the gearbox settings before this, but it's recommended to disable all functionalities in scripts that modify the top speed using the mentioned native.
