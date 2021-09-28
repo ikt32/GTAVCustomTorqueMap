@@ -1,11 +1,11 @@
-#include "FileVersion.h"
-
-#include <filesystem>
-#include <Windows.h>
-#include <Psapi.h>
+#include "FileVersion.hpp"
 
 #include "../Util/Logger.hpp"
-#include "../Util/Paths.h"
+#include "../Util/Paths.hpp"
+
+#include <Windows.h>
+#include <Psapi.h>
+#include <filesystem>
 
 #pragma comment(lib, "Version.lib")
 

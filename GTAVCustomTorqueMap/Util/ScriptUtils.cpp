@@ -1,6 +1,6 @@
 #include "ScriptUtils.h"
 
-#include "../Constants.h"
+#include "../Constants.hpp"
 #include "MathExt.h"
 #include "UIUtils.h"
 #include "inc/natives.h"

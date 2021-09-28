@@ -5,9 +5,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Utils">
-      <UniqueIdentifier>{3a0d094a-6f9d-43b8-aaea-6bf1b897a99b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Menu">
       <UniqueIdentifier>{3d1002af-79db-40b1-a64b-6cf65d44aa32}</UniqueIdentifier>
     </Filter>
@@ -17,27 +14,14 @@
     <Filter Include="Memory">
       <UniqueIdentifier>{ec5233c7-b82a-470f-8df2-e78bce9d5929}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    <Filter Include="thirdparty\ScriptHookV">
+      <UniqueIdentifier>{38f76561-fc93-4dbd-915c-e5b430be774c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Util">
+      <UniqueIdentifier>{9b508854-bf76-441a-8e38-0bb71b1370a8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>Files</Filter>
-    </ClCompile>
-    <ClCompile Include="script.cpp">
-      <Filter>Files</Filter>
-    </ClCompile>
-    <ClCompile Include="scriptSettings.cpp">
-      <Filter>Files</Filter>
-    </ClCompile>
-    <ClCompile Include="scriptMenu.cpp">
-      <Filter>Files</Filter>
-    </ClCompile>
-    <ClCompile Include="gearInfo.cpp">
-      <Filter>Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\thirdparty\pugixml\pugixml.cpp">
       <Filter>thirdparty</Filter>
     </ClCompile>
@@ -65,50 +49,55 @@
     <ClCompile Include="Memory\VehicleExtensions.cpp">
       <Filter>Memory</Filter>
     </ClCompile>
-    <ClCompile Include="Util\FileVersion.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="Util\Timer.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="Util\UIUtils.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="Util\Color.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="Util\Files.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="Util\Logger.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="Util\Paths.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="Util\ScriptUtils.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
     <ClCompile Include="..\thirdparty\fmt\src\format.cc">
       <Filter>thirdparty</Filter>
     </ClCompile>
-    <ClCompile Include="Util\Strings.cpp">
-      <Filter>Utils</Filter>
+    <ClCompile Include="DllMain.cpp" />
+    <ClCompile Include="Script.cpp" />
+    <ClCompile Include="TorqueMenu.cpp" />
+    <ClCompile Include="ScriptSettings.cpp" />
+    <ClCompile Include="ScriptMenuUtils.cpp" />
+    <ClCompile Include="Util\FileVersion.cpp">
+      <Filter>Util</Filter>
     </ClCompile>
+    <ClCompile Include="Util\Logger.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Util\Paths.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Util\ScriptUtils.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Util\String.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Util\Strings.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Util\Timer.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Util\UI.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Util\UIUtils.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Util\AddonSpawnerCache.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Util\Color.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Util\Files.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Config.cpp" />
+    <ClCompile Include="TorqueScript.cpp" />
+    <ClCompile Include="TorqueScriptNPC.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="script.h">
-      <Filter>Files</Filter>
-    </ClInclude>
-    <ClInclude Include="scriptSettings.h">
-      <Filter>Files</Filter>
-    </ClInclude>
-    <ClInclude Include="scriptMenu.h">
-      <Filter>Files</Filter>
-    </ClInclude>
-    <ClInclude Include="gearInfo.h">
-      <Filter>Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\thirdparty\pugixml\pugiconfig.hpp">
       <Filter>thirdparty</Filter>
     </ClInclude>
@@ -154,38 +143,79 @@
     <ClInclude Include="Memory\Versions.h">
       <Filter>Memory</Filter>
     </ClInclude>
-    <ClInclude Include="Util\FileVersion.h">
-      <Filter>Utils</Filter>
+    <ClInclude Include="Constants.hpp" />
+    <ClInclude Include="Script.hpp" />
+    <ClInclude Include="ScriptMenu.hpp" />
+    <ClInclude Include="ScriptSettings.hpp" />
+    <ClInclude Include="Config.hpp" />
+    <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\nativeCaller.h">
+      <Filter>thirdparty\ScriptHookV</Filter>
     </ClInclude>
-    <ClInclude Include="Util\Timer.h">
-      <Filter>Utils</Filter>
+    <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\natives.h">
+      <Filter>thirdparty\ScriptHookV</Filter>
     </ClInclude>
-    <ClInclude Include="Util\UIUtils.h">
-      <Filter>Utils</Filter>
+    <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\types.h">
+      <Filter>thirdparty\ScriptHookV</Filter>
     </ClInclude>
-    <ClInclude Include="Util\Color.h">
-      <Filter>Utils</Filter>
+    <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\enums.h">
+      <Filter>thirdparty\ScriptHookV</Filter>
     </ClInclude>
+    <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\main.h">
+      <Filter>thirdparty\ScriptHookV</Filter>
+    </ClInclude>
+    <ClInclude Include="TorqueScript.hpp" />
+    <ClInclude Include="ScriptMenuUtils.hpp" />
     <ClInclude Include="Util\Files.h">
-      <Filter>Utils</Filter>
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\FileVersion.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\FileVersion.hpp">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\Game.hpp">
+      <Filter>Util</Filter>
     </ClInclude>
     <ClInclude Include="Util\Logger.hpp">
-      <Filter>Utils</Filter>
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\Math.hpp">
+      <Filter>Util</Filter>
     </ClInclude>
     <ClInclude Include="Util\MathExt.h">
-      <Filter>Utils</Filter>
+      <Filter>Util</Filter>
     </ClInclude>
     <ClInclude Include="Util\Paths.h">
-      <Filter>Utils</Filter>
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\Paths.hpp">
+      <Filter>Util</Filter>
     </ClInclude>
     <ClInclude Include="Util\ScriptUtils.h">
-      <Filter>Utils</Filter>
+      <Filter>Util</Filter>
     </ClInclude>
-    <ClInclude Include="Constants.h">
-      <Filter>Files</Filter>
+    <ClInclude Include="Util\String.hpp">
+      <Filter>Util</Filter>
     </ClInclude>
     <ClInclude Include="Util\Strings.h">
-      <Filter>Utils</Filter>
+      <Filter>Util</Filter>
     </ClInclude>
+    <ClInclude Include="Util\Timer.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\UI.hpp">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\UIUtils.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\AddonSpawnerCache.hpp">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\Color.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="TorqueScriptNPC.hpp" />
   </ItemGroup>
 </Project>

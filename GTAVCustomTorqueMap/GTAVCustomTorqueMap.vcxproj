@@ -13,21 +13,21 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{C1865BE4-02EE-42AE-A946-EBA7384F8A7B}</ProjectGuid>
-    <RootNamespace>GTAVCustomGearRatios</RootNamespace>
+    <RootNamespace>GTAVCustomTorqueCurve</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>CustomGearRatios</ProjectName>
+    <ProjectName>CustomTorqueMap</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -82,21 +82,27 @@
     <ClCompile Include="..\thirdparty\GTAVMenuBase\menusettings.cpp" />
     <ClCompile Include="..\thirdparty\GTAVMenuBase\menuutils.cpp" />
     <ClCompile Include="..\thirdparty\pugixml\pugixml.cpp" />
-    <ClCompile Include="gearInfo.cpp" />
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Config.cpp" />
+    <ClCompile Include="DllMain.cpp" />
     <ClCompile Include="Memory\NativeMemory.cpp" />
     <ClCompile Include="Memory\VehicleExtensions.cpp" />
-    <ClCompile Include="script.cpp" />
-    <ClCompile Include="scriptMenu.cpp" />
-    <ClCompile Include="scriptSettings.cpp" />
+    <ClCompile Include="Script.cpp" />
+    <ClCompile Include="ScriptMenuUtils.cpp" />
+    <ClCompile Include="TorqueMenu.cpp" />
+    <ClCompile Include="ScriptSettings.cpp" />
+    <ClCompile Include="TorqueScript.cpp" />
+    <ClCompile Include="TorqueScriptNPC.cpp" />
+    <ClCompile Include="Util\AddonSpawnerCache.cpp" />
     <ClCompile Include="Util\Color.cpp" />
     <ClCompile Include="Util\Files.cpp" />
     <ClCompile Include="Util\FileVersion.cpp" />
     <ClCompile Include="Util\Logger.cpp" />
     <ClCompile Include="Util\Paths.cpp" />
     <ClCompile Include="Util\ScriptUtils.cpp" />
+    <ClCompile Include="Util\String.cpp" />
     <ClCompile Include="Util\Strings.cpp" />
     <ClCompile Include="Util\Timer.cpp" />
+    <ClCompile Include="Util\UI.cpp" />
     <ClCompile Include="Util\UIUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -110,25 +116,40 @@
     <ClInclude Include="..\thirdparty\GTAVMenuBase\Scaleform.h" />
     <ClInclude Include="..\thirdparty\pugixml\pugiconfig.hpp" />
     <ClInclude Include="..\thirdparty\pugixml\pugixml.hpp" />
-    <ClInclude Include="Constants.h" />
-    <ClInclude Include="gearInfo.h" />
+    <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\enums.h" />
+    <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\main.h" />
+    <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\nativeCaller.h" />
+    <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\natives.h" />
+    <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\types.h" />
+    <ClInclude Include="Config.hpp" />
+    <ClInclude Include="Constants.hpp" />
     <ClInclude Include="Memory\NativeMemory.hpp" />
     <ClInclude Include="Memory\Offsets.hpp" />
     <ClInclude Include="Memory\VehicleExtensions.hpp" />
     <ClInclude Include="Memory\VehicleFlags.h" />
     <ClInclude Include="Memory\Versions.h" />
-    <ClInclude Include="script.h" />
-    <ClInclude Include="scriptMenu.h" />
-    <ClInclude Include="scriptSettings.h" />
+    <ClInclude Include="Script.hpp" />
+    <ClInclude Include="ScriptMenu.hpp" />
+    <ClInclude Include="ScriptMenuUtils.hpp" />
+    <ClInclude Include="ScriptSettings.hpp" />
+    <ClInclude Include="TorqueScript.hpp" />
+    <ClInclude Include="TorqueScriptNPC.hpp" />
+    <ClInclude Include="Util\AddonSpawnerCache.hpp" />
     <ClInclude Include="Util\Color.h" />
     <ClInclude Include="Util\Files.h" />
     <ClInclude Include="Util\FileVersion.h" />
+    <ClInclude Include="Util\FileVersion.hpp" />
+    <ClInclude Include="Util\Game.hpp" />
     <ClInclude Include="Util\Logger.hpp" />
+    <ClInclude Include="Util\Math.hpp" />
     <ClInclude Include="Util\MathExt.h" />
     <ClInclude Include="Util\Paths.h" />
+    <ClInclude Include="Util\Paths.hpp" />
     <ClInclude Include="Util\ScriptUtils.h" />
+    <ClInclude Include="Util\String.hpp" />
     <ClInclude Include="Util\Strings.h" />
     <ClInclude Include="Util\Timer.h" />
+    <ClInclude Include="Util\UI.hpp" />
     <ClInclude Include="Util\UIUtils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

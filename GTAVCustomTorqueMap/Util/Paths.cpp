@@ -1,4 +1,4 @@
-#include "Paths.h"
+#include "Paths.hpp"
 
 static HMODULE ourModule;
 

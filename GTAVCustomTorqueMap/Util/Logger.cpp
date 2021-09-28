@@ -1,7 +1,8 @@
 #include "Logger.hpp"
 
-#include <iomanip>
 #include <Windows.h>
+
+#include <iomanip>
 #include <fstream>
 
 Logger::Logger() = default;

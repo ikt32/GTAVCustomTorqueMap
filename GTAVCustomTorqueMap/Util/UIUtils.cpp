@@ -5,7 +5,7 @@
 #include "fmt/format.h"
 #include <algorithm>
 
-#include "../Constants.h"
+#include "../Constants.hpp"
 
 namespace {
     int notificationHandle = 0;

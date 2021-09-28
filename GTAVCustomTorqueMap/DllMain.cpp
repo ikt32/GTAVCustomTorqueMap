@@ -1,16 +1,16 @@
-#include <inc/main.h>
-
-#include <filesystem>
-
-
-#include "Constants.h"
-#include "script.h"
+#include "Script.hpp"
+#include "Constants.hpp"
 
 #include "Util/FileVersion.h"
 #include "Util/Paths.h"
 #include "Util/Logger.hpp"
 #include "Memory/Versions.h"
 #include "Memory/VehicleExtensions.hpp"
+
+#include <inc/main.h>
+
+#include <filesystem>
+
 
 namespace fs = std::filesystem;
 
@@ -20,10 +20,6 @@ void resolveVersion() {
     logger.Write(INFO, "SHV API Game version: %s (%d)", eGameVersionToString(shvVersion).c_str(), shvVersion);
     // Also prints the other stuff, annoyingly.
     SVersion exeVersion = getExeInfo();
-
-    if (shvVersion < G_VER_1_0_877_1_STEAM) {
-        logger.Write(WARN, "Outdated game version! Update your game.");
-    }
 
     // Version we *explicitly* support
     std::vector<int> exeVersionsSupp = findNextLowest(ExeVersionMap, exeVersion);
@@ -77,10 +73,10 @@ BOOL APIENTRY DllMain(HMODULE hInstance, DWORD reason, LPVOID lpReserved) {
     switch (reason) {
         case DLL_PROCESS_ATTACH: {
             logger.Clear();
-            logger.Write(INFO, "Custom Gear Ratios %s (built %s %s)", Constants::DisplayVersion, __DATE__, __TIME__);
+            logger.Write(INFO, "Custom Torque Map %s (built %s %s)", Constants::DisplayVersion, __DATE__, __TIME__);
             resolveVersion();
 
-            scriptRegister(hInstance, ScriptMain);
+            scriptRegister(hInstance, CustomTorque::ScriptMain);
             logger.Write(INFO, "Script registered");
             break;
         }
