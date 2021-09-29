@@ -150,23 +150,26 @@ void CTorqueScript::updateTorque() {
 }
 
 float CTorqueScript::getScaledValue(const std::map<float, float>& map, float key) {
-    auto& mapIt = map.lower_bound(key);
+    auto mapIt = map.lower_bound(key);
+
+    // Go back twice to get the last two elements, since the value is scaled anyway.
     if (mapIt == map.end()) {
-        return 1.0f;
-    }
-    if (mapIt != map.begin()) {
         mapIt--;
     }
 
-    float minVal = std::min(mapIt->second, std::next(mapIt)->second);
-    float maxVal = std::max(mapIt->second, std::next(mapIt)->second);
+    if (mapIt != map.begin()) {
+        mapIt--;
+    }
 
     float scaledValue = ::map(
         key,
         mapIt->first,
         std::next(mapIt)->first,
-        minVal,
-        maxVal);
+        mapIt->second,
+        std::next(mapIt)->second);
 
-    return std::clamp(scaledValue, minVal, maxVal);
+    if (scaledValue < 0.0f)
+        scaledValue = 0.0f;
+
+    return scaledValue;
 }
