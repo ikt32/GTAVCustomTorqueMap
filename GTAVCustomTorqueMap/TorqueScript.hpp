@@ -26,9 +26,10 @@ public:
         return mVehicle;
     }
 
+    static float GetScaledValue(const std::map<float, float>& map, float key);
+
 protected:
     void updateTorque();
-    float getScaledValue(const std::map<float, float>& map, float key);
 
     const CScriptSettings& mSettings;
     std::vector<CConfig>& mConfigs;

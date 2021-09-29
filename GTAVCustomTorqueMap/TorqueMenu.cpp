@@ -8,11 +8,16 @@
 #include "Util/UI.hpp"
 #include "Util/Math.hpp"
 
+#include "Memory/VehicleExtensions.hpp"
+
 #include <fmt/format.h>
+
+using VExt = VehicleExtensions;
 
 namespace CustomTorque {
     std::vector<std::string> FormatTorqueConfig(CTorqueScript& context, const CConfig& config);
     bool PromptSave(CTorqueScript& context, CConfig& config, Hash model, std::string plate, CConfig::ESaveType saveType);
+    void ShowCurve(CTorqueScript& context, const CConfig& config, Vehicle vehicle);
 }
 
 std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
@@ -26,7 +31,7 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
         Vehicle playerVehicle = PED::GET_VEHICLE_PED_IS_IN(playerPed, false);
 
         if (!playerVehicle || !ENTITY::DOES_ENTITY_EXIST(playerVehicle)) {
-            mbCtx.Option("No vehicle", { "Get in a vehicle to change its gear stats." });
+            mbCtx.Option("No vehicle", { "Get in a vehicle to change its torque map." });
             mbCtx.MenuOption("Developer options", "developermenu");
             return;
         }
@@ -40,7 +45,11 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
         torqueExtraTitle = activeConfig->Name;
         extra = FormatTorqueConfig(context, *activeConfig);
 
-        mbCtx.OptionPlus("Torque map info", extra, nullptr, nullptr, nullptr, torqueExtraTitle);
+        bool showTorqueMap = false;
+        mbCtx.OptionPlus("Torque map info", extra, &showTorqueMap, nullptr, nullptr, torqueExtraTitle);
+        if (showTorqueMap) {
+            ShowCurve(context, *activeConfig, playerVehicle);
+        }
 
         mbCtx.MenuOption("Edit configuration", "editconfigmenu",
             { "Enter to edit the current configuration." });
@@ -169,6 +178,7 @@ std::vector<std::string> CustomTorque::FormatTorqueConfig(CTorqueScript& context
 
     // TODO: Draw the torque map
 
+
     return extras;
 }
 
@@ -188,4 +198,51 @@ bool CustomTorque::PromptSave(CTorqueScript& context, CConfig& config, Hash mode
     CustomTorque::LoadConfigs();
 
     return true;
+}
+
+void CustomTorque::ShowCurve(CTorqueScript& context, const CConfig& config, Vehicle vehicle) {
+    const int max_samples = 100;
+
+    std::vector<std::pair<float, float>> points;
+    for (int i = 0; i < max_samples; i++) {
+        float x = static_cast<float>(i) / static_cast<float>(max_samples);
+        float y = CTorqueScript::GetScaledValue(config.Data.TorqueMultMap, x);
+        points.emplace_back(x, y);
+    }
+
+    float rectX = 0.5f;
+    float rectY = 0.5f;
+    float rectW = 0.75f / GRAPHICS::_GET_ASPECT_RATIO(FALSE);
+    float rectH = 0.40f;
+    float blockW = rectW / max_samples;//0.001f * (16.0f / 9.0f) / GRAPHICS::_GET_ASPECT_RATIO(FALSE);
+    float blockH = blockW * GRAPHICS::_GET_ASPECT_RATIO(FALSE);
+
+    GRAPHICS::DRAW_RECT(rectX, rectY,
+        rectW + 3.0f * blockW, rectH + 3.0f * blockH,
+        255, 255, 255, 191, 0);
+    GRAPHICS::DRAW_RECT(rectX, rectY,
+        rectW + blockW / 2.0f, rectH + blockH / 2.0f,
+        0, 0, 0, 239, 0);
+
+    for (auto point : points) {
+        float pointX = rectX - 0.5f * rectW + point.first * rectW;
+        float pointY = rectY + 0.5f * rectH - point.second * rectH;
+        GRAPHICS::DRAW_RECT(pointX, pointY,
+            blockW, blockH,
+            255, 255, 255, 255, 0);
+    }
+
+    if (ENTITY::DOES_ENTITY_EXIST(vehicle)) {
+        float input = VExt::GetCurrentRPM(vehicle);
+        std::pair<float, float> currentPoint = {
+            input,
+            CTorqueScript::GetScaledValue(config.Data.TorqueMultMap, input)
+        };
+
+        float pointX = rectX - 0.5f * rectW + currentPoint.first * rectW;
+        float pointY = rectY + 0.5f * rectH - currentPoint.second * rectH;
+        GRAPHICS::DRAW_RECT(pointX, pointY,
+            3.0f * blockW, 3.0f * blockH,
+            255, 0, 0, 255, 0);
+    }
 }

@@ -120,7 +120,7 @@ void CTorqueScript::updateTorque() {
 
     float rpm = VExt::GetCurrentRPM(mVehicle);
 
-    float baseMultiplier = getScaledValue(BaseTorqueMultMap, rpm);
+    float baseMultiplier = GetScaledValue(BaseTorqueMultMap, rpm);
 
     auto gear = VExt::GetGearCurr(mVehicle);
 
@@ -131,7 +131,7 @@ void CTorqueScript::updateTorque() {
     float mapMultiplier = 1.0f;
 
     if (mActiveConfig->Data.TorqueMultMap.size() >= 3) {
-        mapMultiplier = getScaledValue(mActiveConfig->Data.TorqueMultMap, rpm);
+        mapMultiplier = GetScaledValue(mActiveConfig->Data.TorqueMultMap, rpm);
     }
 
     auto finalForce = baseDriveForce * tuningMultiplier * baseMultiplier * mapMultiplier;
@@ -149,7 +149,7 @@ void CTorqueScript::updateTorque() {
     VExt::SetDriveForce(mVehicle, finalForce);
 }
 
-float CTorqueScript::getScaledValue(const std::map<float, float>& map, float key) {
+float CTorqueScript::GetScaledValue(const std::map<float, float>& map, float key) {
     auto mapIt = map.lower_bound(key);
 
     // Go back twice to get the last two elements, since the value is scaled anyway.
