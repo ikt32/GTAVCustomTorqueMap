@@ -79,7 +79,7 @@ void CustomTorque::ScriptTick() {
     while (true) {
         playerScriptInst->Tick();
         scriptMenu->Tick(*playerScriptInst);
-        UpdateNPC();
+        //UpdateNPC();
         WAIT(0);
     }
 }

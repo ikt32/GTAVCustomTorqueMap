@@ -25,12 +25,12 @@ public:
     std::string ModelName;
     std::string Plate;
 
-    // TorqueMap
+    // Data
     struct {
         // RPM, Mult
         // Size >= 2 required
-        // Map[0     ] = (0.0, <any>)
+        // Map[0     ] = (<any>, <any>)
         // Map[Size-1] = (1.0, <any>)
         std::map<float, float> TorqueMultMap;
-    } TorqueMap;
+    } Data;
 };

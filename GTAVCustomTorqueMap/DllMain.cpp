@@ -72,6 +72,7 @@ BOOL APIENTRY DllMain(HMODULE hInstance, DWORD reason, LPVOID lpReserved) {
 
     switch (reason) {
         case DLL_PROCESS_ATTACH: {
+            logger.SetMinLevel(DEBUG);
             logger.Clear();
             logger.Write(INFO, "Custom Torque Map %s (built %s %s)", Constants::DisplayVersion, __DATE__, __TIME__);
             resolveVersion();

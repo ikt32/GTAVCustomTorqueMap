@@ -15,6 +15,7 @@
 #include <fmt/format.h>
 #include <filesystem>
 #include <algorithm>
+#include "Util/Logger.hpp"
 
 using VExt = VehicleExtensions;
 
@@ -93,7 +94,7 @@ void CTorqueScript::ApplyConfig(const CConfig& config) {
     if (!mActiveConfig)
         return;
 
-    mActiveConfig->TorqueMap.TorqueMultMap = config.TorqueMap.TorqueMultMap;
+    mActiveConfig->Data.TorqueMultMap = config.Data.TorqueMultMap;
 }
 
 void CTorqueScript::updateTorque() {
@@ -105,22 +106,7 @@ void CTorqueScript::updateTorque() {
 
     float rpm = VExt::GetCurrentRPM(mVehicle);
 
-    auto& baseMapIt = BaseTorqueMultMap.lower_bound(rpm);
-    if (baseMapIt != BaseTorqueMultMap.begin()) {
-        baseMapIt--;
-    }
-
-    float minVal = std::min(baseMapIt->second, std::next(baseMapIt)->second);
-    float maxVal = std::max(baseMapIt->second, std::next(baseMapIt)->second);
-
-    float baseMultiplier = map(
-        rpm,
-        baseMapIt->first,
-        std::next(baseMapIt)->first,
-        minVal,
-        maxVal);
-
-    baseMultiplier = std::clamp(baseMultiplier, minVal, maxVal);
+    float baseMultiplier = getScaledValue(BaseTorqueMultMap, rpm);
 
     auto gear = VExt::GetGearCurr(mVehicle);
 
@@ -128,7 +114,44 @@ void CTorqueScript::updateTorque() {
         baseMultiplier = 1.0f;
     }
 
-    auto finalForce = baseDriveForce * baseMultiplier;
+    float mapMultiplier = 1.0f;
+
+    if (mActiveConfig->Data.TorqueMultMap.size() >= 3) {
+        mapMultiplier = getScaledValue(mActiveConfig->Data.TorqueMultMap, rpm);
+    }
+
+    auto finalForce = baseDriveForce * baseMultiplier * mapMultiplier;
+
+    UI::ShowText(0.25f, 0.25f, 0.25f,
+        fmt::format(
+            "BaseForce: {:.2f}\n"
+            "RPM: {:.2f}\n"
+            "BaseMult: {:.2f}\n"
+            "MapMult: {:.2f}\n"
+            "Final: {:.2f}",
+            baseDriveForce, rpm, baseMultiplier, mapMultiplier, finalForce));
 
     VExt::SetDriveForce(mVehicle, finalForce);
+}
+
+float CTorqueScript::getScaledValue(const std::map<float, float>& map, float key) {
+    auto& mapIt = map.lower_bound(key);
+    if (mapIt == map.end()) {
+        return 1.0f;
+    }
+    if (mapIt != map.begin()) {
+        mapIt--;
+    }
+
+    float minVal = std::min(mapIt->second, std::next(mapIt)->second);
+    float maxVal = std::max(mapIt->second, std::next(mapIt)->second);
+
+    float scaledValue = ::map(
+        key,
+        mapIt->first,
+        std::next(mapIt)->first,
+        minVal,
+        maxVal);
+
+    return std::clamp(scaledValue, minVal, maxVal);
 }
