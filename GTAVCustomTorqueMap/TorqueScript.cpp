@@ -7,12 +7,19 @@
 #include "Util/UI.hpp"
 #include "Util/String.hpp"
 
+#include "Memory/Offsets.hpp"
+#include "Memory/VehicleExtensions.hpp"
+
 #include <inc/enums.h>
 #include <inc/natives.h>
 #include <fmt/format.h>
 #include <filesystem>
 #include <algorithm>
 
+using VExt = VehicleExtensions;
+
+// There is a non-linear power decrease
+// Torque @ wheels slightly increase around 0.9 RPM, but is negligible imo
 namespace {
     const std::map<float, float> BaseTorqueMultMap {
         { 0.0f, 1.0f },
@@ -90,5 +97,38 @@ void CTorqueScript::ApplyConfig(const CConfig& config) {
 }
 
 void CTorqueScript::updateTorque() {
-    // TODO: Implementation pending!
+    if (!ENTITY::DOES_ENTITY_EXIST(mVehicle))
+        return;
+
+    auto handlingPtr = VExt::GetHandlingPtr(mVehicle);
+    float baseDriveForce = *reinterpret_cast<float*>(handlingPtr + hOffsets1604.fInitialDriveForce);
+
+    float rpm = VExt::GetCurrentRPM(mVehicle);
+
+    auto& baseMapIt = BaseTorqueMultMap.lower_bound(rpm);
+    if (baseMapIt != BaseTorqueMultMap.begin()) {
+        baseMapIt--;
+    }
+
+    float minVal = std::min(baseMapIt->second, std::next(baseMapIt)->second);
+    float maxVal = std::max(baseMapIt->second, std::next(baseMapIt)->second);
+
+    float baseMultiplier = map(
+        rpm,
+        baseMapIt->first,
+        std::next(baseMapIt)->first,
+        minVal,
+        maxVal);
+
+    baseMultiplier = std::clamp(baseMultiplier, minVal, maxVal);
+
+    auto gear = VExt::GetGearCurr(mVehicle);
+
+    if (gear < 2) {
+        baseMultiplier = 1.0f;
+    }
+
+    auto finalForce = baseDriveForce * baseMultiplier;
+
+    VExt::SetDriveForce(mVehicle, finalForce);
 }
