@@ -217,5 +217,6 @@
       <Filter>Util</Filter>
     </ClInclude>
     <ClInclude Include="TorqueScriptNPC.hpp" />
+    <ClInclude Include="VehicleMods.hpp" />
   </ItemGroup>
 </Project>

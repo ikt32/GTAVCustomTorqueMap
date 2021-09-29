@@ -1,11 +1,14 @@
 #include "TorqueScript.hpp"
 
 #include "Constants.hpp"
+#include "VehicleMods.hpp"
+
 #include "Util/Math.hpp"
 #include "Util/Paths.hpp"
 #include "Util/Game.hpp"
 #include "Util/UI.hpp"
 #include "Util/String.hpp"
+#include "Util/Logger.hpp"
 
 #include "Memory/Offsets.hpp"
 #include "Memory/VehicleExtensions.hpp"
@@ -15,7 +18,6 @@
 #include <fmt/format.h>
 #include <filesystem>
 #include <algorithm>
-#include "Util/Logger.hpp"
 
 using VExt = VehicleExtensions;
 
@@ -104,6 +106,18 @@ void CTorqueScript::updateTorque() {
     auto handlingPtr = VExt::GetHandlingPtr(mVehicle);
     float baseDriveForce = *reinterpret_cast<float*>(handlingPtr + hOffsets1604.fInitialDriveForce);
 
+    int tuningLevel = VEHICLE::GET_VEHICLE_MOD(
+        mVehicle, eVehicleModType::VMT_ENGINE);
+
+    float tuningMultiplier = 1.0f;
+    if (tuningLevel > -1) {
+        // Value of 100 -> 1.2 mult.
+        int modValue = VEHICLE::GET_VEHICLE_MOD_MODIFIER_VALUE(
+            mVehicle, eVehicleModType::VMT_ENGINE, tuningLevel);
+
+        tuningMultiplier = map((float)modValue, 0.0f, 100.0f, 1.0f, 1.2f);
+    }
+
     float rpm = VExt::GetCurrentRPM(mVehicle);
 
     float baseMultiplier = getScaledValue(BaseTorqueMultMap, rpm);
@@ -120,16 +134,17 @@ void CTorqueScript::updateTorque() {
         mapMultiplier = getScaledValue(mActiveConfig->Data.TorqueMultMap, rpm);
     }
 
-    auto finalForce = baseDriveForce * baseMultiplier * mapMultiplier;
+    auto finalForce = baseDriveForce * tuningMultiplier * baseMultiplier * mapMultiplier;
 
-    UI::ShowText(0.25f, 0.25f, 0.25f,
+    UI::ShowText(0.75f, 0.15f, 0.25f,
         fmt::format(
-            "BaseForce: {:.2f}\n"
-            "RPM: {:.2f}\n"
-            "BaseMult: {:.2f}\n"
-            "MapMult: {:.2f}\n"
-            "Final: {:.2f}",
-            baseDriveForce, rpm, baseMultiplier, mapMultiplier, finalForce));
+            "BaseForce: {:.3f}\n"
+            "Tuning: {}/{:.3f}\n"
+            "RPM: {:.3f}\n"
+            "BaseMult: {:.3f}\n"
+            "MapMult: {:.3f}\n"
+            "Final: {:.3f}",
+            baseDriveForce, tuningLevel, tuningMultiplier, rpm, baseMultiplier, mapMultiplier, finalForce));
 
     VExt::SetDriveForce(mVehicle, finalForce);
 }

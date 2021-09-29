@@ -154,6 +154,7 @@
     <ClInclude Include="Util\Timer.h" />
     <ClInclude Include="Util\UI.hpp" />
     <ClInclude Include="Util\UIUtils.h" />
+    <ClInclude Include="VehicleMods.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
