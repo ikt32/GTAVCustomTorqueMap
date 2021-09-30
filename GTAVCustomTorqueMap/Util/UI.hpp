@@ -13,4 +13,5 @@ namespace UI {
 
     void DrawSphere(Vector3 p, float scale, int r, int g, int b, int a);
     void ShowText3D(Vector3 location, const std::vector<std::string>& textLines);
+    void ShowText3DScaled(Vector3 location, float baseSize, const std::vector<std::string>& textLines);
 }

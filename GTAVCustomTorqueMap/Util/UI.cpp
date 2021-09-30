@@ -3,6 +3,7 @@
 #include <inc/enums.h>
 #include <inc/natives.h>
 #include <vector>
+#include "Math.hpp"
 
 namespace {
     int notificationId;
@@ -97,3 +98,27 @@ void UI::ShowText3D(Vector3 location, const std::vector<std::string>& textLines)
     GRAPHICS::CLEAR_DRAW_ORIGIN();
 }
 
+void UI::ShowText3DScaled(Vector3 location, float baseSize, const std::vector<std::string>& textLines) {
+    Vector3 cameraPos = CAM::GET_GAMEPLAY_CAM_COORD();
+    float distance = Distance(cameraPos, location);
+    float totalMult = baseSize / (distance * (CAM::GET_GAMEPLAY_CAM_FOV() / 60.0f));
+
+    float height = 0.0125f * totalMult;
+
+    GRAPHICS::SET_DRAW_ORIGIN(location.x, location.y, location.z, 0);
+    int i = 0;
+
+    float szX = 0.000f;
+    for (auto line : textLines) {
+        float currWidth = GetStringWidth(line, 0.2f * totalMult, 0);
+        ShowText(0.0f, 0.0f + height * i, 0.2f * totalMult, line);
+        if (currWidth > szX)
+            szX = currWidth;
+        i++;
+    }
+
+    float szY = height * i;
+    GRAPHICS::DRAW_RECT(0.0f + szX / 2.0f, (height * i) / 2.0f, szX, szY,
+        0, 0, 0, 92, 0);
+    GRAPHICS::CLEAR_DRAW_ORIGIN();
+}
