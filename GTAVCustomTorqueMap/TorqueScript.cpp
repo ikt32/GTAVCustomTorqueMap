@@ -139,9 +139,9 @@ void CTorqueScript::updateTorque() {
     auto finalForce = baseDriveForce * tuningMultiplier * baseMultiplier * mapMultiplier;
 
     if (mSettings.Debug.DisplayInfo) {
-        float displaySize = 3.0f;
+        float displaySize = 5.0f;
         if (mIsNPC) {
-            displaySize = 10.0f;
+            displaySize = 8.0f;
         }
 
         Vector3 loc = ENTITY::GET_ENTITY_COORDS(mVehicle, true);
