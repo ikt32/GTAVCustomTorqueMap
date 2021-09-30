@@ -9,6 +9,7 @@
 #include "Util/Math.hpp"
 
 #include "Memory/VehicleExtensions.hpp"
+#include "Memory/Offsets.hpp"
 
 #include <fmt/format.h>
 
@@ -16,6 +17,8 @@ using VExt = VehicleExtensions;
 
 namespace CustomTorque {
     std::vector<std::string> FormatTorqueConfig(CTorqueScript& context, const CConfig& config);
+    std::vector<std::string> FormatTorqueLive(CTorqueScript& context, const CConfig& config);
+
     bool PromptSave(CTorqueScript& context, CConfig& config, Hash model, std::string plate, CConfig::ESaveType saveType);
     void ShowCurve(CTorqueScript& context, const CConfig& config, Vehicle vehicle);
 }
@@ -41,12 +44,16 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
 
         std::string torqueExtraTitle;
         std::vector<std::string> extra;
+        std::vector<std::string> details;
 
         torqueExtraTitle = activeConfig->Name;
-        extra = FormatTorqueConfig(context, *activeConfig);
+        extra = FormatTorqueLive(context, *activeConfig);
+        
+        details = FormatTorqueConfig(context, *activeConfig);
+        details.insert(details.begin(), "Raw engine map, without boost or other effects applied.");
 
         bool showTorqueMap = false;
-        mbCtx.OptionPlus("Torque map info", extra, &showTorqueMap, nullptr, nullptr, torqueExtraTitle);
+        mbCtx.OptionPlus("Torque map info", extra, &showTorqueMap, nullptr, nullptr, torqueExtraTitle, details);
         if (showTorqueMap) {
             ShowCurve(context, *activeConfig, playerVehicle);
         }
@@ -130,6 +137,48 @@ std::vector<std::string> CustomTorque::FormatTorqueConfig(CTorqueScript& context
     return extras;
 }
 
+std::vector<std::string> CustomTorque::FormatTorqueLive(CTorqueScript& context, const CConfig& config) {
+    float rpm = VExt::GetCurrentRPM(context.GetVehicle());
+    float mapMultiplier = CTorqueScript::GetScaledValue(config.Data.TorqueMultMap, rpm);
+    
+    auto forces = VExt::GetWheelPower(context.GetVehicle());
+    float totalForce = 0.0f;
+
+    for (uint32_t i = 0; i < forces.size(); ++i) {
+        totalForce += forces[i];
+    }
+
+    auto handlingPtr = VExt::GetHandlingPtr(context.GetVehicle());
+    float weight = *reinterpret_cast<float*>(handlingPtr + hOffsets1604.fMass);
+
+    float gearRatio = VExt::GetGearRatios(context.GetVehicle())[VExt::GetGearCurr(context.GetVehicle())];
+    float totalForceNm = (totalForce * weight) / gearRatio;
+
+    std::vector<std::string> extras;
+    
+    if (config.Data.IdleRPM != 0 && config.Data.RevLimitRPM != 0) {
+        float realRPM = map(rpm, 0.2f, 1.0f,
+            (float)config.Data.IdleRPM, (float)config.Data.RevLimitRPM);
+
+        float horsepower = (totalForceNm * realRPM) / 5252.0f;
+
+        extras = {
+            fmt::format("RPM: {:.0f} ({:.2f})", realRPM, rpm),
+            fmt::format("Torque mult: {:.2f}x", mapMultiplier),
+            fmt::format("Wheel output: {:.3f} ({:.0f} HP / {:.2f} Nm)", totalForce, horsepower, totalForceNm),
+        };
+    }
+    else {
+        extras = {
+            fmt::format("RPM: {:.2f}", rpm),
+            fmt::format("Torque mult: {:.2f}x", mapMultiplier),
+            fmt::format("Wheel output: {:.3f} ({:.2f} Nm)", totalForce, totalForceNm),
+        };
+    }
+
+    return extras;
+}
+
 bool CustomTorque::PromptSave(CTorqueScript& context, CConfig& config, Hash model, std::string plate, CConfig::ESaveType saveType) {
     UI::Notify("Enter new config name.", true);
     std::string newName = UI::GetKeyboardResult();
@@ -167,14 +216,68 @@ void CustomTorque::ShowCurve(CTorqueScript& context, const CConfig& config, Vehi
 
     float rectX = 0.5f;
     float rectY = 0.5f;
-    float rectW = 0.75f / GRAPHICS::_GET_ASPECT_RATIO(FALSE);
+    float rectW = 0.66f / GRAPHICS::_GET_ASPECT_RATIO(FALSE);
     float rectH = 0.40f;
     float blockW = rectW / maxSamples;//0.001f * (16.0f / 9.0f) / GRAPHICS::_GET_ASPECT_RATIO(FALSE);
     float blockH = blockW * GRAPHICS::_GET_ASPECT_RATIO(FALSE);
 
-    GRAPHICS::DRAW_RECT(rectX, rectY,
-        rectW + 3.0f * blockW, rectH + 3.0f * blockH,
-        255, 255, 255, 191, 0);
+    float vertAxisLabelX = rectX - 0.5f * rectW - 0.05f;
+    float vertAxisLabelY = rectY;
+    UI::ShowText(vertAxisLabelX, vertAxisLabelY, 0.25f, "Torque\nMult");
+
+    float vertAxisValueX = rectX - 0.5f * rectW - 0.025f;
+    float vertAxis0Y = rectY + 0.5f * rectH;
+    UI::ShowText(vertAxisValueX, vertAxis0Y, 0.25f, "0.0x");
+
+    float vertAxis1Y = rectY - 0.5f * rectH;
+    UI::ShowText(vertAxisValueX, vertAxis1Y, 0.25f, "1.0x");
+
+    float horAxisLabelX = rectX;
+    float horAxisLabelY = rectY + 0.5f * rectH + 0.05f;
+    UI::ShowText(horAxisLabelX, horAxisLabelY, 0.25f, "Normalized RPM");
+
+    float horAxis0_0X = rectX - 0.5f * rectW;
+    float horAxisValueY = rectY + 0.5f * rectH + 0.025f;
+    UI::ShowText(horAxis0_0X, horAxisValueY, 0.25f, "0.0");
+
+    float horAxis0_2X = rectX - 0.5f * rectW + 0.2f * rectW;
+    UI::ShowText(horAxis0_2X, horAxisValueY, 0.25f, "0.2\nIdle");
+
+    float horAxis1_0X = rectX + 0.5f * rectW;
+    UI::ShowText(horAxis1_0X, horAxisValueY, 0.25f, "1.0");
+
+    // Left
+    GRAPHICS::DRAW_RECT(
+        rectX - rectW * 0.5f - blockW * 0.5f,
+        rectY,
+        blockW,
+        rectH + 2.0f * blockH,
+        255, 255, 255, 255, 0);
+
+    // Right
+    GRAPHICS::DRAW_RECT(
+        rectX + rectW * 0.5f + blockW * 0.5f,
+        rectY,
+        blockW,
+        rectH + 2.0f * blockH,
+        255, 255, 255, 255, 0);
+
+    // Top
+    GRAPHICS::DRAW_RECT(
+        rectX,
+        rectY - rectH * 0.5f - blockH * 0.5f,
+        rectW + 2.0f * blockW,
+        blockH,
+        255, 255, 255, 255, 0);
+
+    // Bottom
+    GRAPHICS::DRAW_RECT(
+        rectX,
+        rectY + rectH * 0.5f + blockH * 0.5f,
+        rectW + 2.0f * blockW,
+        blockH,
+        255, 255, 255, 255, 0);
+
     GRAPHICS::DRAW_RECT(rectX, rectY,
         rectW + blockW / 2.0f, rectH + blockH / 2.0f,
         0, 0, 0, 239, 0);

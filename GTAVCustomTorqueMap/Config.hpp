@@ -27,6 +27,9 @@ public:
 
     // Data
     struct {
+        int IdleRPM;
+        int RevLimitRPM;
+
         // RPM, Mult
         // Size >= 2 required
         // Map[0     ] = (<any>, <any>)

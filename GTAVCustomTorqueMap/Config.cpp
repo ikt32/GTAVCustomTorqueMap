@@ -72,6 +72,9 @@ CConfig CConfig::Read(const std::string& configFile) {
     config.Plate = ini.GetValue("ID", "Plate", "");
 
     // [Data]
+    config.Data.IdleRPM = ini.GetLongValue("Data", "IdleRPM", 0);
+    config.Data.RevLimitRPM = ini.GetLongValue("Data", "RevLimitRPM", 0);
+
     std::string torqueMapString = ini.GetValue("Data", "TorqueMultMap", "");
     config.Data.TorqueMultMap.clear();
 
