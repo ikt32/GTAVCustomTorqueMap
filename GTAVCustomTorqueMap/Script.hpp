@@ -13,6 +13,7 @@ namespace CustomTorque {
     CScriptSettings& GetSettings();
     CTorqueScript* GetScript();
     uint64_t GetNPCScriptCount();
+    void ClearNPCScripts();
     const std::vector<CConfig>& GetConfigs();
 
     uint32_t LoadConfigs();

@@ -136,15 +136,28 @@ void CTorqueScript::updateTorque() {
 
     auto finalForce = baseDriveForce * tuningMultiplier * baseMultiplier * mapMultiplier;
 
-    UI::ShowText(0.75f, 0.15f, 0.25f,
-        fmt::format(
-            "BaseForce: {:.3f}\n"
-            "Tuning: {}/{:.3f}\n"
-            "RPM: {:.3f}\n"
-            "BaseMult: {:.3f}\n"
-            "MapMult: {:.3f}\n"
-            "Final: {:.3f}",
-            baseDriveForce, tuningLevel, tuningMultiplier, rpm, baseMultiplier, mapMultiplier, finalForce));
+    if (mSettings.Debug.DisplayInfo) {
+        float displaySize = 3.0f;
+        if (mIsNPC) {
+            displaySize = 10.0f;
+        }
+
+        Vector3 loc = ENTITY::GET_ENTITY_COORDS(mVehicle, true);
+        Vector3 cameraPos = CAM::GET_GAMEPLAY_CAM_COORD();
+        float distance = Distance(cameraPos, loc);
+
+        if (distance < 50.0f) {
+            loc.z += 1.0f;
+            UI::ShowText3DScaled(loc, displaySize, {
+                { fmt::format("BaseForce: {:.3f}", baseDriveForce) },
+                { fmt::format("Tuning: {}/{:.3f}", tuningLevel, tuningMultiplier) },
+                { fmt::format("RPM: {:.3f}",       rpm) },
+                { fmt::format("BaseMult: {:.3f}",  baseMultiplier) },
+                { fmt::format("MapMult: {:.3f}",   mapMultiplier) },
+                { fmt::format("Final: {:.3f}",     finalForce) },
+                });
+        }
+    }
 
     VExt::SetDriveForce(mVehicle, finalForce);
 }

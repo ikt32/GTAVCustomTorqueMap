@@ -10,11 +10,11 @@ public:
     void Save();
 
     struct {
-        bool EnableNPC;
+        bool EnableNPC = true;
     } Main;
 
     struct {
-        bool NPCDetails = false;
+        bool DisplayInfo = false;
     } Debug;
 
 private:

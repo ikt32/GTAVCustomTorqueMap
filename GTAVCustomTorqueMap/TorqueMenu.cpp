@@ -51,33 +51,20 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
             ShowCurve(context, *activeConfig, playerVehicle);
         }
 
-        mbCtx.MenuOption("Edit configuration", "editconfigmenu",
-            { "Enter to edit the current configuration." });
+        // No config editing possible here.
+        // mbCtx.MenuOption("Edit configuration", "editconfigmenu",
+        //     { "Enter to edit the current configuration." });
 
         if (mbCtx.MenuOption("Load configuration", "loadmenu",
             { "Load another configuration into the current config." })) {
             CustomTorque::LoadConfigs();
         }
 
-        mbCtx.MenuOption("Save configuration", "savemenu",
-            { "Save the current configuration to disk." });
+        // No editing = no saving
+        // mbCtx.MenuOption("Save configuration", "savemenu",
+        //     { "Save the current configuration to disk." });
 
         mbCtx.MenuOption("Developer options", "developermenu");
-        });
-
-    /* mainmenu -> editconfigmenu */
-    submenus.emplace_back("editconfigmenu", [](NativeMenu::Menu& mbCtx, CTorqueScript& context) {
-        mbCtx.Title("Config edit");
-        CConfig* config = context.ActiveConfig();
-        mbCtx.Subtitle(config ? config->Name : "None");
-
-        if (config == nullptr) {
-            mbCtx.Option("No active configuration");
-            return;
-        }
-
-        // TODO: Config editing
-
         });
 
     /* mainmenu -> loadmenu */
@@ -93,7 +80,7 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
         }
 
         if (CustomTorque::GetConfigs().empty()) {
-            mbCtx.Option("No saved ratios");
+            mbCtx.Option("No saved configs");
         }
 
         for (const auto& config : CustomTorque::GetConfigs()) {
@@ -111,59 +98,23 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
         }
         });
 
-    /* mainmenu -> savemenu */
-    submenus.emplace_back("savemenu", [](NativeMenu::Menu& mbCtx, CTorqueScript& context) {
-        mbCtx.Title("Save configuration");
-        mbCtx.Subtitle("");
-        auto* config = context.ActiveConfig();
-
-        if (config == nullptr) {
-            mbCtx.Option("No active configuration");
-            return;
-        }
-
-        Hash model = ENTITY::GET_ENTITY_MODEL(PED::GET_VEHICLE_PED_IS_IN(PLAYER::PLAYER_PED_ID(), false));
-        const char* plate = VEHICLE::GET_VEHICLE_NUMBER_PLATE_TEXT(PED::GET_VEHICLE_PED_IS_IN(PLAYER::PLAYER_PED_ID(), false));
-
-        if (mbCtx.Option("Save",
-            { "Save the current configuration to the current active configuration.",
-              fmt::format("Current active configuration: {}.", context.ActiveConfig()->Name) })) {
-            config->Write(CConfig::ESaveType::GenericNone); // Don't write model/plate
-            CustomTorque::LoadConfigs();
-            UI::Notify("Saved changes", true);
-        }
-
-        if (mbCtx.Option("Save as specific vehicle",
-            { "Save current configuration for the current vehicle model and license plate.",
-               "Automatically loads for vehicles of this model with this license plate." })) {
-            if (PromptSave(context, *config, model, plate, CConfig::ESaveType::Specific))
-                CustomTorque::LoadConfigs();
-        }
-
-        if (mbCtx.Option("Save as generic vehicle",
-            { "Save current configuration for the current vehicle model."
-                "Automatically loads for any vehicle of this model.",
-                "Overridden by license plate config, if present." })) {
-            if (PromptSave(context, *config, model, std::string(), CConfig::ESaveType::GenericModel))
-                CustomTorque::LoadConfigs();
-        }
-
-        if (mbCtx.Option("Save as generic",
-            { "Save current configuration, but don't make it automatically load for any vehicle." })) {
-            if (PromptSave(context, *config, 0, std::string(), CConfig::ESaveType::GenericNone))
-                CustomTorque::LoadConfigs();
-        }
-        });
-
     /* mainmenu -> developermenu */
     submenus.emplace_back("developermenu", [](NativeMenu::Menu& mbCtx, CTorqueScript& context) {
         mbCtx.Title("Developer options");
         mbCtx.Subtitle("");
 
+        mbCtx.BoolOption("Debug Info", CustomTorque::GetSettings().Debug.DisplayInfo,
+            { "Displays a window with status info for each affected vehicle." });
+
+        if (mbCtx.BoolOption("Enable for NPCs", CustomTorque::GetSettings().Main.EnableNPC)) {
+            if (!CustomTorque::GetSettings().Main.EnableNPC) {
+                CustomTorque::ClearNPCScripts();
+            }
+        }
+
         mbCtx.Option(fmt::format("NPC instances: {}", CustomTorque::GetNPCScriptCount()),
             { "CustomTorqueMap works for all NPC vehicles.",
               "This is the number of vehicles the script is working for." });
-        mbCtx.BoolOption("NPC Details", CustomTorque::GetSettings().Debug.NPCDetails);
         });
 
     return submenus;
@@ -175,9 +126,6 @@ std::vector<std::string> CustomTorque::FormatTorqueConfig(CTorqueScript& context
         fmt::format("Model: {}", config.ModelName.empty() ? "None (Generic)" : config.ModelName),
         fmt::format("Plate: {}", config.Plate.empty() ? "None" : fmt::format("[{}]", config.Plate)),
     };
-
-    // TODO: Draw the torque map
-
 
     return extras;
 }

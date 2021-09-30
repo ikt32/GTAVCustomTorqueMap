@@ -79,7 +79,10 @@ void CustomTorque::ScriptTick() {
     while (true) {
         playerScriptInst->Tick();
         scriptMenu->Tick(*playerScriptInst);
-        //UpdateNPC();
+
+        if (settings->Main.EnableNPC)
+            UpdateNPC();
+
         WAIT(0);
     }
 }
@@ -94,7 +97,7 @@ void CustomTorque::UpdateNPC() {
     for (const auto& vehicle : allVehicles) {
         if (ENTITY::IS_ENTITY_DEAD(vehicle, 0) ||
             vehicle == playerScriptInst->GetVehicle() ||
-            !VEHICLE::IS_TOGGLE_MOD_ON(vehicle, VehicleToggleModTurbo))
+            !VEHICLE::GET_IS_VEHICLE_ENGINE_RUNNING(vehicle))
             continue;
     
         auto it = std::find_if(npcScriptInsts.begin(), npcScriptInsts.end(), [vehicle](const auto& inst) {
@@ -112,8 +115,7 @@ void CustomTorque::UpdateNPC() {
     for (const auto& inst : npcScriptInsts) {
         if (!ENTITY::DOES_ENTITY_EXIST(inst->GetVehicle()) ||
             ENTITY::IS_ENTITY_DEAD(inst->GetVehicle(), 0) ||
-            inst->GetVehicle() == playerScriptInst->GetVehicle() ||
-            !VEHICLE::IS_TOGGLE_MOD_ON(inst->GetVehicle(), VehicleToggleModTurbo)) {
+            inst->GetVehicle() == playerScriptInst->GetVehicle()) {
             instsToDelete.push_back(inst);
         }
         else {
@@ -145,6 +147,10 @@ CTorqueScript* CustomTorque::GetScript() {
 
 uint64_t CustomTorque::GetNPCScriptCount() {
     return npcScriptInsts.size();
+}
+
+void CustomTorque::ClearNPCScripts() {
+    npcScriptInsts.clear();
 }
 
 const std::vector<CConfig>& CustomTorque::GetConfigs() {
