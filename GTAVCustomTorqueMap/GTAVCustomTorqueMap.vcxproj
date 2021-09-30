@@ -91,6 +91,7 @@
     <ClCompile Include="Memory\VehicleExtensions.cpp" />
     <ClCompile Include="Script.cpp" />
     <ClCompile Include="ScriptMenuUtils.cpp" />
+    <ClCompile Include="SettingsCommon.cpp" />
     <ClCompile Include="TorqueMenu.cpp" />
     <ClCompile Include="ScriptSettings.cpp" />
     <ClCompile Include="TorqueScript.cpp" />
@@ -135,6 +136,7 @@
     <ClInclude Include="ScriptMenu.hpp" />
     <ClInclude Include="ScriptMenuUtils.hpp" />
     <ClInclude Include="ScriptSettings.hpp" />
+    <ClInclude Include="SettingsCommon.hpp" />
     <ClInclude Include="TorqueScript.hpp" />
     <ClInclude Include="TorqueScriptNPC.hpp" />
     <ClInclude Include="Util\AddonSpawnerCache.hpp" />

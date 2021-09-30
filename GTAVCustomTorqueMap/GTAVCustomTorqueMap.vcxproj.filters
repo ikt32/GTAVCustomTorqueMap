@@ -96,6 +96,7 @@
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="TorqueScript.cpp" />
     <ClCompile Include="TorqueScriptNPC.cpp" />
+    <ClCompile Include="SettingsCommon.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\thirdparty\pugixml\pugiconfig.hpp">
@@ -218,5 +219,6 @@
     </ClInclude>
     <ClInclude Include="TorqueScriptNPC.hpp" />
     <ClInclude Include="VehicleMods.hpp" />
+    <ClInclude Include="SettingsCommon.hpp" />
   </ItemGroup>
 </Project>
