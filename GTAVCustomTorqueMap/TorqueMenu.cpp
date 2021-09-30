@@ -149,20 +149,27 @@ bool CustomTorque::PromptSave(CTorqueScript& context, CConfig& config, Hash mode
 }
 
 void CustomTorque::ShowCurve(CTorqueScript& context, const CConfig& config, Vehicle vehicle) {
-    const int max_samples = 100;
+    struct Point {
+        float x;
+        float y;
+        bool solid;
+    };
 
-    std::vector<std::pair<float, float>> points;
-    for (int i = 0; i < max_samples; i++) {
-        float x = static_cast<float>(i) / static_cast<float>(max_samples);
+    const int maxSamples = 100;
+    const int idleRange = 20; // 0.2 of maxSamples
+
+    std::vector<Point> points;
+    for (int i = 0; i < maxSamples; i++) {
+        float x = static_cast<float>(i) / static_cast<float>(maxSamples);
         float y = CTorqueScript::GetScaledValue(config.Data.TorqueMultMap, x);
-        points.emplace_back(x, y);
+        points.push_back({ x, y, i >= idleRange });
     }
 
     float rectX = 0.5f;
     float rectY = 0.5f;
     float rectW = 0.75f / GRAPHICS::_GET_ASPECT_RATIO(FALSE);
     float rectH = 0.40f;
-    float blockW = rectW / max_samples;//0.001f * (16.0f / 9.0f) / GRAPHICS::_GET_ASPECT_RATIO(FALSE);
+    float blockW = rectW / maxSamples;//0.001f * (16.0f / 9.0f) / GRAPHICS::_GET_ASPECT_RATIO(FALSE);
     float blockH = blockW * GRAPHICS::_GET_ASPECT_RATIO(FALSE);
 
     GRAPHICS::DRAW_RECT(rectX, rectY,
@@ -173,11 +180,15 @@ void CustomTorque::ShowCurve(CTorqueScript& context, const CConfig& config, Vehi
         0, 0, 0, 239, 0);
 
     for (auto point : points) {
-        float pointX = rectX - 0.5f * rectW + point.first * rectW;
-        float pointY = rectY + 0.5f * rectH - point.second * rectH;
+        float pointX = rectX - 0.5f * rectW + point.x * rectW;
+        float pointY = rectY + 0.5f * rectH - point.y * rectH;
         GRAPHICS::DRAW_RECT(pointX, pointY,
             blockW, blockH,
-            255, 255, 255, 255, 0);
+            255,
+            255,
+            255,
+            point.solid ? 255 : 91,
+            0);
     }
 
     if (ENTITY::DOES_ENTITY_EXIST(vehicle)) {
