@@ -146,7 +146,12 @@ CTorqueScript* CustomTorque::GetScript() {
 }
 
 uint64_t CustomTorque::GetNPCScriptCount() {
-    return npcScriptInsts.size();
+    uint64_t numActive = 0;
+    for (auto& npcInstance : npcScriptInsts) {
+        if (!npcInstance->ActiveConfig()->Name.empty())
+            ++numActive;
+    }
+    return numActive;
 }
 
 void CustomTorque::ClearNPCScripts() {
