@@ -2,7 +2,7 @@
 #include "Constants.hpp"
 
 #include "Util/FileVersion.h"
-#include "Util/Paths.h"
+#include "Util/Paths.hpp"
 #include "Util/Logger.hpp"
 #include "Memory/Versions.h"
 #include "Memory/VehicleExtensions.hpp"

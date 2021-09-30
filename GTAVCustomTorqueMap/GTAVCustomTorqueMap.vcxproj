@@ -84,7 +84,6 @@
     <ClCompile Include="..\thirdparty\GTAVMenuBase\menumemutils.cpp" />
     <ClCompile Include="..\thirdparty\GTAVMenuBase\menusettings.cpp" />
     <ClCompile Include="..\thirdparty\GTAVMenuBase\menuutils.cpp" />
-    <ClCompile Include="..\thirdparty\pugixml\pugixml.cpp" />
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="DllMain.cpp" />
     <ClCompile Include="Memory\NativeMemory.cpp" />
@@ -104,10 +103,8 @@
     <ClCompile Include="Util\Paths.cpp" />
     <ClCompile Include="Util\ScriptUtils.cpp" />
     <ClCompile Include="Util\String.cpp" />
-    <ClCompile Include="Util\Strings.cpp" />
     <ClCompile Include="Util\Timer.cpp" />
     <ClCompile Include="Util\UI.cpp" />
-    <ClCompile Include="Util\UIUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\thirdparty\GTAVMenuBase\InstructionalButton.h" />
@@ -118,8 +115,6 @@
     <ClInclude Include="..\thirdparty\GTAVMenuBase\menusettings.h" />
     <ClInclude Include="..\thirdparty\GTAVMenuBase\menuutils.h" />
     <ClInclude Include="..\thirdparty\GTAVMenuBase\Scaleform.h" />
-    <ClInclude Include="..\thirdparty\pugixml\pugiconfig.hpp" />
-    <ClInclude Include="..\thirdparty\pugixml\pugixml.hpp" />
     <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\enums.h" />
     <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\main.h" />
     <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\nativeCaller.h" />
@@ -147,15 +142,11 @@
     <ClInclude Include="Util\Game.hpp" />
     <ClInclude Include="Util\Logger.hpp" />
     <ClInclude Include="Util\Math.hpp" />
-    <ClInclude Include="Util\MathExt.h" />
-    <ClInclude Include="Util\Paths.h" />
     <ClInclude Include="Util\Paths.hpp" />
     <ClInclude Include="Util\ScriptUtils.h" />
     <ClInclude Include="Util\String.hpp" />
-    <ClInclude Include="Util\Strings.h" />
     <ClInclude Include="Util\Timer.h" />
     <ClInclude Include="Util\UI.hpp" />
-    <ClInclude Include="Util\UIUtils.h" />
     <ClInclude Include="VehicleMods.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -22,9 +22,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\thirdparty\pugixml\pugixml.cpp">
-      <Filter>thirdparty</Filter>
-    </ClCompile>
     <ClCompile Include="..\thirdparty\GTAVMenuBase\menu.cpp">
       <Filter>Menu</Filter>
     </ClCompile>
@@ -72,16 +69,10 @@
     <ClCompile Include="Util\String.cpp">
       <Filter>Util</Filter>
     </ClCompile>
-    <ClCompile Include="Util\Strings.cpp">
-      <Filter>Util</Filter>
-    </ClCompile>
     <ClCompile Include="Util\Timer.cpp">
       <Filter>Util</Filter>
     </ClCompile>
     <ClCompile Include="Util\UI.cpp">
-      <Filter>Util</Filter>
-    </ClCompile>
-    <ClCompile Include="Util\UIUtils.cpp">
       <Filter>Util</Filter>
     </ClCompile>
     <ClCompile Include="Util\AddonSpawnerCache.cpp">
@@ -99,12 +90,6 @@
     <ClCompile Include="SettingsCommon.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\thirdparty\pugixml\pugiconfig.hpp">
-      <Filter>thirdparty</Filter>
-    </ClInclude>
-    <ClInclude Include="..\thirdparty\pugixml\pugixml.hpp">
-      <Filter>thirdparty</Filter>
-    </ClInclude>
     <ClInclude Include="..\thirdparty\GTAVMenuBase\InstructionalButton.h">
       <Filter>Menu</Filter>
     </ClInclude>
@@ -184,12 +169,6 @@
     <ClInclude Include="Util\Math.hpp">
       <Filter>Util</Filter>
     </ClInclude>
-    <ClInclude Include="Util\MathExt.h">
-      <Filter>Util</Filter>
-    </ClInclude>
-    <ClInclude Include="Util\Paths.h">
-      <Filter>Util</Filter>
-    </ClInclude>
     <ClInclude Include="Util\Paths.hpp">
       <Filter>Util</Filter>
     </ClInclude>
@@ -199,16 +178,10 @@
     <ClInclude Include="Util\String.hpp">
       <Filter>Util</Filter>
     </ClInclude>
-    <ClInclude Include="Util\Strings.h">
-      <Filter>Util</Filter>
-    </ClInclude>
     <ClInclude Include="Util\Timer.h">
       <Filter>Util</Filter>
     </ClInclude>
     <ClInclude Include="Util\UI.hpp">
-      <Filter>Util</Filter>
-    </ClInclude>
-    <ClInclude Include="Util\UIUtils.h">
       <Filter>Util</Filter>
     </ClInclude>
     <ClInclude Include="Util\AddonSpawnerCache.hpp">

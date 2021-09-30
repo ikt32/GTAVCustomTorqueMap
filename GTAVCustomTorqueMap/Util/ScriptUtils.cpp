@@ -1,10 +1,6 @@
 #include "ScriptUtils.h"
-
 #include "../Constants.hpp"
-#include "MathExt.h"
-#include "UIUtils.h"
-#include "inc/natives.h"
-
+#include <inc/natives.h>
 
 bool Util::PlayerAvailable(Player player, Ped playerPed) {
     if (!PLAYER::IS_PLAYER_CONTROL_ON(player) ||
