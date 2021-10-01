@@ -21,7 +21,7 @@ namespace CustomTorque {
     std::vector<std::string> FormatTorqueConfig(CTorqueScript& context, const CConfig& config);
 
     std::vector<std::string> FormatTorqueLive(const STorqueData& torqueData);
-    void ShowCurve(CTorqueScript& context, const CConfig& config, Vehicle vehicle, const STorqueData& torqueData);
+    void ShowCurve(CTorqueScript& context, const CConfig& config, Vehicle vehicle);
 
     bool PromptSave(CTorqueScript& context, CConfig& config, Hash model, std::string plate, CConfig::ESaveType saveType);
 }
@@ -37,7 +37,7 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
         Vehicle playerVehicle = PED::GET_VEHICLE_PED_IS_IN(playerPed, false);
 
         if (!playerVehicle || !ENTITY::DOES_ENTITY_EXIST(playerVehicle)) {
-            mbCtx.Option("No vehicle", { "Get in a vehicle to change its torque map." });
+            mbCtx.Option("No vehicle", { "Get in a vehicle." });
             mbCtx.MenuOption("Developer options", "developermenu");
             return;
         }
@@ -63,7 +63,7 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
                 break;
         }
 
-        if (mbCtx.Option(fmt::format("Record: {}", stateText))) {
+        if (mbCtx.Option(fmt::format("Performance logging: {}", stateText))) {
             if (recordState == PerformanceLog::LogState::Idle) {
                 PerformanceLog::Start();
             }
@@ -72,9 +72,9 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
         // activeConfig can always be assumed if in any vehicle.
         CConfig* activeConfig = context.ActiveConfig();
 
-        if (activeConfig->Name.empty()) {
-            mbCtx.Option("No torque map",
-                { "This vehicle has no custom torque map." });
+        if (!activeConfig) {
+            mbCtx.Option("Fatal error?",
+                { "This vehicle has no config at all?" });
         }
         else {
             std::string torqueExtraTitle;
@@ -93,7 +93,7 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
             bool showTorqueMap = false;
             mbCtx.OptionPlus("Torque map info", extra, &showTorqueMap, nullptr, nullptr, torqueExtraTitle, details);
             if (showTorqueMap) {
-                ShowCurve(context, *activeConfig, playerVehicle, torqueData);
+                ShowCurve(context, *activeConfig, playerVehicle);
             }
         }
 
@@ -135,6 +135,7 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
 
             if (selected) {
                 mbCtx.OptionPlusPlus(FormatTorqueConfig(context, config));
+                ShowCurve(context, config, 0);
             }
 
             if (triggered) {
@@ -217,7 +218,7 @@ bool CustomTorque::PromptSave(CTorqueScript& context, CConfig& config, Hash mode
     return true;
 }
 
-void CustomTorque::ShowCurve(CTorqueScript& context, const CConfig& config, Vehicle vehicle, const STorqueData& torqueData) {
+void CustomTorque::ShowCurve(CTorqueScript& context, const CConfig& config, Vehicle vehicle) {
     struct Point {
         float x;
         float y;
@@ -335,7 +336,7 @@ void CustomTorque::ShowCurve(CTorqueScript& context, const CConfig& config, Vehi
         UI::ShowText(vertAxisValueX, vertAxisValueY, 0.25f, fmt::format("{:1.2f}x", currentPoint.second));
 
         GRAPHICS::DRAW_RECT(pointX, pointY,
-            3.0f * blockW, 3.0f * blockH,
+            1.5f * blockW, 1.5f * blockH,
             255, 0, 0, 255, 0);
     }
 }
