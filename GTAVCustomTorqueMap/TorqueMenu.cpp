@@ -3,6 +3,7 @@
 #include "TorqueScript.hpp"
 #include "Constants.hpp"
 #include "TorqueUtil.hpp"
+#include "PerformanceLog.hpp"
 
 #include "ScriptMenuUtils.hpp"
 
@@ -39,6 +40,33 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
             mbCtx.Option("No vehicle", { "Get in a vehicle to change its torque map." });
             mbCtx.MenuOption("Developer options", "developermenu");
             return;
+        }
+
+        auto recordState = PerformanceLog::GetState();
+        std::string stateText;
+
+        switch (recordState) {
+            case PerformanceLog::LogState::Idle:
+                stateText = "Idle";
+                break;
+            case PerformanceLog::LogState::Waiting:
+                stateText = "Waiting";
+                break;
+            case PerformanceLog::LogState::Recording:
+                stateText = "Recording";
+                break;
+            case PerformanceLog::LogState::Finished:
+                stateText = "Finished";
+                break;
+            default:
+                stateText = "Invalid";
+                break;
+        }
+
+        if (mbCtx.Option(fmt::format("Record: {}", stateText))) {
+            if (recordState == PerformanceLog::LogState::Idle) {
+                PerformanceLog::Start();
+            }
         }
 
         // activeConfig can always be assumed if in any vehicle.

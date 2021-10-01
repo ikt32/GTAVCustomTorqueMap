@@ -3,6 +3,7 @@
 #include "Constants.hpp"
 #include "VehicleMods.hpp"
 #include "TorqueUtil.hpp"
+#include "PerformanceLog.hpp"
 
 #include "Util/Math.hpp"
 #include "Util/Paths.hpp"
@@ -55,6 +56,8 @@ void CTorqueScript::Tick() {
     if (mActiveConfig && Util::VehicleAvailable(mVehicle, PLAYER::PLAYER_PED_ID(), false)) {
         updateTorque();
     }
+
+    PerformanceLog::Update(mVehicle);
 }
 
 void CTorqueScript::UpdateActiveConfig(bool playerCheck) {

@@ -88,6 +88,7 @@
     <ClCompile Include="TorqueScript.cpp" />
     <ClCompile Include="TorqueScriptNPC.cpp" />
     <ClCompile Include="SettingsCommon.cpp" />
+    <ClCompile Include="PerformanceLog.cpp" />
     <ClCompile Include="TorqueUtil.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -194,6 +195,7 @@
     <ClInclude Include="TorqueScriptNPC.hpp" />
     <ClInclude Include="VehicleMods.hpp" />
     <ClInclude Include="SettingsCommon.hpp" />
+    <ClInclude Include="PerformanceLog.hpp" />
     <ClInclude Include="TorqueUtil.hpp" />
   </ItemGroup>
 </Project>

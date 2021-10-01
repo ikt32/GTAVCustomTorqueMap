@@ -88,6 +88,7 @@
     <ClCompile Include="DllMain.cpp" />
     <ClCompile Include="Memory\NativeMemory.cpp" />
     <ClCompile Include="Memory\VehicleExtensions.cpp" />
+    <ClCompile Include="PerformanceLog.cpp" />
     <ClCompile Include="Script.cpp" />
     <ClCompile Include="ScriptMenuUtils.cpp" />
     <ClCompile Include="SettingsCommon.cpp" />
@@ -128,6 +129,7 @@
     <ClInclude Include="Memory\VehicleExtensions.hpp" />
     <ClInclude Include="Memory\VehicleFlags.h" />
     <ClInclude Include="Memory\Versions.h" />
+    <ClInclude Include="PerformanceLog.hpp" />
     <ClInclude Include="Script.hpp" />
     <ClInclude Include="ScriptMenu.hpp" />
     <ClInclude Include="ScriptMenuUtils.hpp" />
