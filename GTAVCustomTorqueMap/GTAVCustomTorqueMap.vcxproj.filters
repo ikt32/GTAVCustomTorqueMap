@@ -88,6 +88,7 @@
     <ClCompile Include="TorqueScript.cpp" />
     <ClCompile Include="TorqueScriptNPC.cpp" />
     <ClCompile Include="SettingsCommon.cpp" />
+    <ClCompile Include="TorqueUtil.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\thirdparty\GTAVMenuBase\InstructionalButton.h">
@@ -193,5 +194,6 @@
     <ClInclude Include="TorqueScriptNPC.hpp" />
     <ClInclude Include="VehicleMods.hpp" />
     <ClInclude Include="SettingsCommon.hpp" />
+    <ClInclude Include="TorqueUtil.hpp" />
   </ItemGroup>
 </Project>

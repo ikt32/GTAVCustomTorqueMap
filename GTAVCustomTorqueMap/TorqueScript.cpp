@@ -2,6 +2,7 @@
 
 #include "Constants.hpp"
 #include "VehicleMods.hpp"
+#include "TorqueUtil.hpp"
 
 #include "Util/Math.hpp"
 #include "Util/Paths.hpp"
@@ -122,7 +123,7 @@ void CTorqueScript::updateTorque() {
 
     float rpm = VExt::GetCurrentRPM(mVehicle);
 
-    float baseMultiplier = GetScaledValue(BaseTorqueMultMap, rpm);
+    float baseMultiplier = CustomTorque::GetScaledValue(BaseTorqueMultMap, rpm);
 
     auto gear = VExt::GetGearCurr(mVehicle);
 
@@ -133,7 +134,7 @@ void CTorqueScript::updateTorque() {
     float mapMultiplier = 1.0f;
 
     if (mActiveConfig->Data.TorqueMultMap.size() >= 3) {
-        mapMultiplier = GetScaledValue(mActiveConfig->Data.TorqueMultMap, rpm);
+        mapMultiplier = CustomTorque::GetScaledValue(mActiveConfig->Data.TorqueMultMap, rpm);
     }
 
     auto finalForce = baseDriveForce * tuningMultiplier * baseMultiplier * mapMultiplier;
@@ -162,29 +163,4 @@ void CTorqueScript::updateTorque() {
     }
 
     VExt::SetDriveForce(mVehicle, finalForce);
-}
-
-float CTorqueScript::GetScaledValue(const std::map<float, float>& map, float key) {
-    auto mapIt = map.lower_bound(key);
-
-    // Go back twice to get the last two elements, since the value is scaled anyway.
-    if (mapIt == map.end()) {
-        mapIt--;
-    }
-
-    if (mapIt != map.begin()) {
-        mapIt--;
-    }
-
-    float scaledValue = ::map(
-        key,
-        mapIt->first,
-        std::next(mapIt)->first,
-        mapIt->second,
-        std::next(mapIt)->second);
-
-    if (scaledValue < 0.0f)
-        scaledValue = 0.0f;
-
-    return scaledValue;
 }

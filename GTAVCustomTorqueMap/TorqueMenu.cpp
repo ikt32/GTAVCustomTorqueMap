@@ -2,6 +2,7 @@
 #include "Script.hpp"
 #include "TorqueScript.hpp"
 #include "Constants.hpp"
+#include "TorqueUtil.hpp"
 
 #include "ScriptMenuUtils.hpp"
 
@@ -9,7 +10,6 @@
 #include "Util/Math.hpp"
 
 #include "Memory/VehicleExtensions.hpp"
-#include "Memory/Offsets.hpp"
 
 #include <fmt/format.h>
 #include <optional>
@@ -17,24 +17,8 @@
 using VExt = VehicleExtensions;
 
 namespace CustomTorque {
-    struct STorqueDataAdvanced {
-        float RealRPM;
-        float PowerkW;
-        float PowerHP;
-    };
-
-    struct STorqueData {
-        float NormalizedRPM;
-        float TorqueMult;
-        float TotalForce;
-        float TotalForceNm;
-        float TotalForceLbFt;
-        std::optional<STorqueDataAdvanced> RPMData;
-    };
-
     std::vector<std::string> FormatTorqueConfig(CTorqueScript& context, const CConfig& config);
 
-    STorqueData GetTorqueData(CTorqueScript& context, const CConfig& config);
     std::vector<std::string> FormatTorqueLive(const STorqueData& torqueData);
     void ShowCurve(CTorqueScript& context, const CConfig& config, Vehicle vehicle, const STorqueData& torqueData);
 
@@ -164,51 +148,6 @@ std::vector<std::string> CustomTorque::FormatTorqueConfig(CTorqueScript& context
     return extras;
 }
 
-CustomTorque::STorqueData CustomTorque::GetTorqueData(CTorqueScript& context, const CConfig& config) {
-
-    float rpm = VExt::GetCurrentRPM(context.GetVehicle());
-    float mapMultiplier = CTorqueScript::GetScaledValue(config.Data.TorqueMultMap, rpm);
-
-    auto forces = VExt::GetWheelPower(context.GetVehicle());
-    float totalForce = 0.0f;
-
-    for (uint32_t i = 0; i < forces.size(); ++i) {
-        totalForce += forces[i];
-    }
-
-    auto handlingPtr = VExt::GetHandlingPtr(context.GetVehicle());
-    float weight = *reinterpret_cast<float*>(handlingPtr + hOffsets1604.fMass);
-
-    float gearRatio = VExt::GetGearRatios(context.GetVehicle())[VExt::GetGearCurr(context.GetVehicle())];
-    float totalForceNm = (totalForce * weight) / gearRatio;
-    float totalForceLbFt = totalForceNm / 1.356f;
-
-    STorqueData torqueData{
-        .NormalizedRPM = rpm,
-        .TorqueMult = mapMultiplier,
-        .TotalForce = totalForce,
-        .TotalForceNm = totalForceNm,
-        .TotalForceLbFt = totalForceLbFt,
-        .RPMData = std::nullopt,
-    };
-
-    if (config.Data.IdleRPM != 0 && config.Data.RevLimitRPM != 0) {
-        float realRPM = map(rpm, 0.2f, 1.0f,
-            (float)config.Data.IdleRPM, (float)config.Data.RevLimitRPM);
-
-        float power = (0.105f * totalForceNm * realRPM) / 1000.0f;
-        float horsepower = (totalForceLbFt * realRPM) / 5252.0f;
-
-        torqueData.RPMData = STorqueDataAdvanced{
-            .RealRPM = realRPM,
-            .PowerkW = power,
-            .PowerHP = horsepower
-        };
-    }
-
-    return torqueData;
-}
-
 std::vector<std::string> CustomTorque::FormatTorqueLive(const STorqueData& torqueData) {
     std::vector<std::string> extras;
     
@@ -263,7 +202,7 @@ void CustomTorque::ShowCurve(CTorqueScript& context, const CConfig& config, Vehi
     std::vector<Point> points;
     for (int i = 0; i < maxSamples; i++) {
         float x = static_cast<float>(i) / static_cast<float>(maxSamples);
-        float y = CTorqueScript::GetScaledValue(config.Data.TorqueMultMap, x);
+        float y = CustomTorque::GetScaledValue(config.Data.TorqueMultMap, x);
         points.push_back({ x, y, i >= idleRange });
     }
 
@@ -351,7 +290,7 @@ void CustomTorque::ShowCurve(CTorqueScript& context, const CConfig& config, Vehi
         float input = VExt::GetCurrentRPM(vehicle);
         std::pair<float, float> currentPoint = {
             input,
-            CTorqueScript::GetScaledValue(config.Data.TorqueMultMap, input)
+            CustomTorque::GetScaledValue(config.Data.TorqueMultMap, input)
         };
 
         float pointX = rectX - 0.5f * rectW + currentPoint.first * rectW;
