@@ -41,6 +41,7 @@ namespace {
 CTorqueScript::CTorqueScript(CScriptSettings& settings, std::vector<CConfig>& configs)
     : mSettings(settings)
     , mConfigs(configs)
+    , mDefaultConfig(configs[0])
     , mVehicle(0)
     , mActiveConfig(nullptr)
     , mIsNPC(false) {
