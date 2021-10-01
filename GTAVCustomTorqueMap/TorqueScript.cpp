@@ -26,10 +26,15 @@ using VExt = VehicleExtensions;
 // There is a non-linear power decrease
 // Torque @ wheels slightly increase around 0.9 RPM, but is negligible imo
 namespace {
-    const std::map<float, float> BaseTorqueMultMap {
-        { 0.0f, 1.0f },
-        { 0.8f, 1.0f },
-        { 1.0f, 1.0f/0.6f },
+    const std::map<float, float> BaseTorqueModMap1 {
+        { 0.0f, 0.0f },
+        { 0.8f, 0.0f },
+        { 1.0f, 0.4f },
+    };
+    const std::map<float, float> BaseTorqueModMap2{
+        { 0.0f, 0.0f },
+        { 0.8f, 0.0f },
+        { 1.0f, 2.0f/3.0f },
     };
 }
 
@@ -126,12 +131,17 @@ void CTorqueScript::updateTorque() {
 
     float rpm = VExt::GetCurrentRPM(mVehicle);
 
-    float baseMultiplier = CustomTorque::GetScaledValue(BaseTorqueMultMap, rpm);
+    float baseMod1 = CustomTorque::GetScaledValue(BaseTorqueModMap1, rpm) * baseDriveForce;
+    float baseMod2 = CustomTorque::GetScaledValue(BaseTorqueModMap2, rpm) * baseDriveForce;
+    float baseMod = map(rpm, 0.8f, 1.0f, baseMod1, baseMod2);
+
+    if (rpm <= 0.8f)
+        baseMod = 0.0f;
 
     auto gear = VExt::GetGearCurr(mVehicle);
 
     if (gear < 2) {
-        baseMultiplier = 1.0f;
+        baseMod = 0.0f;
     }
 
     float mapMultiplier = 1.0f;
@@ -140,7 +150,7 @@ void CTorqueScript::updateTorque() {
         mapMultiplier = CustomTorque::GetScaledValue(mActiveConfig->Data.TorqueMultMap, rpm);
     }
 
-    auto finalForce = baseDriveForce * tuningMultiplier * baseMultiplier * mapMultiplier;
+    auto finalForce = (baseDriveForce + baseMod) * tuningMultiplier * mapMultiplier;
 
     if (mSettings.Debug.DisplayInfo) {
         float displaySize = 5.0f;
@@ -158,7 +168,7 @@ void CTorqueScript::updateTorque() {
                 { fmt::format("BaseForce: {:.3f}", baseDriveForce) },
                 { fmt::format("Tuning: {}/{:.3f}", tuningLevel, tuningMultiplier) },
                 { fmt::format("RPM: {:.3f}",       rpm) },
-                { fmt::format("BaseMult: {:.3f}",  baseMultiplier) },
+                { fmt::format("BaseMod: {:.3f}",   baseMod) },
                 { fmt::format("MapMult: {:.3f}",   mapMultiplier) },
                 { fmt::format("Final: {:.3f}",     finalForce) },
                 });
