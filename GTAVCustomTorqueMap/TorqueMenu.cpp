@@ -160,12 +160,16 @@ std::vector<std::string> CustomTorque::FormatTorqueLive(CTorqueScript& context, 
         float realRPM = map(rpm, 0.2f, 1.0f,
             (float)config.Data.IdleRPM, (float)config.Data.RevLimitRPM);
 
-        float horsepower = (totalForceNm * realRPM) / 5252.0f;
+        float power = (0.105f * totalForceNm * realRPM) / 1000.0f;
+
+        float totalForceLbFt = totalForceNm / 1.356f;
+        float horsepower = (totalForceLbFt * realRPM) / 5252.0f;
 
         extras = {
-            fmt::format("RPM: {:.0f} ({:.2f})", realRPM, rpm),
-            fmt::format("Torque mult: {:.2f}x", mapMultiplier),
-            fmt::format("Wheel output: {:.3f} ({:.0f} HP / {:.2f} Nm)", totalForce, horsepower, totalForceNm),
+            fmt::format("RPM: {:3.0f} \t({:.2f})", realRPM, rpm),
+            fmt::format("Torque mult: {:.2f}x \tForce: {:.3f}", mapMultiplier, totalForce),
+            fmt::format("Output: {:3.0f} HP \t{:3.0f} lb-ft", horsepower, totalForceLbFt),
+            fmt::format("Output: {:3.0f} kW \t{:3.0f} Nm", power, totalForceNm),
         };
     }
     else {
