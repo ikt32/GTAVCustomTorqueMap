@@ -18,6 +18,7 @@ namespace CustomTorque {
         float TotalForce;
         float TotalForceNm;
         float TotalForceLbFt;
+        float RawMapForceNm;
         std::optional<STorqueDataAdvanced> RPMData;
     };
 

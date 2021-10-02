@@ -17,11 +17,11 @@ using VExt = VehicleExtensions;
 struct LogEntry {
     float NormalizedRPM;
     float RealRPM;
-    float NormalizedForce;
     float PowerkW;
     float PowerHP;
     float TorqueNm;
     float TorqueLbFt;
+    float TorqueMapNm;
 };
 
 namespace {
@@ -71,11 +71,11 @@ void UpdateRecording(Vehicle playerVehicle, CTorqueScript& context) {
     LogEntry entry{
         .NormalizedRPM = rpm,
         .RealRPM = torqueData.RPMData->RealRPM,
-        .NormalizedForce = torqueData.TotalForce,
         .PowerkW = torqueData.RPMData->PowerkW,
         .PowerHP = torqueData.RPMData->PowerHP,
         .TorqueNm = torqueData.TotalForceNm,
         .TorqueLbFt = torqueData.TotalForceLbFt,
+        .TorqueMapNm = torqueData.RawMapForceNm,
     };
 
     Entries.push_back(entry);
@@ -90,11 +90,11 @@ void PerformanceLog::Finish() {
 
     std::ofstream logFile("CustomTorqueMap/LatestDataLog.csv", std::ofstream::out | std::ofstream::trunc);
 
-    logFile << "NormalizedRPM,RealRPM,NormalizedForce,PowerkW,PowerHP,TorqueNm,TorqueLbFt" << std::endl;
+    logFile << "NormalizedRPM,RealRPM,PowerkW,PowerHP,TorqueNm,TorqueLbFt,TorqueMapNm" << std::endl;
 
     for (const auto& entry : Entries) {
         logFile << fmt::format("{:.3f},{:.3f},{:.3f},{:.3f},{:.3f},{:.3f},{:.3f}",
-            entry.NormalizedRPM, entry.RealRPM, entry.NormalizedForce, entry.PowerkW, entry.PowerHP, entry.TorqueNm, entry.TorqueLbFt)
+            entry.NormalizedRPM, entry.RealRPM, entry.PowerkW, entry.PowerHP, entry.TorqueNm, entry.TorqueLbFt, entry.TorqueMapNm)
             << std::endl;
     }
 }

@@ -46,6 +46,7 @@ CustomTorque::STorqueData CustomTorque::GetTorqueData(CTorqueScript& context, co
 
     auto handlingPtr = VExt::GetHandlingPtr(context.GetVehicle());
     float weight = *reinterpret_cast<float*>(handlingPtr + hOffsets1604.fMass);
+    float baseDriveForce = weight * *reinterpret_cast<float*>(handlingPtr + hOffsets1604.fInitialDriveForce);
 
     float gearRatio = VExt::GetGearRatios(context.GetVehicle())[VExt::GetGearCurr(context.GetVehicle())];
     float totalForceNm = (totalForce * weight) / gearRatio;
@@ -57,6 +58,7 @@ CustomTorque::STorqueData CustomTorque::GetTorqueData(CTorqueScript& context, co
         .TotalForce = totalForce,
         .TotalForceNm = totalForceNm,
         .TotalForceLbFt = totalForceLbFt,
+        .RawMapForceNm = mapMultiplier * baseDriveForce,
         .RPMData = std::nullopt,
     };
 
