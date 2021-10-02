@@ -131,7 +131,7 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
         }
 
         mbCtx.MenuOption("Developer options", "developermenu");
-        });
+    });
 
     /* mainmenu -> loadmenu */
     submenus.emplace_back("loadmenu", [](NativeMenu::Menu& mbCtx, CTorqueScript& context) {
@@ -163,7 +163,7 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
                 UI::Notify(fmt::format("Applied config {}.", config.Name), true);
             }
         }
-        });
+    });
 
     /* mainmenu -> developermenu */
     submenus.emplace_back("developermenu", [](NativeMenu::Menu& mbCtx, CTorqueScript& context) {
@@ -182,7 +182,7 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
         mbCtx.Option(fmt::format("NPC instances: {}", CustomTorque::GetNPCScriptCount()),
             { "CustomTorqueMap works for all NPC vehicles.",
               "This is the number of vehicles the script is working for." });
-        });
+    });
 
     return submenus;
 }
