@@ -42,33 +42,6 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
             return;
         }
 
-        auto recordState = PerformanceLog::GetState();
-        std::string stateText;
-
-        switch (recordState) {
-            case PerformanceLog::LogState::Idle:
-                stateText = "Idle";
-                break;
-            case PerformanceLog::LogState::Waiting:
-                stateText = "Waiting";
-                break;
-            case PerformanceLog::LogState::Recording:
-                stateText = "Recording";
-                break;
-            case PerformanceLog::LogState::Finished:
-                stateText = "Finished";
-                break;
-            default:
-                stateText = "Invalid";
-                break;
-        }
-
-        if (mbCtx.Option(fmt::format("Performance logging: {}", stateText))) {
-            if (recordState == PerformanceLog::LogState::Idle) {
-                PerformanceLog::Start();
-            }
-        }
-
         // activeConfig can always be assumed if in any vehicle.
         CConfig* activeConfig = context.ActiveConfig();
 
@@ -97,18 +70,65 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
             }
         }
 
-        // No config editing possible here.
-        // mbCtx.MenuOption("Edit configuration", "editconfigmenu",
-        //     { "Enter to edit the current configuration." });
-
         if (mbCtx.MenuOption("Load configuration", "loadmenu",
             { "Load another configuration into the current config." })) {
             CustomTorque::LoadConfigs();
         }
 
-        // No editing = no saving
-        // mbCtx.MenuOption("Save configuration", "savemenu",
-        //     { "Save the current configuration to disk." });
+        auto recordState = PerformanceLog::GetState();
+        std::string stateText;
+
+        switch (recordState) {
+            case PerformanceLog::LogState::Idle:
+                stateText = "Idle";
+                break;
+            case PerformanceLog::LogState::Waiting:
+                stateText = "Waiting";
+                break;
+            case PerformanceLog::LogState::Recording:
+                stateText = "Recording";
+                break;
+            case PerformanceLog::LogState::Finished:
+                stateText = "Finished";
+                break;
+            default:
+                stateText = "Invalid";
+                break;
+        }
+
+        std::vector<std::string> datalogDetails{
+            "Record performance data to a csv file to analyze.",
+            "RealRPM and PowerHP/PowerkW fields only calculated if IdleRPM and RevLimitRPM are set in the config ini.",
+        };
+
+        std::vector<std::string> datalogExplain{
+            "Make sure the current status is 'Idle'",
+            "1. Be at or below idle RPM in gear, slowly rolling",
+            "2. Press this option to start.",
+            "   - Status goes to 'Waiting'",
+            "3. Hit full throttle.",
+            "   - Status goes go 'Recording'",
+            "4. Keep on full throttle until rev limiter",
+            "5. Script saves output to timestamp-model.csv",
+            "   - Status returns to 'Idle'",
+            "",
+            "Releasing throttle also saves the log. Make sure assists such as traction control are turned off."
+        };
+
+        bool dataLogToggled = mbCtx.OptionPlus(
+            fmt::format("Datalogging: {}", stateText),
+            datalogExplain,
+            nullptr,
+            nullptr,
+            nullptr,
+            "Instructions",
+            datalogDetails);
+
+        if (dataLogToggled) {
+            if (recordState == PerformanceLog::LogState::Idle) {
+                PerformanceLog::Start();
+            }
+        }
 
         mbCtx.MenuOption("Developer options", "developermenu");
         });
