@@ -129,7 +129,6 @@ void PerformanceLog::Update(Vehicle playerVehicle) {
             break;
         case LogState::Recording:
             UpdateRecording(playerVehicle, *CustomTorque::GetScript());
-            UI::Notify("", true);
             break;
         case LogState::Finished:
             Finish(playerVehicle);
