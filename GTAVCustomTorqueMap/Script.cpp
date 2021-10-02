@@ -71,8 +71,8 @@ void CustomTorque::ScriptInit() {
             // OnExit
             settings->Save();
         },
-            BuildMenu()
-            );
+        BuildMenu()
+    );
 }
 
 void CustomTorque::ScriptTick() {

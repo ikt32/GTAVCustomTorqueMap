@@ -155,7 +155,7 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
             bool triggered = mbCtx.OptionPlus(config.Name, {}, &selected);
 
             if (selected) {
-                mbCtx.OptionPlusPlus(FormatTorqueConfig(context, config));
+                mbCtx.OptionPlusPlus(FormatTorqueConfig(context, config), config.Name);
                 ShowCurve(context, config, 0);
             }
 
