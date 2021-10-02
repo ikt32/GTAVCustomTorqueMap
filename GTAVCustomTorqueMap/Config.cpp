@@ -72,8 +72,8 @@ CConfig CConfig::Read(const std::string& configFile) {
     config.Plate = ini.GetValue("ID", "Plate", "");
 
     // [Data]
-    config.Data.IdleRPM = ini.GetLongValue("Data", "IdleRPM", 0);
-    config.Data.RevLimitRPM = ini.GetLongValue("Data", "RevLimitRPM", 0);
+    LOAD_VAL("Data", "IdleRPM", config.Data.IdleRPM);
+    LOAD_VAL("Data", "RevLimitRPM", config.Data.RevLimitRPM);
 
     std::string torqueMapString = ini.GetValue("Data", "TorqueMultMap", "");
     config.Data.TorqueMultMap.clear();
@@ -96,13 +96,69 @@ CConfig CConfig::Read(const std::string& configFile) {
         logger.Write(ERROR, "Missing torque mult map. Raw data: [%s]", torqueMapString.c_str());
     }
 
-    // TODO: Verify torque mult map
     return config;
 }
 
 void CConfig::Write(ESaveType saveType) {
+    Write(Name, 0, std::string(), saveType);
 }
 
 bool CConfig::Write(const std::string& newName, Hash model, std::string plate, ESaveType saveType) {
-    return false;
+    const std::string configsPath =
+        Paths::GetModuleFolder(Paths::GetOurModuleHandle()) +
+        Constants::ModDir +
+        "\\Configs";
+    const std::string configFile = fmt::format("{}\\{}.ini", configsPath, newName);
+
+    CSimpleIniA ini;
+    ini.SetUnicode();
+    ini.SetMultiLine(true);
+
+    // This here MAY fail on first save, in which case, it can be ignored.
+    // _Not_ having this just nukes the entire file, including any comments.
+    SI_Error result = ini.LoadFile(configFile.c_str());
+    if (result < 0) {
+        logger.Write(WARN, "[Config] %s Failed to load, SI_Error [%d]. (No problem if no file exists yet)",
+            configFile.c_str(), result);
+    }
+
+    // [ID]
+    if (saveType != ESaveType::GenericNone) {
+        if (model != 0) {
+            ModelHash = model;
+        }
+
+        ini.SetValue("ID", "ModelHash", fmt::format("{:X}", ModelHash).c_str());
+
+        auto& asCache = ASCache::Get();
+        auto it = asCache.find(ModelHash);
+        std::string modelName = it == asCache.end() ? std::string() : it->second;
+        if (!modelName.empty()) {
+            ModelName = modelName;
+            ini.SetValue("ID", "ModelName", modelName.c_str());
+        }
+
+        if (saveType == ESaveType::Specific) {
+            Plate = plate;
+            ini.SetValue("ID", "Plate", plate.c_str());
+        }
+    }
+
+    // [Data]
+    SAVE_VAL("Data", "IdleRPM", Data.IdleRPM);
+    SAVE_VAL("Data", "RevLimitRPM", Data.RevLimitRPM);
+
+    std::string torqueMultMap = "<<<END_OF_MAP\n";
+    for (auto [rpm, mult] : Data.TorqueMultMap) {
+        torqueMultMap += fmt::format("{:.3f}|{:.3f}\n", rpm, mult);
+    }
+    torqueMultMap += "END_OF_MAP\n";
+
+    ini.SetValue("Data", "TorqueMultMap", torqueMultMap.c_str());
+
+    result = ini.SaveFile(configFile.c_str());
+    CHECK_LOG_SI_ERROR(result, "save", configFile.c_str());
+    if (result < 0)
+        return false;
+    return true;
 }

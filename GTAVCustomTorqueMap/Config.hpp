@@ -27,13 +27,17 @@ public:
 
     // Data
     struct {
-        int IdleRPM;
-        int RevLimitRPM;
+        int IdleRPM = 0;
+        int RevLimitRPM = 0;
 
         // RPM, Mult
         // Size >= 2 required
         // Map[0     ] = (<any>, <any>)
         // Map[Size-1] = (1.0, <any>)
-        std::map<float, float> TorqueMultMap;
+        std::map<float, float> TorqueMultMap {
+            { 0.2f, 1.0f },
+            { 0.8f, 1.0f },
+            { 1.0f, 1.0f },
+        };
     } Data;
 };
