@@ -14,5 +14,5 @@ namespace PerformanceLog {
     void Cancel();
     void Start();
     void Update(Vehicle playerVehicle);
-    void Finish();
+    void Finish(Vehicle playerVehicle);
 }

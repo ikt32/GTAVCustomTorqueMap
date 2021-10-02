@@ -1,13 +1,19 @@
 #include "PerformanceLog.hpp"
+#include "Constants.hpp"
 #include "TorqueScript.hpp"
 #include "TorqueUtil.hpp"
 #include "Script.hpp"
 
+#include "Util/AddonSpawnerCache.hpp"
 #include "Util/Math.hpp"
+#include "Util/UI.hpp"
 
 #include "Memory/VehicleExtensions.hpp"
 
+#include <inc/natives.h>
+#include <fmt/chrono.h>
 #include <fmt/format.h>
+#include <chrono>
 #include <fstream>
 #include <vector>
 
@@ -35,11 +41,14 @@ LogState PerformanceLog::GetState() {
 
 void PerformanceLog::Cancel() {
     State = LogState::Idle;
+    UI::Notify("Cancelled recording.", true);
 }
 
 void PerformanceLog::Start() {
-    State = LogState::Waiting;
     Entries.clear();
+
+    State = LogState::Waiting;
+    UI::Notify("Starting recording.", true);
 }
 
 void UpdateWaiting(Vehicle playerVehicle) {
@@ -85,10 +94,19 @@ void UpdateRecording(Vehicle playerVehicle, CTorqueScript& context) {
     }
 }
 
-void PerformanceLog::Finish() {
-    State = LogState::Idle;
+void PerformanceLog::Finish(Vehicle playerVehicle) {
 
-    std::ofstream logFile("CustomTorqueMap/LatestDataLog.csv", std::ofstream::out | std::ofstream::trunc);
+    const auto t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    const auto creationTime = fmt::format("{:%Y%m%d-%H%M%S}", fmt::localtime(t));
+
+    Hash model = ENTITY::GET_ENTITY_MODEL(playerVehicle);
+    auto& asCache = ASCache::Get();
+    auto it = asCache.find(model);
+    std::string modelName = it == asCache.end() ? VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(model) : it->second;
+    std::string logFileName = fmt::format("{}-{}.csv", creationTime, modelName);
+
+    std::ofstream logFile(fmt::format("CustomTorqueMap/{}", logFileName),
+        std::ofstream::out | std::ofstream::trunc);
 
     logFile << "NormalizedRPM,RealRPM,PowerkW,PowerHP,TorqueNm,TorqueLbFt,TorqueMapNm" << std::endl;
 
@@ -97,6 +115,9 @@ void PerformanceLog::Finish() {
             entry.NormalizedRPM, entry.RealRPM, entry.PowerkW, entry.PowerHP, entry.TorqueNm, entry.TorqueLbFt, entry.TorqueMapNm)
             << std::endl;
     }
+
+    State = LogState::Idle;
+    UI::Notify(fmt::format("Saved recording {}", logFileName), true);
 }
 
 void PerformanceLog::Update(Vehicle playerVehicle) {
@@ -108,9 +129,10 @@ void PerformanceLog::Update(Vehicle playerVehicle) {
             break;
         case LogState::Recording:
             UpdateRecording(playerVehicle, *CustomTorque::GetScript());
+            UI::Notify("", true);
             break;
         case LogState::Finished:
-            Finish();
+            Finish(playerVehicle);
             break;
         default:
             break;
