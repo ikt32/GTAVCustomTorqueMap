@@ -30,7 +30,7 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
     std::vector<CScriptMenu<CTorqueScript>::CSubmenu> submenus;
     /* mainmenu */
     submenus.emplace_back("mainmenu", [](NativeMenu::Menu& mbCtx, CTorqueScript& context) {
-        mbCtx.Title("Torque Map");
+        mbCtx.Title("Custom Torque Map");
         mbCtx.Subtitle(std::string("~b~") + Constants::DisplayVersion);
 
         Ped playerPed = PLAYER::PLAYER_PED_ID();
@@ -98,21 +98,22 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
 
         std::vector<std::string> datalogDetails{
             "Record performance data to a csv file to analyze.",
-            "RealRPM and PowerHP/PowerkW fields only calculated if IdleRPM and RevLimitRPM are set in the config ini.",
+            "Use your favourite plotting software to visualize the data."
         };
 
         std::vector<std::string> datalogExplain{
             "Make sure the current status is 'Idle'",
-            "1. Be at or below idle RPM in gear, slowly rolling",
-            "2. Press this option to start.",
+            "1. Be at or below idle RPM (in gear)",
+            "   - Speed less than idle RPM speed"
+            "2. Press this option to start",
             "   - Status goes to 'Waiting'",
-            "3. Hit full throttle.",
+            "3. Hit full throttle",
             "   - Status goes go 'Recording'",
             "4. Keep on full throttle until rev limiter",
-            "5. Script saves output to timestamp-model.csv",
+            "5. Output saves as timestamp-model.csv",
             "   - Status returns to 'Idle'",
             "",
-            "Releasing throttle also saves the log. Make sure assists such as traction control are turned off."
+            "Releasing throttle also saves. Make sure assists such as traction control are turned off.",
         };
 
         bool dataLogToggled = mbCtx.OptionPlus(
@@ -174,23 +175,36 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
         if (CustomTorque::GetConfigs().size() > 0)
             ShowCurve(context, CustomTorque::GetConfigs()[0], 0);
 
-        mbCtx.FloatOptionCb("UI.TorqueGraphX", CustomTorque::GetSettings().UI.TorqueGraphX, 0.0f, 1.0f, 0.05f, MenuUtils::GetKbFloat);
-        mbCtx.FloatOptionCb("UI.TorqueGraphY", CustomTorque::GetSettings().UI.TorqueGraphY, 0.0f, 1.0f, 0.05f, MenuUtils::GetKbFloat);
-        mbCtx.FloatOptionCb("UI.TorqueGraphW", CustomTorque::GetSettings().UI.TorqueGraphW, 0.0f, 1.0f, 0.05f, MenuUtils::GetKbFloat);
-        mbCtx.FloatOptionCb("UI.TorqueGraphH", CustomTorque::GetSettings().UI.TorqueGraphH, 0.0f, 1.0f, 0.05f, MenuUtils::GetKbFloat);
+        const std::vector<std::string> graphPosInfo {
+            "Move graph position.",
+            "Use arrow keys or select to enter a value."
+        };
+
+        mbCtx.FloatOptionCb("UI.TorqueGraphX", CustomTorque::GetSettings().UI.TorqueGraphX, 0.0f, 1.0f, 0.05f,
+            MenuUtils::GetKbFloat, graphPosInfo);
+        mbCtx.FloatOptionCb("UI.TorqueGraphY", CustomTorque::GetSettings().UI.TorqueGraphY, 0.0f, 1.0f, 0.05f,
+            MenuUtils::GetKbFloat, graphPosInfo);
+        mbCtx.FloatOptionCb("UI.TorqueGraphW", CustomTorque::GetSettings().UI.TorqueGraphW, 0.0f, 1.0f, 0.05f,
+            MenuUtils::GetKbFloat, graphPosInfo);
+        mbCtx.FloatOptionCb("UI.TorqueGraphH", CustomTorque::GetSettings().UI.TorqueGraphH, 0.0f, 1.0f, 0.05f,
+            MenuUtils::GetKbFloat, graphPosInfo);
 
         mbCtx.BoolOption("Debug Info", CustomTorque::GetSettings().Debug.DisplayInfo,
             { "Displays a window with status info for each affected vehicle." });
 
-        if (mbCtx.BoolOption("Enable for NPCs", CustomTorque::GetSettings().Main.EnableNPC)) {
+        std::vector<std::string> npcDetails = {
+            "The script can also apply engine mappings for applicable NPC vehicles.",
+            "If this impacts performance, turn this off."
+        };
+
+        if (mbCtx.BoolOption("Enable for NPCs", CustomTorque::GetSettings().Main.EnableNPC, npcDetails)) {
             if (!CustomTorque::GetSettings().Main.EnableNPC) {
                 CustomTorque::ClearNPCScripts();
             }
         }
 
         mbCtx.Option(fmt::format("NPC instances: {}", CustomTorque::GetNPCScriptCount()),
-            { "CustomTorqueMap works for all NPC vehicles.",
-              "This is the number of vehicles the script is working for." });
+            { "Number of vehicles the script is active on." });
     });
 
     return submenus;
@@ -203,6 +217,11 @@ std::vector<std::string> CustomTorque::FormatTorqueConfig(CTorqueScript& context
         fmt::format("Plate: {}", config.Plate.empty() ? "None" : fmt::format("[{}]", config.Plate)),
     };
 
+    if (config.Data.IdleRPM != 0 && config.Data.RevLimitRPM != 0) {
+        extras.push_back(fmt::format("Idle: {} RPM", config.Data.IdleRPM));
+        extras.push_back(fmt::format("Rev limit: {} RPM", config.Data.RevLimitRPM));
+    }
+
     return extras;
 }
 
@@ -211,20 +230,25 @@ std::vector<std::string> CustomTorque::FormatTorqueLive(const STorqueData& torqu
     
     if (torqueData.RPMData != std::nullopt) {
         extras = {
-            fmt::format("RPM: {:3.0f} \t({:.2f})", torqueData.RPMData->RealRPM, torqueData.NormalizedRPM),
-            fmt::format("Torque mult: {:.2f}x \tForce: {:.3f}", torqueData.TorqueMult, torqueData.TotalForce),
-            fmt::format("Output: {:3.0f} HP \t{:3.0f} lb-ft", torqueData.RPMData->PowerHP, torqueData.TotalForceLbFt),
-            fmt::format("Output: {:3.0f} kW \t{:3.0f} Nm", torqueData.RPMData->PowerkW, torqueData.TotalForceNm),
+            fmt::format("RPM: {:3.0f} ({:.2f})", torqueData.RPMData->RealRPM, torqueData.NormalizedRPM),
+            fmt::format("Torque mult: {:.2f}x", torqueData.TorqueMult),
+            fmt::format("Mapped: {:3.0f} Nm", torqueData.RawMapForceNm),
+            fmt::format("Output: {:3.0f} HP / {:3.0f} lb-ft", torqueData.RPMData->PowerHP, torqueData.TotalForceLbFt),
+            fmt::format("Output: {:3.0f} kW / {:3.0f} Nm", torqueData.RPMData->PowerkW, torqueData.TotalForceNm),
         };
     }
     else {
         extras = {
             fmt::format("RPM: {:.2f}", torqueData.NormalizedRPM),
-            fmt::format("Torque mult: {:.2f}x \tForce: {:.3f}", torqueData.TorqueMult, torqueData.TotalForce),
+            fmt::format("Torque mult: {:.2f}x", torqueData.TorqueMult),
+            fmt::format("Mapped: {:3.0f} Nm", torqueData.RawMapForceNm),
             fmt::format("Output: {:3.0f} lb-ft", torqueData.TotalForceLbFt),
             fmt::format("Output: {:3.0f} Nm", torqueData.TotalForceNm),
+            "For RPM-derived data, add IdleRPM and RevLimitRPM in [Data] in the engine map file."
         };
     }
+
+    extras.push_back("Performance upgrades and scripts may affect final output.");
 
     return extras;
 }
@@ -328,9 +352,10 @@ void CustomTorque::ShowCurve(CTorqueScript& context, const CConfig& config, Vehi
         blockH,
         255, 255, 255, 255, 0);
 
+    // Background
     GRAPHICS::DRAW_RECT(rectX, rectY,
         rectW + blockW / 2.0f, rectH + blockH / 2.0f,
-        0, 0, 0, 239, 0);
+        0, 0, 0, 191, 0);
 
     for (auto point : points) {
         float pointX = rectX - 0.5f * rectW + point.x * rectW;
