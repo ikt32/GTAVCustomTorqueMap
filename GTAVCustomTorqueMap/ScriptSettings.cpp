@@ -31,6 +31,12 @@ void CScriptSettings::Load() {
     CHECK_LOG_SI_ERROR(result, "load");
 
     LOAD_VAL("Main", "EnableNPC", Main.EnableNPC);
+
+    LOAD_VAL("UI", "TorqueGraphX", UI.TorqueGraphX);
+    LOAD_VAL("UI", "TorqueGraphY", UI.TorqueGraphY);
+    LOAD_VAL("UI", "TorqueGraphW", UI.TorqueGraphW);
+    LOAD_VAL("UI", "TorqueGraphH", UI.TorqueGraphH);
+
     LOAD_VAL("Debug", "DisplayInfo", Debug.DisplayInfo);
 }
 
@@ -41,6 +47,12 @@ void CScriptSettings::Save() {
     CHECK_LOG_SI_ERROR(result, "load");
 
     SAVE_VAL("Main", "EnableNPC", Main.EnableNPC);
+
+    SAVE_VAL("UI", "TorqueGraphX", UI.TorqueGraphX);
+    SAVE_VAL("UI", "TorqueGraphY", UI.TorqueGraphY);
+    SAVE_VAL("UI", "TorqueGraphW", UI.TorqueGraphW);
+    SAVE_VAL("UI", "TorqueGraphH", UI.TorqueGraphH);
+
     SAVE_VAL("Debug", "DisplayInfo", Debug.DisplayInfo);
 
     result = ini.SaveFile(mSettingsFile.c_str());

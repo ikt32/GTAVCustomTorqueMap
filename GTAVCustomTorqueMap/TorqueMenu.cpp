@@ -170,6 +170,15 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
         mbCtx.Title("Developer options");
         mbCtx.Subtitle("");
 
+        // For reference/editing coords.
+        if (CustomTorque::GetConfigs().size() > 0)
+            ShowCurve(context, CustomTorque::GetConfigs()[0], 0);
+
+        mbCtx.FloatOptionCb("UI.TorqueGraphX", CustomTorque::GetSettings().UI.TorqueGraphX, 0.0f, 1.0f, 0.05f, MenuUtils::GetKbFloat);
+        mbCtx.FloatOptionCb("UI.TorqueGraphY", CustomTorque::GetSettings().UI.TorqueGraphY, 0.0f, 1.0f, 0.05f, MenuUtils::GetKbFloat);
+        mbCtx.FloatOptionCb("UI.TorqueGraphW", CustomTorque::GetSettings().UI.TorqueGraphW, 0.0f, 1.0f, 0.05f, MenuUtils::GetKbFloat);
+        mbCtx.FloatOptionCb("UI.TorqueGraphH", CustomTorque::GetSettings().UI.TorqueGraphH, 0.0f, 1.0f, 0.05f, MenuUtils::GetKbFloat);
+
         mbCtx.BoolOption("Debug Info", CustomTorque::GetSettings().Debug.DisplayInfo,
             { "Displays a window with status info for each affected vehicle." });
 
@@ -255,10 +264,10 @@ void CustomTorque::ShowCurve(CTorqueScript& context, const CConfig& config, Vehi
         points.push_back({ x, y, i >= idleRange });
     }
 
-    float rectX = 0.5f;
-    float rectY = 0.5f;
-    float rectW = 0.66f / GRAPHICS::_GET_ASPECT_RATIO(FALSE);
-    float rectH = 0.40f;
+    float rectX = CustomTorque::GetSettings().UI.TorqueGraphX;
+    float rectY = CustomTorque::GetSettings().UI.TorqueGraphY;
+    float rectW = CustomTorque::GetSettings().UI.TorqueGraphW / GRAPHICS::_GET_ASPECT_RATIO(FALSE);
+    float rectH = CustomTorque::GetSettings().UI.TorqueGraphH;
     float blockW = rectW / maxSamples;//0.001f * (16.0f / 9.0f) / GRAPHICS::_GET_ASPECT_RATIO(FALSE);
     float blockH = blockW * GRAPHICS::_GET_ASPECT_RATIO(FALSE);
 
