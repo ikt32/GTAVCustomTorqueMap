@@ -79,9 +79,9 @@ void UpdateRecording(Vehicle playerVehicle, CTorqueScript& context) {
 
     LogEntry entry{
         .NormalizedRPM = rpm,
-        .RealRPM = torqueData.RPMData->RealRPM,
-        .PowerkW = torqueData.RPMData->PowerkW,
-        .PowerHP = torqueData.RPMData->PowerHP,
+        .RealRPM = rpmAvailable ? torqueData.RPMData->RealRPM : 0.0f,
+        .PowerkW = rpmAvailable ? torqueData.RPMData->PowerkW : 0.0f,
+        .PowerHP = rpmAvailable ? torqueData.RPMData->PowerHP : 0.0f,
         .TorqueNm = torqueData.TotalForceNm,
         .TorqueLbFt = torqueData.TotalForceLbFt,
         .TorqueMapNm = torqueData.RawMapForceNm,
