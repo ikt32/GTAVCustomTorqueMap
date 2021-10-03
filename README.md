@@ -41,7 +41,8 @@ From this linearized output, any arbitrary normalized map of torque-rpm output c
 
 Configuration files are to be placed in the `Configs` folder. These are the things to pay attention to:
 
-File name: Anything goes, the filename with the `.ini` extension is used as "Name" in the script.
+File name: Anything goes, as long as it ends on `.ini`.
+The file name without the extension is used as "Name" in the script.
 
 `handling.meta`:
 
@@ -77,11 +78,14 @@ RevLimitRPM = 8000
 
 ; Torque map. Do not touch the END_OF_MAP lines, these are used to determine the begin and end of the map.
 ; The map is defined as {normalized_rpm}|{normalized_torque}.
-; normalized_rpm: RPM as ratio between idle and rev limit. 0.2 RPM is idle, 1.0 RPM is rev limit.
+; At least three data points are required. There is no upper limit.
+; normalized_rpm: RPM as ratio between idle and rev limit.
+;                 0.2 RPM is idle, 1.0 RPM is rev limit.
 ;                 Use "NormalizedRPM = (RPM - IdleRPM) * (1.0 - 0.2) / (RevLimitRPM - IdleRPM) + 0.2"
 ;                 to map from real RPM to normalized RPM.
 ; normalized_torque: Torque as ratio of max torque.
-;                 Use "NormalizedTorque = Torque / MaxTorque" to map from real torque to normalized torque.
+;                 Use "NormalizedTorque = Torque / MaxTorque"
+;                 to map from real torque to normalized torque.
 TorqueMultMap = <<<END_OF_MAP
 0.222|0.612
 0.278|0.718
@@ -95,6 +99,8 @@ TorqueMultMap = <<<END_OF_MAP
 0.911|0.816
 END_OF_MAP
 ```
+
+For more pre-made configs, check [TheAdmiester's repository on GitHub](https://github.com/AJB-Tech/GTATorqueMaps).
 
 ## Power figures, and other assumptions
 
@@ -112,9 +118,9 @@ final torque.
 
 ## Data logging
 
-The script includes a function to record the actual torque and power output. The format is `csv`, and any software
-such as Microsoft Excel or Google Sheets can be used to import this file to process the output. An example
-of visualized data is this following graph:
+The script includes a function to record the actual torque and power output. The format is `{timestamp}-{model}.csv`,
+and any software such as Microsoft Excel or Google Sheets can be used to import this file to process the output.
+An example of visualized data is this following graph:
 
 ![AE86 output graph](img/AE86_HP_Torque_chart.png)
 
@@ -170,7 +176,18 @@ The current solution:
 
 ## Download
 
-[Custom Torque Map on GTA5-Mods.com](https://www.gta5-mods.com/scripts/customtorquemap)
+[Custom Torque Map on GTA5-Mods.com](https://www.gta5-mods.com/scripts/custom-torque-map)
+
+**Recommended scripts** to use along with this script:
+
+* [Custom Gear Ratios](https://www.gta5-mods.com/scripts/custom-gear-ratios)
+* [TurboFix](https://www.gta5-mods.com/scripts/turbofix-2)
+* [Manual Transmission](https://www.gta5-mods.com/scripts/manual-transmission-ikt)
+* [Dial Accuracy Fix](https://www.gta5-mods.com/scripts/manual-transmission-ikt)
+
+**Other recommendations**:
+
+* Realistic handlings, with consistent `fInitialDriveForce = PeakTorqueNm * fMass`
 
 ## Special Thanks
 
