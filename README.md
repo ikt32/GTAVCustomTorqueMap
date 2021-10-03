@@ -172,9 +172,9 @@ The current solution:
 
 [Custom Torque Map on GTA5-Mods.com](https://www.gta5-mods.com/scripts/customtorquemap)
 
-## Thanks
+## Special Thanks
 
-Thanks to the following people, who helped with making this script a reality:
+Thanks to the following people, who helped with making this script come together:
 
 * TheAdmiester, for providing lots of data and testing
 * Members of GVMA, for testing and general involvement
