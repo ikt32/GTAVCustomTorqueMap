@@ -16,6 +16,9 @@ To install, drag and drop the `CustomTorqueMap.asi` file and `CustomTorqueMap` f
 Engine mappings go into the `Configs` folder, and are automatically loaded when the model matches,
 or the model **and** plate match.
 
+Open the management menu with the `ctm` cheat (use tilde (`~`) to open the cheat console).
+Other hotkeys may be assigned in `settings_menu.ini`.
+
 ## Background
 
 By default, the engine output in GTA V is linear, and drops with 40% towards the end of the rev range (80%).
