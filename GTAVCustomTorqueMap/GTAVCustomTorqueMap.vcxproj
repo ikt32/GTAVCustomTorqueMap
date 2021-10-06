@@ -142,7 +142,6 @@
     <ClInclude Include="Util\AddonSpawnerCache.hpp" />
     <ClInclude Include="Util\Color.h" />
     <ClInclude Include="Util\Files.h" />
-    <ClInclude Include="Util\FileVersion.h" />
     <ClInclude Include="Util\FileVersion.hpp" />
     <ClInclude Include="Util\Game.hpp" />
     <ClInclude Include="Util\Logger.hpp" />

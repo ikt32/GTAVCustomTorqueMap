@@ -1,7 +1,7 @@
 #include "Script.hpp"
 #include "Constants.hpp"
 
-#include "Util/FileVersion.h"
+#include "Util/FileVersion.hpp"
 #include "Util/Paths.hpp"
 #include "Util/Logger.hpp"
 #include "Memory/Versions.h"

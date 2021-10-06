@@ -156,9 +156,6 @@
     <ClInclude Include="Util\Files.h">
       <Filter>Util</Filter>
     </ClInclude>
-    <ClInclude Include="Util\FileVersion.h">
-      <Filter>Util</Filter>
-    </ClInclude>
     <ClInclude Include="Util\FileVersion.hpp">
       <Filter>Util</Filter>
     </ClInclude>
