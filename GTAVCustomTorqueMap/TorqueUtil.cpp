@@ -4,6 +4,8 @@
 #include "Memory/VehicleExtensions.hpp"
 #include "Memory/Offsets.hpp"
 
+#include <inc/natives.h>
+
 using VExt = VehicleExtensions;
 
 float CustomTorque::GetScaledValue(const std::map<float, float>& map, float key) {
@@ -34,7 +36,9 @@ float CustomTorque::GetScaledValue(const std::map<float, float>& map, float key)
 
 CustomTorque::STorqueData CustomTorque::GetTorqueData(CTorqueScript& context, const CConfig& config) {
 
-    float rpm = VExt::GetCurrentRPM(context.GetVehicle());
+    float rpm = VEHICLE::GET_IS_VEHICLE_ENGINE_RUNNING(context.GetVehicle()) ?
+        VExt::GetCurrentRPM(context.GetVehicle()) : 0.00f;
+
     float mapMultiplier = CustomTorque::GetScaledValue(config.Data.TorqueMultMap, rpm);
 
     auto forces = VExt::GetWheelPower(context.GetVehicle());
@@ -65,6 +69,10 @@ CustomTorque::STorqueData CustomTorque::GetTorqueData(CTorqueScript& context, co
     if (config.Data.IdleRPM != 0 && config.Data.RevLimitRPM != 0) {
         float realRPM = map(rpm, 0.2f, 1.0f,
             (float)config.Data.IdleRPM, (float)config.Data.RevLimitRPM);
+
+        if (rpm < 0.2f) {
+            realRPM = map(rpm, 0.0f, 0.2f, 0.0f, (float)config.Data.IdleRPM);
+        }
 
         float power = (0.105f * totalForceNm * realRPM) / 1000.0f;
         float horsepower = (totalForceLbFt * realRPM) / 5252.0f;
