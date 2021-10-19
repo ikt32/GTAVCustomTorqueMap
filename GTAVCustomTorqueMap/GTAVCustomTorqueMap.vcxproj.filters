@@ -194,5 +194,6 @@
     <ClInclude Include="SettingsCommon.hpp" />
     <ClInclude Include="PerformanceLog.hpp" />
     <ClInclude Include="TorqueUtil.hpp" />
+    <ClInclude Include="CustomTorqueMap.hpp" />
   </ItemGroup>
 </Project>

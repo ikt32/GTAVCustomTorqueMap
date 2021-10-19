@@ -1,9 +1,11 @@
 #include "Script.hpp"
+#include "CustomTorqueMap.hpp"
 
 #include "TorqueScript.hpp"
 #include "TorqueScriptNPC.hpp"
 #include "ScriptMenu.hpp"
 #include "Constants.hpp"
+#include "TorqueUtil.hpp"
 
 #include "Util/Logger.hpp"
 #include "Util/Paths.hpp"
@@ -209,4 +211,21 @@ uint32_t CustomTorque::LoadConfigs() {
 
     CustomTorque::UpdateActiveConfigs();
     return static_cast<unsigned>(configs.size());
+}
+
+bool CTM_GetPlayerRPMInfo(CTM_RPMInfo* rpmInfo) {
+    auto* playerInstance = CustomTorque::GetScript();
+    if (rpmInfo && playerInstance) {
+        auto* playerConfig = playerInstance->ActiveConfig();
+        if (playerConfig) {
+            auto torqueData = CustomTorque::GetTorqueData(*playerInstance, *playerConfig);
+            if (torqueData.RPMData) {
+                rpmInfo->IdleRPM = static_cast<float>(playerConfig->Data.IdleRPM);
+                rpmInfo->RevLimitRPM = static_cast<float>(playerConfig->Data.RevLimitRPM);
+                rpmInfo->ActualRPM = torqueData.RPMData->RealRPM;
+                return true;
+            }
+        }
+    }
+    return false;
 }
