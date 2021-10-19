@@ -2,6 +2,11 @@
 
 #ifdef CTM_EXPORTS
 #define CTM_API extern "C" __declspec(dllexport)
+
+#define VERSION_MAJOR 1
+#define VERSION_MINOR 0
+#define VERSION_PATCH 1
+
 #else
 #ifndef CTM_RUNTIME
 #define CTM_API extern "C" __declspec(dllimport)
