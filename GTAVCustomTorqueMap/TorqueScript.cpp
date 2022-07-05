@@ -112,6 +112,7 @@ void CTorqueScript::ApplyConfig(const CConfig& config) {
 void CTorqueScript::updateTorque() {
     if (!ENTITY::DOES_ENTITY_EXIST(mVehicle) ||
         !VEHICLE::GET_IS_VEHICLE_ENGINE_RUNNING(mVehicle) ||
+        !mActiveConfig ||
         mActiveConfig == &mDefaultConfig)
         return;
 
