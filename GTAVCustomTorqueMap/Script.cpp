@@ -80,11 +80,11 @@ void CustomTorque::ScriptInit() {
 void CustomTorque::ScriptTick() {
     while (true) {
         playerScriptInst->Tick();
-        scriptMenu->Tick(*playerScriptInst);
 
         if (settings->Main.EnableNPC)
             UpdateNPC();
 
+        scriptMenu->Tick(*playerScriptInst);
         WAIT(0);
     }
 }

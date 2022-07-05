@@ -67,6 +67,9 @@ void CTorqueScript::Tick() {
 }
 
 void CTorqueScript::UpdateActiveConfig(bool playerCheck) {
+    if (!ENTITY::DOES_ENTITY_EXIST(mVehicle))
+        return;
+
     if (playerCheck) {
         if (!Util::VehicleAvailable(mVehicle, PLAYER::PLAYER_PED_ID(), false)) {
             mActiveConfig = nullptr;
