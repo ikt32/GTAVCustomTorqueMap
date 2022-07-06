@@ -104,7 +104,7 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
         std::vector<std::string> datalogExplain{
             "Make sure the current status is 'Idle'",
             "1. Be at or below idle RPM (in gear)",
-            "   - Speed less than idle RPM speed"
+            "   - Speed less than idle RPM speed",
             "2. Press this option to start",
             "   - Status goes to 'Waiting'",
             "3. Hit full throttle",
