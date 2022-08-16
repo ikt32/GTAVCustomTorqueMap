@@ -38,6 +38,7 @@ CConfig CConfig::Read(const std::string& configFile) {
     CHECK_LOG_SI_ERROR(result, "load", configFile.c_str());
 
     config.Name = std::filesystem::path(configFile).stem().string();
+    logger.Write(INFO, "Loading vehicle config [%s]", config.Name.c_str());
 
     // [ID]
     std::string modelNamesAll = ini.GetValue("ID", "Models", "");
@@ -94,6 +95,29 @@ CConfig CConfig::Read(const std::string& configFile) {
     }
     else {
         logger.Write(ERROR, "Missing torque mult map. Raw data: [%s]", torqueMapString.c_str());
+    }
+
+    if (config.Data.TorqueMultMap.begin() != config.Data.TorqueMultMap.end() &&
+        config.Data.TorqueMultMap.begin()->first > 1.0f) {
+        logger.Write(DEBUG, "RPM|Torque map detected, converting into relative values");
+
+        float maxRpm = 0.0f;
+        float maxTorque = 0.0f;
+
+        // Need to iterate twice over the whole list... :(
+        for (const auto& [rpm, torque] : config.Data.TorqueMultMap) {
+            if (rpm > maxRpm)
+                maxRpm = rpm;
+            if (torque > maxTorque)
+                maxTorque = torque;
+        }
+
+        std::map<float, float> mappedTorqueMap;
+        for (auto& [rpm, torque] : config.Data.TorqueMultMap) {
+            mappedTorqueMap.emplace(rpm / maxRpm, torque / maxTorque);
+        }
+
+        config.Data.TorqueMultMap = mappedTorqueMap;
     }
 
     return config;
