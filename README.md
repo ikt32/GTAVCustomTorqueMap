@@ -89,6 +89,13 @@ RevLimitRPM = 8000
 ; normalized_torque: Torque as ratio of max torque.
 ;                 Use "NormalizedTorque = Torque / MaxTorque"
 ;                 to map from real torque to normalized torque.
+;--------------------------------------------------------------
+; Note for 1.0.2:
+; Since 1.0.2, the map also supports {actual_rpm}|{actual_torque}.
+; The script will normalize both RPM and torque, so it does not matter what
+; unit the torque is in.
+; It's activated when the first RPM item is higher than 1, so pasting actual
+; dyno run data is also valid now.
 TorqueMultMap = <<<END_OF_MAP
 0.222|0.612
 0.278|0.718
