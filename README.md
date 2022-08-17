@@ -213,6 +213,7 @@ Thanks to the following people, who helped with making this script come together
 
 * Add support for `{actual_rpm}|{actual_torque}` in the torque map.
   Conversion to relative numbers is not required any more.
+  Check `CustomTorqueMap/Configs/VAG 4.2 V8 FSI 32v.ini` for an example.
 * Fix crash on invalid/missing config
 * Fix crash on missing vehicle
 * Update dependencies
