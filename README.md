@@ -91,11 +91,12 @@ RevLimitRPM = 8000
 ;                 to map from real torque to normalized torque.
 ;--------------------------------------------------------------
 ; Note for 1.0.2:
-; Since 1.0.2, the map also supports {actual_rpm}|{actual_torque}.
-; The script will normalize both RPM and torque, so it does not matter what
-; unit the torque is in.
-; It's activated when the first RPM item is higher than 1, so pasting actual
-; dyno run data is also valid now.
+; Using actual dyno data is valid since 1.0.2.
+; The map in 1.0.2 also supports {actual_rpm}|{actual_torque}.
+; The script normalizes both RPM and torque, so input units don't matter.
+; It's activated when the first RPM item is higher than 1, such as 800 (RPM).
+; Make sure the top (last) RPM value is the redline value.
+; If it's not in your data set, just pick a reasonable number.
 TorqueMultMap = <<<END_OF_MAP
 0.222|0.612
 0.278|0.718
@@ -205,3 +206,24 @@ Thanks to the following people, who helped with making this script come together
 
 * TheAdmiester, for providing lots of data and testing
 * Members of GVMA, for testing and general involvement
+
+## Changelog
+
+### 1.0.2
+
+* Add support for `{actual_rpm}|{actual_torque}` in the torque map.
+  Conversion to relative numbers is not required any more.
+* Fix crash on invalid/missing config
+* Fix crash on missing vehicle
+* Update dependencies
+
+### 1.0.1
+
+* Add exported function to retrieve idle, rev limit and actual RPM if those are defined
+* Fix mapped "actual" RPM reporting below 0.2 RPM
+
+### 1.0.0
+
+* Initial release
+
+© 2022 ikt. All rights reserved.
