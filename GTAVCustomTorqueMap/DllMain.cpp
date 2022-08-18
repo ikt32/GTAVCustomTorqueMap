@@ -7,7 +7,6 @@
 #include "Memory/Versions.h"
 #include "Memory/VehicleExtensions.hpp"
 
-#include <GTAVMenuBase/menukeyboard.h>
 #include <inc/main.h>
 
 #include <filesystem>
@@ -79,12 +78,10 @@ BOOL APIENTRY DllMain(HMODULE hInstance, DWORD reason, LPVOID lpReserved) {
             resolveVersion();
 
             scriptRegister(hInstance, CustomTorque::ScriptMain);
-            keyboardHandlerRegister(NativeMenu::OnKeyboardMessage);
             logger.Write(INFO, "Script registered");
             break;
         }
         case DLL_PROCESS_DETACH: {
-            keyboardHandlerUnregister(NativeMenu::OnKeyboardMessage);
             scriptUnregister(hInstance);
             break;
         }
