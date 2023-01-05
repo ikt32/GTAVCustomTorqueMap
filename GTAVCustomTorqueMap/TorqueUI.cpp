@@ -35,10 +35,10 @@ void CustomTorque::DrawCurve(CTorqueScript& context, const CConfig& config, Vehi
 
     float rectX = CustomTorque::GetSettings().UI.TorqueGraph.X;
     float rectY = CustomTorque::GetSettings().UI.TorqueGraph.Y;
-    float rectW = CustomTorque::GetSettings().UI.TorqueGraph.W / GRAPHICS::_GET_ASPECT_RATIO(FALSE);
+    float rectW = CustomTorque::GetSettings().UI.TorqueGraph.W / GRAPHICS::GET_ASPECT_RATIO(FALSE);
     float rectH = CustomTorque::GetSettings().UI.TorqueGraph.H;
     float blockW = rectW / maxSamples;//0.001f * (16.0f / 9.0f) / GRAPHICS::_GET_ASPECT_RATIO(FALSE);
-    float blockH = blockW * GRAPHICS::_GET_ASPECT_RATIO(FALSE);
+    float blockH = blockW * GRAPHICS::GET_ASPECT_RATIO(FALSE);
 
     float vertAxisLabelX = rectX - 0.5f * rectW - 0.05f;
     float vertAxisLabelY = rectY;
@@ -66,46 +66,38 @@ void CustomTorque::DrawCurve(CTorqueScript& context, const CConfig& config, Vehi
     UI::ShowText(horAxis1_0X, horAxisValueY, 0.25f, "1.00");
 
     // Left
-    GRAPHICS::DRAW_RECT(
-        rectX - rectW * 0.5f - blockW * 0.5f,
-        rectY,
+    GRAPHICS::DRAW_RECT({ rectX - rectW * 0.5f - blockW * 0.5f, rectY },
         blockW,
         rectH + 2.0f * blockH,
         255, 255, 255, 255, 0);
 
     // Right
-    GRAPHICS::DRAW_RECT(
-        rectX + rectW * 0.5f + blockW * 0.5f,
-        rectY,
+    GRAPHICS::DRAW_RECT({ rectX + rectW * 0.5f + blockW * 0.5f, rectY },
         blockW,
         rectH + 2.0f * blockH,
         255, 255, 255, 255, 0);
 
     // Top
-    GRAPHICS::DRAW_RECT(
-        rectX,
-        rectY - rectH * 0.5f - blockH * 0.5f,
+    GRAPHICS::DRAW_RECT({ rectX, rectY - rectH * 0.5f - blockH * 0.5f },
         rectW + 2.0f * blockW,
         blockH,
         255, 255, 255, 255, 0);
 
     // Bottom
-    GRAPHICS::DRAW_RECT(
-        rectX,
-        rectY + rectH * 0.5f + blockH * 0.5f,
+    GRAPHICS::DRAW_RECT({ rectX, rectY + rectH * 0.5f + blockH * 0.5f },
         rectW + 2.0f * blockW,
         blockH,
         255, 255, 255, 255, 0);
 
     // Background
-    GRAPHICS::DRAW_RECT(rectX, rectY,
+    GRAPHICS::DRAW_RECT({ rectX, rectY },
         rectW + blockW / 2.0f, rectH + blockH / 2.0f,
         0, 0, 0, 191, 0);
 
     for (auto point : points) {
         float pointX = rectX - 0.5f * rectW + point.x * rectW;
         float pointY = rectY + 0.5f * rectH - point.y * rectH;
-        GRAPHICS::DRAW_RECT(pointX, pointY,
+        GRAPHICS::DRAW_RECT({ pointX, pointY },
             blockW, blockH,
             255,
             255,
@@ -134,7 +126,7 @@ void CustomTorque::DrawCurve(CTorqueScript& context, const CConfig& config, Vehi
         float vertAxisValueY = pointY;
         UI::ShowText(vertAxisValueX, vertAxisValueY, 0.25f, fmt::format("{:1.2f}x", currentPoint.second));
 
-        GRAPHICS::DRAW_RECT(pointX, pointY,
+        GRAPHICS::DRAW_RECT({ pointX, pointY },
             1.5f * blockW, 1.5f * blockH,
             255, 0, 0, 255, 0);
     }
@@ -197,7 +189,7 @@ void CustomTorque::DrawTachometer(CTorqueScript& context, Vehicle vehicle) {
         realRpm = 0;
     }
 
-    GRAPHICS::DRAW_RECT(uiCfg.Tachometer.X, uiCfg.Tachometer.Y,
+    GRAPHICS::DRAW_RECT({ uiCfg.Tachometer.X, uiCfg.Tachometer.Y },
         uiCfg.Tachometer.W, uiCfg.Tachometer.H,
         uiCfg.Tachometer.BackgroundColor.R,
         uiCfg.Tachometer.BackgroundColor.G,
@@ -259,7 +251,7 @@ void CustomTorque::DrawTachometer(CTorqueScript& context, Vehicle vehicle) {
             uiCfg.Tachometer.RedlineColor :
             uiCfg.Tachometer.NormalColor;
 
-        GRAPHICS::DRAW_RECT(x, y,
+        GRAPHICS::DRAW_RECT({ x, y },
             w, h,
             solid ? hiCol.R : loCol.R,
             solid ? hiCol.G : loCol.G,

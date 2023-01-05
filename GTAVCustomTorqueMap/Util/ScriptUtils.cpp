@@ -29,7 +29,7 @@ bool Util::IsPedOnSeat(Vehicle vehicle, Ped ped, int seat) {
 
 std::string Util::GetFormattedModelName(Hash modelHash) {
     const char* name = VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(modelHash);
-    std::string displayName = HUD::_GET_LABEL_TEXT(name);
+    std::string displayName = HUD::GET_FILENAME_FOR_AUDIO_CONVERSATION(name);
     if (displayName == "NULL") {
         displayName = name;
     }
