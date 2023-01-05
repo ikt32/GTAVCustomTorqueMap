@@ -1,27 +1,23 @@
 #include "ScriptMenu.hpp"
-#include "Script.hpp"
-#include "TorqueScript.hpp"
+
 #include "Constants.hpp"
-#include "TorqueUtil.hpp"
 #include "PerformanceLog.hpp"
+#include "Script.hpp"
+#include "TorqueUI.hpp"
+#include "TorqueUtil.hpp"
+#include "TorqueScript.hpp"
 
 #include "ScriptMenuUtils.hpp"
 
 #include "Util/UI.hpp"
 #include "Util/Math.hpp"
 
-#include "Memory/VehicleExtensions.hpp"
-
 #include <fmt/format.h>
 #include <optional>
 
-using VExt = VehicleExtensions;
-
 namespace CustomTorque {
     std::vector<std::string> FormatTorqueConfig(CTorqueScript& context, const CConfig& config);
-
     std::vector<std::string> FormatTorqueLive(const STorqueData& torqueData);
-    void ShowCurve(CTorqueScript& context, const CConfig& config, Vehicle vehicle);
 
     bool PromptSave(CTorqueScript& context, CConfig& config, Hash model, std::string plate, CConfig::ESaveType saveType);
 }
@@ -38,7 +34,8 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
 
         if (!playerVehicle || !ENTITY::DOES_ENTITY_EXIST(playerVehicle)) {
             mbCtx.Option("No vehicle", { "Get in a vehicle." });
-            mbCtx.MenuOption("Developer options", "developermenu");
+            mbCtx.MenuOption("UI settings", "uimenu");
+            mbCtx.MenuOption("Developer settings", "developermenu");
             return;
         }
 
@@ -66,7 +63,7 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
             bool showTorqueMap = false;
             mbCtx.OptionPlus("Torque map info", extra, &showTorqueMap, nullptr, nullptr, torqueExtraTitle, details);
             if (showTorqueMap) {
-                ShowCurve(context, *activeConfig, playerVehicle);
+                DrawCurve(context, *activeConfig, playerVehicle);
             }
         }
 
@@ -131,7 +128,8 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
             }
         }
 
-        mbCtx.MenuOption("Developer options", "developermenu");
+        mbCtx.MenuOption("UI settings", "uimenu");
+        mbCtx.MenuOption("Developer settings", "developermenu");
     });
 
     /* mainmenu -> loadmenu */
@@ -156,7 +154,7 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
 
             if (selected) {
                 mbCtx.OptionPlusPlus(FormatTorqueConfig(context, config), config.Name);
-                ShowCurve(context, config, 0);
+                DrawCurve(context, config, 0);
             }
 
             if (triggered) {
@@ -166,27 +164,50 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
         }
     });
 
+    /* mainmenu -> uimenu */
+    submenus.emplace_back("uimenu", [](NativeMenu::Menu& mbCtx, CTorqueScript& context) {
+        mbCtx.Title("UI settings");
+        mbCtx.Subtitle("");
+
+        mbCtx.BoolOption("Enable tachometer", CustomTorque::GetSettings().UI.Tachometer.Enable,
+            { "Display a custom tachometer that incorporates the torque curve." });
+
+        const std::vector<std::string> graphPosInfo{
+            "Move tachometer position.",
+            "Use arrow keys or select to enter a value."
+        };
+
+        mbCtx.FloatOptionCb("Horizontal position", CustomTorque::GetSettings().UI.Tachometer.X, 0.0f, 1.0f, 0.01f,
+            MenuUtils::GetKbFloat, graphPosInfo);
+        mbCtx.FloatOptionCb("Vertical position", CustomTorque::GetSettings().UI.Tachometer.Y, 0.0f, 1.0f, 0.01f,
+            MenuUtils::GetKbFloat, graphPosInfo);
+        mbCtx.FloatOptionCb("Width", CustomTorque::GetSettings().UI.Tachometer.W, 0.0f, 1.0f, 0.01f,
+            MenuUtils::GetKbFloat, graphPosInfo);
+        mbCtx.FloatOptionCb("Height", CustomTorque::GetSettings().UI.Tachometer.H, 0.0f, 1.0f, 0.01f,
+            MenuUtils::GetKbFloat, graphPosInfo);
+    });
+
     /* mainmenu -> developermenu */
     submenus.emplace_back("developermenu", [](NativeMenu::Menu& mbCtx, CTorqueScript& context) {
-        mbCtx.Title("Developer options");
+        mbCtx.Title("Developer settings");
         mbCtx.Subtitle("");
 
         // For reference/editing coords.
         if (CustomTorque::GetConfigs().size() > 0)
-            ShowCurve(context, CustomTorque::GetConfigs()[0], 0);
+            DrawCurve(context, CustomTorque::GetConfigs()[0], 0);
 
         const std::vector<std::string> graphPosInfo {
             "Move graph position.",
             "Use arrow keys or select to enter a value."
         };
 
-        mbCtx.FloatOptionCb("UI.TorqueGraphX", CustomTorque::GetSettings().UI.TorqueGraphX, 0.0f, 1.0f, 0.05f,
+        mbCtx.FloatOptionCb("UI.TorqueGraphX", CustomTorque::GetSettings().UI.TorqueGraph.X, 0.0f, 1.0f, 0.05f,
             MenuUtils::GetKbFloat, graphPosInfo);
-        mbCtx.FloatOptionCb("UI.TorqueGraphY", CustomTorque::GetSettings().UI.TorqueGraphY, 0.0f, 1.0f, 0.05f,
+        mbCtx.FloatOptionCb("UI.TorqueGraphY", CustomTorque::GetSettings().UI.TorqueGraph.Y, 0.0f, 1.0f, 0.05f,
             MenuUtils::GetKbFloat, graphPosInfo);
-        mbCtx.FloatOptionCb("UI.TorqueGraphW", CustomTorque::GetSettings().UI.TorqueGraphW, 0.0f, 1.0f, 0.05f,
+        mbCtx.FloatOptionCb("UI.TorqueGraphW", CustomTorque::GetSettings().UI.TorqueGraph.W, 0.0f, 1.0f, 0.05f,
             MenuUtils::GetKbFloat, graphPosInfo);
-        mbCtx.FloatOptionCb("UI.TorqueGraphH", CustomTorque::GetSettings().UI.TorqueGraphH, 0.0f, 1.0f, 0.05f,
+        mbCtx.FloatOptionCb("UI.TorqueGraphH", CustomTorque::GetSettings().UI.TorqueGraph.H, 0.0f, 1.0f, 0.05f,
             MenuUtils::GetKbFloat, graphPosInfo);
 
         mbCtx.BoolOption("Debug Info", CustomTorque::GetSettings().Debug.DisplayInfo,
@@ -269,128 +290,4 @@ bool CustomTorque::PromptSave(CTorqueScript& context, CConfig& config, Hash mode
     CustomTorque::LoadConfigs();
 
     return true;
-}
-
-void CustomTorque::ShowCurve(CTorqueScript& context, const CConfig& config, Vehicle vehicle) {
-    struct Point {
-        float x;
-        float y;
-        bool solid;
-    };
-
-    const int maxSamples = 100;
-    const int idleRange = 20; // 0.2 of maxSamples
-
-    std::vector<Point> points;
-    for (int i = 0; i < maxSamples; i++) {
-        float x = static_cast<float>(i) / static_cast<float>(maxSamples);
-        float y = CustomTorque::GetScaledValue(config.Data.TorqueMultMap, x);
-        points.push_back({ x, y, i >= idleRange });
-    }
-
-    float rectX = CustomTorque::GetSettings().UI.TorqueGraphX;
-    float rectY = CustomTorque::GetSettings().UI.TorqueGraphY;
-    float rectW = CustomTorque::GetSettings().UI.TorqueGraphW / GRAPHICS::_GET_ASPECT_RATIO(FALSE);
-    float rectH = CustomTorque::GetSettings().UI.TorqueGraphH;
-    float blockW = rectW / maxSamples;//0.001f * (16.0f / 9.0f) / GRAPHICS::_GET_ASPECT_RATIO(FALSE);
-    float blockH = blockW * GRAPHICS::_GET_ASPECT_RATIO(FALSE);
-
-    float vertAxisLabelX = rectX - 0.5f * rectW - 0.05f;
-    float vertAxisLabelY = rectY;
-    UI::ShowText(vertAxisLabelX, vertAxisLabelY, 0.25f, "Torque\nMult");
-
-    float vertAxisValueX = rectX - 0.5f * rectW - 0.025f;
-    float vertAxis0Y = rectY + 0.5f * rectH;
-    UI::ShowText(vertAxisValueX, vertAxis0Y, 0.25f, "0.00x");
-
-    float vertAxis1Y = rectY - 0.5f * rectH;
-    UI::ShowText(vertAxisValueX, vertAxis1Y, 0.25f, "1.00x");
-
-    float horAxisLabelX = rectX;
-    float horAxisLabelY = rectY + 0.5f * rectH + 0.05f;
-    UI::ShowText(horAxisLabelX, horAxisLabelY, 0.25f, "Normalized RPM");
-
-    float horAxis0_0X = rectX - 0.5f * rectW;
-    float horAxisValueY = rectY + 0.5f * rectH + 0.025f;
-    UI::ShowText(horAxis0_0X, horAxisValueY, 0.25f, "0.00");
-
-    float horAxis0_2X = rectX - 0.5f * rectW + 0.2f * rectW;
-    UI::ShowText(horAxis0_2X, horAxisValueY, 0.25f, "0.20\n(Idle)");
-
-    float horAxis1_0X = rectX + 0.5f * rectW;
-    UI::ShowText(horAxis1_0X, horAxisValueY, 0.25f, "1.00");
-
-    // Left
-    GRAPHICS::DRAW_RECT(
-        rectX - rectW * 0.5f - blockW * 0.5f,
-        rectY,
-        blockW,
-        rectH + 2.0f * blockH,
-        255, 255, 255, 255, 0);
-
-    // Right
-    GRAPHICS::DRAW_RECT(
-        rectX + rectW * 0.5f + blockW * 0.5f,
-        rectY,
-        blockW,
-        rectH + 2.0f * blockH,
-        255, 255, 255, 255, 0);
-
-    // Top
-    GRAPHICS::DRAW_RECT(
-        rectX,
-        rectY - rectH * 0.5f - blockH * 0.5f,
-        rectW + 2.0f * blockW,
-        blockH,
-        255, 255, 255, 255, 0);
-
-    // Bottom
-    GRAPHICS::DRAW_RECT(
-        rectX,
-        rectY + rectH * 0.5f + blockH * 0.5f,
-        rectW + 2.0f * blockW,
-        blockH,
-        255, 255, 255, 255, 0);
-
-    // Background
-    GRAPHICS::DRAW_RECT(rectX, rectY,
-        rectW + blockW / 2.0f, rectH + blockH / 2.0f,
-        0, 0, 0, 191, 0);
-
-    for (auto point : points) {
-        float pointX = rectX - 0.5f * rectW + point.x * rectW;
-        float pointY = rectY + 0.5f * rectH - point.y * rectH;
-        GRAPHICS::DRAW_RECT(pointX, pointY,
-            blockW, blockH,
-            255,
-            255,
-            255,
-            point.solid ? 255 : 91,
-            0);
-    }
-
-    if (ENTITY::DOES_ENTITY_EXIST(vehicle)) {
-        float input = VExt::GetCurrentRPM(vehicle);
-        std::pair<float, float> currentPoint = {
-            input,
-            CustomTorque::GetScaledValue(config.Data.TorqueMultMap, input)
-        };
-
-        float pointX = rectX - 0.5f * rectW + currentPoint.first * rectW;
-        float pointY = rectY + 0.5f * rectH - currentPoint.second * rectH;
-
-        // RPM
-        float horAxisValueX = pointX;
-        float horAxisValueY = rectY + 0.5f * rectH + 0.025f;
-        UI::ShowText(horAxisValueX, horAxisValueY, 0.25f, fmt::format("{:1.2f}", input));
-
-        // Mult
-        float vertAxisValueX = rectX - 0.5f * rectW - 0.025f;
-        float vertAxisValueY = pointY;
-        UI::ShowText(vertAxisValueX, vertAxisValueY, 0.25f, fmt::format("{:1.2f}x", currentPoint.second));
-
-        GRAPHICS::DRAW_RECT(pointX, pointY,
-            1.5f * blockW, 1.5f * blockH,
-            255, 0, 0, 255, 0);
-    }
 }

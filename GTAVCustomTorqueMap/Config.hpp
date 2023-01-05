@@ -30,6 +30,9 @@ public:
         int IdleRPM = 0;
         int RevLimitRPM = 0;
 
+        // Just used to show on the tachometer
+        int RedlineRPM = 0;
+
         // RPM, Mult
         // Size >= 2 required
         // Map[0     ] = (<any>, <any>)
@@ -39,5 +42,11 @@ public:
             { 0.8f, 1.0f },
             { 1.0f, 1.0f },
         };
+
+        // Don't change this, only assigned/calculated during load
+        struct {
+            float RelativeRPM = 0.0;
+            float RelativePower = 0.0f;
+        } MaxPower;
     } Data;
 };

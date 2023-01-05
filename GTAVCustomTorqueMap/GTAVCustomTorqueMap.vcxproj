@@ -87,6 +87,7 @@
     <ClCompile Include="..\thirdparty\GTAVMenuBase\menuutils.cpp" />
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="DllMain.cpp" />
+    <ClCompile Include="Compatibility.cpp" />
     <ClCompile Include="Memory\NativeMemory.cpp" />
     <ClCompile Include="Memory\VehicleExtensions.cpp" />
     <ClCompile Include="PerformanceLog.cpp" />
@@ -98,8 +99,8 @@
     <ClCompile Include="TorqueScript.cpp" />
     <ClCompile Include="TorqueScriptNPC.cpp" />
     <ClCompile Include="TorqueUtil.cpp" />
+    <ClCompile Include="TorqueUI.cpp" />
     <ClCompile Include="Util\AddonSpawnerCache.cpp" />
-    <ClCompile Include="Util\Color.cpp" />
     <ClCompile Include="Util\Files.cpp" />
     <ClCompile Include="Util\FileVersion.cpp" />
     <ClCompile Include="Util\Logger.cpp" />
@@ -123,6 +124,7 @@
     <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\nativeCaller.h" />
     <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\natives.h" />
     <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\types.h" />
+    <ClInclude Include="Compatibility.hpp" />
     <ClInclude Include="Config.hpp" />
     <ClInclude Include="Constants.hpp" />
     <ClInclude Include="CustomTorqueMap.hpp" />
@@ -140,6 +142,7 @@
     <ClInclude Include="TorqueScript.hpp" />
     <ClInclude Include="TorqueScriptNPC.hpp" />
     <ClInclude Include="TorqueUtil.hpp" />
+    <ClInclude Include="TorqueUI.hpp" />
     <ClInclude Include="Util\AddonSpawnerCache.hpp" />
     <ClInclude Include="Util\Color.h" />
     <ClInclude Include="Util\Files.h" />

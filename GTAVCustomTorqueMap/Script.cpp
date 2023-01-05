@@ -1,10 +1,11 @@
 #include "Script.hpp"
-#include "CustomTorqueMap.hpp"
 
+#include "Compatibility.hpp"
+#include "Constants.hpp"
+#include "CustomTorqueMap.hpp"
+#include "ScriptMenu.hpp"
 #include "TorqueScript.hpp"
 #include "TorqueScriptNPC.hpp"
-#include "ScriptMenu.hpp"
-#include "Constants.hpp"
 #include "TorqueUtil.hpp"
 
 #include "Util/Logger.hpp"
@@ -62,6 +63,7 @@ void CustomTorque::ScriptInit() {
     playerScriptInst = std::make_shared<CTorqueScript>(*settings, configs);
 
     VehicleExtensions::Init();
+    Compatibility::Setup();
 
     scriptMenu = std::make_unique<CScriptMenu<CTorqueScript>>(settingsMenuPath,
         []() {

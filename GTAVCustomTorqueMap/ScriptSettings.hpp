@@ -1,4 +1,6 @@
 #pragma once
+
+#include "Util/Color.h"
 #include <string>
 
 class CScriptSettings
@@ -14,10 +16,28 @@ public:
     } Main;
 
     struct {
-        float TorqueGraphX = 0.80f;
-        float TorqueGraphY = 0.25f;
-        float TorqueGraphW = 0.60f;
-        float TorqueGraphH = 0.40f;
+        struct {
+            bool Enable = true;
+            float X = 0.90f;
+            float Y = 0.85f;
+            float W = 0.20f;
+            float H = 0.20f;
+
+            SColor BackgroundColor{ .R = 0,   .G = 0,   .B = 0,   .A = 191 };
+
+            SColor NormalColor{ .R = 191, .G = 255, .B = 211, .A = 91 };
+            SColor NormalHiColor{ .R = 191, .G = 255, .B = 211, .A = 255 };
+
+            SColor RedlineColor{ .R = 255, .G = 31, .B = 31, .A = 91 };
+            SColor RedlineHiColor{ .R = 255, .G = 64, .B = 64, .A = 255 };
+        } Tachometer;
+
+        struct {
+            float X = 0.80f;
+            float Y = 0.25f;
+            float W = 0.60f;
+            float H = 0.40f;
+        } TorqueGraph;
     } UI;
 
     struct {

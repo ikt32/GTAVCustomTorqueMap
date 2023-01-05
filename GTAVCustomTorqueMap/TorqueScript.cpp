@@ -1,9 +1,10 @@
 #include "TorqueScript.hpp"
 
 #include "Constants.hpp"
-#include "VehicleMods.hpp"
-#include "TorqueUtil.hpp"
 #include "PerformanceLog.hpp"
+#include "TorqueUtil.hpp"
+#include "TorqueUI.hpp"
+#include "VehicleMods.hpp"
 
 #include "Util/Math.hpp"
 #include "Util/Paths.hpp"
@@ -61,6 +62,11 @@ void CTorqueScript::Tick() {
 
     if (mActiveConfig && Util::VehicleAvailable(mVehicle, PLAYER::PLAYER_PED_ID(), false)) {
         updateTorque();
+    }
+
+    if (mSettings.UI.Tachometer.Enable &&
+        Util::VehicleAvailable(mVehicle, PLAYER::PLAYER_PED_ID(), true)) {
+        CustomTorque::DrawTachometer(*this, mVehicle);
     }
 
     PerformanceLog::Update(mVehicle);

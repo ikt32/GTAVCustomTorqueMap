@@ -78,9 +78,6 @@
     <ClCompile Include="Util\AddonSpawnerCache.cpp">
       <Filter>Util</Filter>
     </ClCompile>
-    <ClCompile Include="Util\Color.cpp">
-      <Filter>Util</Filter>
-    </ClCompile>
     <ClCompile Include="Util\Files.cpp">
       <Filter>Util</Filter>
     </ClCompile>
@@ -90,6 +87,8 @@
     <ClCompile Include="SettingsCommon.cpp" />
     <ClCompile Include="PerformanceLog.cpp" />
     <ClCompile Include="TorqueUtil.cpp" />
+    <ClCompile Include="TorqueUI.cpp" />
+    <ClCompile Include="Compatibility.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\thirdparty\GTAVMenuBase\InstructionalButton.h">
@@ -195,5 +194,7 @@
     <ClInclude Include="PerformanceLog.hpp" />
     <ClInclude Include="TorqueUtil.hpp" />
     <ClInclude Include="CustomTorqueMap.hpp" />
+    <ClInclude Include="TorqueUI.hpp" />
+    <ClInclude Include="Compatibility.hpp" />
   </ItemGroup>
 </Project>

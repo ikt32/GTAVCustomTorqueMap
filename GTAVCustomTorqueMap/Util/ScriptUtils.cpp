@@ -1,5 +1,6 @@
 #include "ScriptUtils.h"
 #include "../Constants.hpp"
+#include <inc/enums.h>
 #include <inc/natives.h>
 
 bool Util::PlayerAvailable(Player player, Ped playerPed) {
@@ -37,4 +38,10 @@ std::string Util::GetFormattedModelName(Hash modelHash) {
 
 std::string Util::GetFormattedVehicleModelName(Vehicle vehicle) {
     return GetFormattedModelName(ENTITY::GET_ENTITY_MODEL(vehicle));
+}
+
+bool Util::VehicleHasTurboMod(Vehicle vehicle) {
+    return vehicle != 0 &&
+        ENTITY::DOES_ENTITY_EXIST(vehicle) &&
+        VEHICLE::IS_TOGGLE_MOD_ON(vehicle, VehicleToggleModTurbo);
 }

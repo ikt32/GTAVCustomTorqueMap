@@ -75,6 +75,7 @@ CConfig CConfig::Read(const std::string& configFile) {
     // [Data]
     LOAD_VAL("Data", "IdleRPM", config.Data.IdleRPM);
     LOAD_VAL("Data", "RevLimitRPM", config.Data.RevLimitRPM);
+    LOAD_VAL("Data", "RedlineRPM", config.Data.RedlineRPM);
 
     std::string torqueMapString = ini.GetValue("Data", "TorqueMultMap", "");
     config.Data.TorqueMultMap.clear();
@@ -118,6 +119,13 @@ CConfig CConfig::Read(const std::string& configFile) {
         }
 
         config.Data.TorqueMultMap = mappedTorqueMap;
+    }
+
+    for (auto& [rpm, torque] : config.Data.TorqueMultMap) {
+        if (rpm * torque > config.Data.MaxPower.RelativePower) {
+            config.Data.MaxPower.RelativePower = rpm * torque;
+            config.Data.MaxPower.RelativeRPM = rpm;
+        }
     }
 
     return config;
@@ -171,6 +179,7 @@ bool CConfig::Write(const std::string& newName, Hash model, std::string plate, E
     // [Data]
     SAVE_VAL("Data", "IdleRPM", Data.IdleRPM);
     SAVE_VAL("Data", "RevLimitRPM", Data.RevLimitRPM);
+    SAVE_VAL("Data", "RedlineRPM", Data.RedlineRPM);
 
     std::string torqueMultMap = "<<<END_OF_MAP\n";
     for (auto [rpm, mult] : Data.TorqueMultMap) {
