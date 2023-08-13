@@ -26,11 +26,14 @@ void CustomTorque::DrawCurve(CTorqueScript& context, const CConfig& config, Vehi
     const int maxSamples = 100;
     const int idleRange = 20; // 0.2 of maxSamples
 
-    std::vector<SPoint> points;
+    std::vector<SPoint> torquePoints(maxSamples);
+    std::vector<SPoint> powerPoints(maxSamples);
+
     for (int i = 0; i < maxSamples; i++) {
         float x = static_cast<float>(i) / static_cast<float>(maxSamples);
         float y = CustomTorque::GetScaledValue(config.Data.TorqueMultMap, x);
-        points.push_back({ x, y, i >= idleRange });
+        torquePoints[i] = { x, y, i >= idleRange };
+        powerPoints[i] = { x, y * x, i >= idleRange };
     }
 
     float rectX = CustomTorque::GetSettings().UI.TorqueGraph.X;
@@ -94,14 +97,26 @@ void CustomTorque::DrawCurve(CTorqueScript& context, const CConfig& config, Vehi
         rectW + blockW / 2.0f, rectH + blockH / 2.0f,
         0, 0, 0, 191, 0);
 
-    for (auto point : points) {
+    for (auto point : torquePoints) {
         float pointX = rectX - 0.5f * rectW + point.x * rectW;
         float pointY = rectY + 0.5f * rectH - point.y * rectH;
         GRAPHICS::DRAW_RECT({ pointX, pointY },
             blockW, blockH,
-            255,
-            255,
-            255,
+            219,
+            86,
+            55,
+            point.solid ? 255 : 91,
+            0);
+    }
+
+    for (auto point : powerPoints) {
+        float pointX = rectX - 0.5f * rectW + point.x * rectW;
+        float pointY = rectY + 0.5f * rectH - point.y * rectH;
+        GRAPHICS::DRAW_RECT({ pointX, pointY },
+            blockW, blockH,
+            68,
+            134,
+            244,
             point.solid ? 255 : 91,
             0);
     }
