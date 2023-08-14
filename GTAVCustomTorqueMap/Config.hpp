@@ -44,9 +44,13 @@ public:
         };
 
         // Don't change this, only assigned/calculated during load
+        // Relative to max output
         struct {
-            float RelativeRPM = 0.0;
-            float RelativePower = 0.0f;
-        } MaxPower;
+            float Torque = 0.0f;
+            float TorqueRPM = 0.0f;
+
+            float Power = 0.0f;
+            float PowerRPM = 0.0f;
+        } Peak;
     } Data;
 };

@@ -4,7 +4,6 @@
 #include "Script.hpp"
 #include "TorqueUtil.hpp"
 
-#include "Memory/Offsets.hpp"
 #include "Memory/VehicleExtensions.hpp"
 #include "Util/Color.h"
 #include "Util/Math.hpp"
@@ -16,16 +15,6 @@
 #include <fmt/format.h>
 
 using VExt = VehicleExtensions;
-
-float kW2hp(float val) { return val * 1.34102f; }
-float Nm2lbft(float val) { return val * 0.737562f; }
-
-float GetHandlingTorqueNm(Vehicle vehicle) {
-    auto handlingPtr = VExt::GetHandlingPtr(vehicle);
-    float weight = *reinterpret_cast<float*>(handlingPtr + hOffsets1604.fMass);
-    float torqueNm = weight * *reinterpret_cast<float*>(handlingPtr + hOffsets1604.fInitialDriveForce);
-    return torqueNm;
-}
 
 void CustomTorque::DrawCurve(CTorqueScript& context, const CConfig& config, Vehicle vehicle) {
     struct SPoint {
@@ -57,26 +46,11 @@ void CustomTorque::DrawCurve(CTorqueScript& context, const CConfig& config, Vehi
     float maxMeasurement = 1.0f;
 
     if (calcAvail) {
-        float maxTorque = GetHandlingTorqueNm(vehicle);
+        maxTorqueNm = Util::GetHandlingTorqueNm(vehicle);
 
-        // TODO: Eww
-        for (const auto& [relRpm, relTorque] : config.Data.TorqueMultMap) {
-            float realRPM = map(relRpm, 0.2f, 1.0f,
-                (float)config.Data.IdleRPM, (float)config.Data.RevLimitRPM);
-
-            if (relRpm < 0.2f) {
-                realRPM = map(relRpm, 0.0f, 0.2f, 0.0f, (float)config.Data.IdleRPM);
-            }
-
-            float torqueNm = relTorque * maxTorque;
-            if (maxTorqueNm < torqueNm)
-                maxTorqueNm = torqueNm;
-
-            // 1/((60) / (2 * pi))
-            float powerKw = (0.10471975512f * torqueNm * realRPM) / 1000.0f;
-            if (maxPowerkW < powerKw)
-                maxPowerkW = powerKw;
-        }
+        const float peakhpRPM = map(config.Data.Peak.Power, 0.2f, 1.0f,
+            (float)config.Data.IdleRPM, (float)config.Data.RevLimitRPM);
+        maxPowerkW = (0.10471975512f * maxTorqueNm * peakhpRPM) / 1000.0f;
 
         if (measurement == 0) {
             maxMeasurement = 1.0f;
@@ -469,7 +443,7 @@ void CustomTorque::DrawTachometer(CTorqueScript& context, Vehicle vehicle) {
                 static_cast<float>(i) / static_cast<float>(numTachoBars));
         }
 
-        float mapMultiplier = (torqueMultiplier * barRpmRel) / cfg.Data.MaxPower.RelativePower;
+        float mapMultiplier = (torqueMultiplier * barRpmRel) / cfg.Data.Peak.Power;
 
         float h = 0.90f * uiCfg.Tachometer.H * mapMultiplier * mapScaleFactor *
             mapScaleFactorTurbo * turboDispMod;

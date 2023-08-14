@@ -11,6 +11,7 @@
 
 #include "Util/UI.hpp"
 #include "Util/Math.hpp"
+#include "Util/ScriptUtils.h"
 
 #include <fmt/format.h>
 #include <optional>
@@ -247,8 +248,31 @@ std::vector<std::string> CustomTorque::FormatTorqueConfig(CTorqueScript& context
     };
 
     if (config.Data.IdleRPM != 0 && config.Data.RevLimitRPM != 0) {
-        extras.push_back(fmt::format("Idle: {} RPM", config.Data.IdleRPM));
-        extras.push_back(fmt::format("Rev limit: {} RPM", config.Data.RevLimitRPM));
+        extras.push_back(fmt::format("Idle @ {} RPM, Limit: {} RPM", config.Data.IdleRPM, config.Data.RevLimitRPM));
+
+        auto vehicle = context.GetVehicle();
+        if (ENTITY::DOES_ENTITY_EXIST(vehicle) && ENTITY::GET_ENTITY_MODEL(vehicle) == config.ModelHash) {
+            float maxTorqueNm = Util::GetHandlingTorqueNm(vehicle);
+            float maxTorqueRPM = map(config.Data.Peak.TorqueRPM, 0.2f, 1.0f,
+                (float)config.Data.IdleRPM, (float)config.Data.RevLimitRPM);
+
+            float maxPowerkW = config.Data.Peak.Power * maxTorqueNm;
+            float maxPowerRPM = map(config.Data.Peak.PowerRPM, 0.2f, 1.0f,
+                (float)config.Data.IdleRPM, (float)config.Data.RevLimitRPM);
+
+            if (CustomTorque::GetSettings().UI.Measurement != 2) {
+                extras.push_back(fmt::format("Peak power: {:.0f} kW @ {:.0f} RPM",
+                    maxPowerkW, maxPowerRPM));
+                extras.push_back(fmt::format("Peak torque: {:.0f} N-m @ {:.0f} RPM",
+                    maxTorqueNm, maxTorqueRPM));
+            }
+            else {
+                extras.push_back(fmt::format("Peak power: {:.0f} hp @ {:.0f} RPM",
+                    kW2hp(maxPowerkW), maxPowerRPM));
+                extras.push_back(fmt::format("Peak torque: {:.0f} lb-ft @ {:.0f} RPM",
+                    Nm2lbft(maxTorqueNm), maxTorqueRPM));
+            }
+        }
     }
 
     return extras;

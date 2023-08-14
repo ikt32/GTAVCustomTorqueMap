@@ -10,4 +10,6 @@ namespace Util {
 
     std::string GetFormattedModelName(Hash modelHash);
     std::string GetFormattedVehicleModelName(Vehicle vehicle);
+
+    float GetHandlingTorqueNm(Vehicle vehicle);
 }

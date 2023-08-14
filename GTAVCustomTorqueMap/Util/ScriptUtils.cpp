@@ -1,5 +1,7 @@
 #include "ScriptUtils.h"
 #include "../Constants.hpp"
+#include "../Memory/Offsets.hpp"
+#include "../Memory/VehicleExtensions.hpp"
 #include <inc/enums.h>
 #include <inc/natives.h>
 
@@ -44,4 +46,11 @@ bool Util::VehicleHasTurboMod(Vehicle vehicle) {
     return vehicle != 0 &&
         ENTITY::DOES_ENTITY_EXIST(vehicle) &&
         VEHICLE::IS_TOGGLE_MOD_ON(vehicle, VehicleToggleModTurbo);
+}
+
+float Util::GetHandlingTorqueNm(Vehicle vehicle) {
+    auto handlingPtr = VehicleExtensions::GetHandlingPtr(vehicle);
+    float weight = *reinterpret_cast<float*>(handlingPtr + hOffsets1604.fMass);
+    float torqueNm = weight * *reinterpret_cast<float*>(handlingPtr + hOffsets1604.fInitialDriveForce);
+    return torqueNm;
 }

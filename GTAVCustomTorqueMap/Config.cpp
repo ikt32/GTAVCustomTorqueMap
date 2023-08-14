@@ -121,10 +121,15 @@ CConfig CConfig::Read(const std::string& configFile) {
         config.Data.TorqueMultMap = mappedTorqueMap;
     }
 
-    for (auto& [rpm, torque] : config.Data.TorqueMultMap) {
-        if (rpm * torque > config.Data.MaxPower.RelativePower) {
-            config.Data.MaxPower.RelativePower = rpm * torque;
-            config.Data.MaxPower.RelativeRPM = rpm;
+    for (const auto& [relRpm, relTorque] : config.Data.TorqueMultMap) {
+        if (config.Data.Peak.Torque < relTorque) {
+            config.Data.Peak.Torque = relTorque;
+            config.Data.Peak.TorqueRPM = relRpm;
+        }
+
+        if (config.Data.Peak.Power < relTorque * relRpm) {
+            config.Data.Peak.Power = relTorque * relRpm;
+            config.Data.Peak.PowerRPM = relRpm;
         }
     }
 
