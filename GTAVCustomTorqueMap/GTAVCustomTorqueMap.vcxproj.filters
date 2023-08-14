@@ -46,9 +46,6 @@
     <ClCompile Include="Memory\VehicleExtensions.cpp">
       <Filter>Memory</Filter>
     </ClCompile>
-    <ClCompile Include="..\thirdparty\fmt\src\format.cc">
-      <Filter>thirdparty</Filter>
-    </ClCompile>
     <ClCompile Include="DllMain.cpp" />
     <ClCompile Include="Script.cpp" />
     <ClCompile Include="TorqueMenu.cpp" />

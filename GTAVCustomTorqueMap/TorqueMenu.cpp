@@ -13,7 +13,7 @@
 #include "Util/Math.hpp"
 #include "Util/ScriptUtils.h"
 
-#include <fmt/format.h>
+#include <format>
 #include <optional>
 
 namespace CustomTorque {
@@ -117,7 +117,7 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
         };
 
         bool dataLogToggled = mbCtx.OptionPlus(
-            fmt::format("Datalogging: {}", stateText),
+            std::format("Datalogging: {}", stateText),
             datalogExplain,
             nullptr,
             nullptr,
@@ -140,7 +140,7 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
         mbCtx.Title("Load configurations");
 
         CConfig* config = context.ActiveConfig();
-        mbCtx.Subtitle(fmt::format("Current: ", config ? config->Name : "None"));
+        mbCtx.Subtitle(std::format("Current: ", config ? config->Name : "None"));
 
         if (config == nullptr) {
             mbCtx.Option("No active configuration");
@@ -162,7 +162,7 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
 
             if (triggered) {
                 context.ApplyConfig(config);
-                UI::Notify(fmt::format("Applied config {}.", config.Name), true);
+                UI::Notify(std::format("Applied config {}.", config.Name), true);
             }
         }
     });
@@ -233,7 +233,7 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
             }
         }
 
-        mbCtx.Option(fmt::format("NPC instances: {}", CustomTorque::GetNPCScriptCount()),
+        mbCtx.Option(std::format("NPC instances: {}", CustomTorque::GetNPCScriptCount()),
             { "Number of vehicles the script is active on." });
     });
 
@@ -242,13 +242,13 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
 
 std::vector<std::string> CustomTorque::FormatTorqueConfig(CTorqueScript& context, const CConfig& config) {
     std::vector<std::string> extras{
-        fmt::format("Name: {}", config.Name),
-        fmt::format("Model: {}", config.ModelName.empty() ? "None (Generic)" : config.ModelName),
-        fmt::format("Plate: {}", config.Plate.empty() ? "None" : fmt::format("[{}]", config.Plate)),
+        std::format("Name: {}", config.Name),
+        std::format("Model: {}", config.ModelName.empty() ? "None (Generic)" : config.ModelName),
+        std::format("Plate: {}", config.Plate.empty() ? "None" : std::format("[{}]", config.Plate)),
     };
 
     if (config.Data.IdleRPM != 0 && config.Data.RevLimitRPM != 0) {
-        extras.push_back(fmt::format("Idle @ {} RPM, Limit: {} RPM", config.Data.IdleRPM, config.Data.RevLimitRPM));
+        extras.push_back(std::format("Idle @ {} RPM, Limit: {} RPM", config.Data.IdleRPM, config.Data.RevLimitRPM));
 
         auto vehicle = context.GetVehicle();
         if (ENTITY::DOES_ENTITY_EXIST(vehicle) && ENTITY::GET_ENTITY_MODEL(vehicle) == config.ModelHash) {
@@ -261,15 +261,15 @@ std::vector<std::string> CustomTorque::FormatTorqueConfig(CTorqueScript& context
                 (float)config.Data.IdleRPM, (float)config.Data.RevLimitRPM);
 
             if (CustomTorque::GetSettings().UI.Measurement != 2) {
-                extras.push_back(fmt::format("Peak power: {:.0f} kW @ {:.0f} RPM",
+                extras.push_back(std::format("Peak power: {:.0f} kW @ {:.0f} RPM",
                     maxPowerkW, maxPowerRPM));
-                extras.push_back(fmt::format("Peak torque: {:.0f} N-m @ {:.0f} RPM",
+                extras.push_back(std::format("Peak torque: {:.0f} N-m @ {:.0f} RPM",
                     maxTorqueNm, maxTorqueRPM));
             }
             else {
-                extras.push_back(fmt::format("Peak power: {:.0f} hp @ {:.0f} RPM",
+                extras.push_back(std::format("Peak power: {:.0f} hp @ {:.0f} RPM",
                     kW2hp(maxPowerkW), maxPowerRPM));
-                extras.push_back(fmt::format("Peak torque: {:.0f} lb-ft @ {:.0f} RPM",
+                extras.push_back(std::format("Peak torque: {:.0f} lb-ft @ {:.0f} RPM",
                     Nm2lbft(maxTorqueNm), maxTorqueRPM));
             }
         }
@@ -283,33 +283,33 @@ std::vector<std::string> CustomTorque::FormatTorqueLive(const STorqueData& torqu
     std::string actualOutput;
 
     if (CustomTorque::GetSettings().UI.Measurement != 2) {
-        rawMapTorque = fmt::format("Mapped: {:3.0f} N-m", torqueData.RawMapForceNm);
+        rawMapTorque = std::format("Mapped: {:3.0f} N-m", torqueData.RawMapForceNm);
         if (torqueData.RPMData != std::nullopt)
-            actualOutput = fmt::format("Output: {:3.0f} kW / {:3.0f} N-m", torqueData.RPMData->PowerkW, torqueData.TotalForceNm);
+            actualOutput = std::format("Output: {:3.0f} kW / {:3.0f} N-m", torqueData.RPMData->PowerkW, torqueData.TotalForceNm);
         else
-            actualOutput = fmt::format("Output: {:3.0f} N-m", torqueData.TotalForceNm);
+            actualOutput = std::format("Output: {:3.0f} N-m", torqueData.TotalForceNm);
     }
     else {
-        rawMapTorque = fmt::format("Mapped: {:3.0f} lb-ft", torqueData.RawMapForceNm * 0.737562f);
+        rawMapTorque = std::format("Mapped: {:3.0f} lb-ft", torqueData.RawMapForceNm * 0.737562f);
         if (torqueData.RPMData != std::nullopt)
-            actualOutput = fmt::format("Output: {:3.0f} hp / {:3.0f} lb-ft", torqueData.RPMData->PowerHP, torqueData.TotalForceLbFt);
+            actualOutput = std::format("Output: {:3.0f} hp / {:3.0f} lb-ft", torqueData.RPMData->PowerHP, torqueData.TotalForceLbFt);
         else
-            actualOutput = fmt::format("Output: {:3.0f} lb-ft", torqueData.TotalForceLbFt);
+            actualOutput = std::format("Output: {:3.0f} lb-ft", torqueData.TotalForceLbFt);
     }
 
     std::vector<std::string> extras;
     if (torqueData.RPMData != std::nullopt) {
         extras = {
-            fmt::format("RPM: {:3.0f} ({:.2f})", torqueData.RPMData->RealRPM, torqueData.NormalizedRPM),
-            fmt::format("Torque mult: {:.2f}x", torqueData.TorqueMult),
+            std::format("RPM: {:3.0f} ({:.2f})", torqueData.RPMData->RealRPM, torqueData.NormalizedRPM),
+            std::format("Torque mult: {:.2f}x", torqueData.TorqueMult),
             rawMapTorque,
             actualOutput,
         };
     }
     else {
         extras = {
-            fmt::format("RPM: {:.2f}", torqueData.NormalizedRPM),
-            fmt::format("Torque mult: {:.2f}x", torqueData.TorqueMult),
+            std::format("RPM: {:.2f}", torqueData.NormalizedRPM),
+            std::format("Torque mult: {:.2f}x", torqueData.TorqueMult),
             rawMapTorque,
             actualOutput,
             "Horsepower not calculated: Add IdleRPM and RevLimitRPM in [Data] in the engine map file for RPM-derived horsepower."

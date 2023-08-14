@@ -8,7 +8,7 @@
 #include "Util/String.hpp"
 
 #include <simpleini/SimpleIni.h>
-#include <fmt/format.h>
+#include <format>
 #include <filesystem>
 #include <sstream>
 
@@ -145,7 +145,7 @@ bool CConfig::Write(const std::string& newName, Hash model, std::string plate, E
         Paths::GetModuleFolder(Paths::GetOurModuleHandle()) +
         Constants::ModDir +
         "\\Configs";
-    const std::string configFile = fmt::format("{}\\{}.ini", configsPath, newName);
+    const std::string configFile = std::format("{}\\{}.ini", configsPath, newName);
 
     CSimpleIniA ini;
     ini.SetUnicode();
@@ -165,7 +165,7 @@ bool CConfig::Write(const std::string& newName, Hash model, std::string plate, E
             ModelHash = model;
         }
 
-        ini.SetValue("ID", "ModelHash", fmt::format("{:X}", ModelHash).c_str());
+        ini.SetValue("ID", "ModelHash", std::format("{:X}", ModelHash).c_str());
 
         auto& asCache = ASCache::Get();
         auto it = asCache.find(ModelHash);
@@ -188,7 +188,7 @@ bool CConfig::Write(const std::string& newName, Hash model, std::string plate, E
 
     std::string torqueMultMap = "<<<END_OF_MAP\n";
     for (auto [rpm, mult] : Data.TorqueMultMap) {
-        torqueMultMap += fmt::format("{:.3f}|{:.3f}\n", rpm, mult);
+        torqueMultMap += std::format("{:.3f}|{:.3f}\n", rpm, mult);
     }
     torqueMultMap += "END_OF_MAP\n";
 

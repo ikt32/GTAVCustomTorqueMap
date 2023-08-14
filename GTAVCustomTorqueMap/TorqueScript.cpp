@@ -18,7 +18,7 @@
 
 #include <inc/enums.h>
 #include <inc/natives.h>
-#include <fmt/format.h>
+#include <format>
 #include <filesystem>
 #include <algorithm>
 
@@ -176,12 +176,12 @@ void CTorqueScript::updateTorque() {
         if (distance < 50.0f) {
             loc.z += 1.0f;
             UI::ShowText3DScaled(loc, displaySize, {
-                { fmt::format("BaseForce: {:.3f}", baseDriveForce) },
-                { fmt::format("Tuning: {}/{:.3f}", tuningLevel, tuningMultiplier) },
-                { fmt::format("RPM: {:.3f}",       rpm) },
-                { fmt::format("BaseMod: {:.3f}",   baseMod) },
-                { fmt::format("MapMult: {:.3f}",   mapMultiplier) },
-                { fmt::format("Final: {:.3f}",     finalForce) },
+                { std::format("BaseForce: {:.3f}", baseDriveForce) },
+                { std::format("Tuning: {}/{:.3f}", tuningLevel, tuningMultiplier) },
+                { std::format("RPM: {:.3f}",       rpm) },
+                { std::format("BaseMod: {:.3f}",   baseMod) },
+                { std::format("MapMult: {:.3f}",   mapMultiplier) },
+                { std::format("Final: {:.3f}",     finalForce) },
                 });
         }
     }

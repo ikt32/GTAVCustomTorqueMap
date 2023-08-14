@@ -12,7 +12,7 @@
 #include "Util/String.hpp"
 
 #include <inc/natives.h>
-#include <fmt/format.h>
+#include <format>
 
 using VExt = VehicleExtensions;
 
@@ -135,7 +135,7 @@ void CustomTorque::DrawCurve(CTorqueScript& context, const CConfig& config, Vehi
     if (measurement == 0 || !calcAvail)
         UI::ShowText(vertAxisValueX, vertAxis1Y, 0.25f, "1.00x");
     else
-        UI::ShowText(vertAxisValueX, vertAxis1Y, 0.25f, fmt::format("{:.0f}", maxMeasurement));
+        UI::ShowText(vertAxisValueX, vertAxis1Y, 0.25f, std::format("{:.0f}", maxMeasurement));
 
     float horAxisLabelX = rectX;
     float horAxisLabelY = rectY + 0.5f * rectH + 0.05f;
@@ -155,13 +155,13 @@ void CustomTorque::DrawCurve(CTorqueScript& context, const CConfig& config, Vehi
     if (measurement == 0 || !calcAvail)
         UI::ShowText(horAxis0_2X, horAxisValueY, 0.25f, "0.20 ~n~ (Idle)");
     else
-        UI::ShowText(horAxis0_2X, horAxisValueY, 0.25f, fmt::format("{} ~n~ (Idle)", config.Data.IdleRPM));
+        UI::ShowText(horAxis0_2X, horAxisValueY, 0.25f, std::format("{} ~n~ (Idle)", config.Data.IdleRPM));
 
     float horAxis1_0X = rectX + 0.5f * rectW;
     if (measurement == 0 || !calcAvail)
         UI::ShowText(horAxis1_0X, horAxisValueY, 0.25f, "1.00");
     else
-        UI::ShowText(horAxis1_0X, horAxisValueY, 0.25f, fmt::format("{}", config.Data.RevLimitRPM));
+        UI::ShowText(horAxis1_0X, horAxisValueY, 0.25f, std::format("{}", config.Data.RevLimitRPM));
 
 
     // Left
@@ -226,9 +226,9 @@ void CustomTorque::DrawCurve(CTorqueScript& context, const CConfig& config, Vehi
         float horAxisValueX = pointX;
         float horAxisValueY = rectY + 0.5f * rectH + 0.025f;
         if (measurement == 0 || !calcAvail)
-            UI::ShowText(horAxisValueX, horAxisValueY, 0.25f, fmt::format("{:1.2f}", input));
+            UI::ShowText(horAxisValueX, horAxisValueY, 0.25f, std::format("{:1.2f}", input));
         else
-            UI::ShowText(horAxisValueX, horAxisValueY, 0.25f, fmt::format("{:.0f}", map(input, 0.2f, 1.0f, (float)config.Data.IdleRPM, (float)config.Data.RevLimitRPM)));
+            UI::ShowText(horAxisValueX, horAxisValueY, 0.25f, std::format("{:.0f}", map(input, 0.2f, 1.0f, (float)config.Data.IdleRPM, (float)config.Data.RevLimitRPM)));
 
         // Vertical RPM bar
         GRAPHICS::DRAW_RECT({ pointX, rectY },
@@ -289,15 +289,15 @@ void CustomTorque::DrawCurve(CTorqueScript& context, const CConfig& config, Vehi
         float pointYTorque = rectY + 0.5f * rectH - torqueScaled * rectH;
         if (measurement == 0 || !calcAvail) {
             // pointYTorque's currentPoint.second needs no modification
-            UI::ShowText(vertAxisValueX, pointYTorque, 0.25f, fmt::format("~r~{:1.2f}x", torqueValue));
+            UI::ShowText(vertAxisValueX, pointYTorque, 0.25f, std::format("~r~{:1.2f}x", torqueValue));
         }
         if (measurement == 1 && calcAvail) {
             pointYTorque = rectY + 0.5f * rectH - torqueScaled * rectH;
-            UI::ShowText(vertAxisValueX, pointYTorque, 0.25f, fmt::format("~r~{:.0f}", torqueValue));
+            UI::ShowText(vertAxisValueX, pointYTorque, 0.25f, std::format("~r~{:.0f}", torqueValue));
         }
         if (measurement == 2 && calcAvail) {
             pointYTorque = rectY + 0.5f * rectH - torqueScaled * rectH;
-            UI::ShowText(vertAxisValueX, pointYTorque, 0.25f, fmt::format("~r~{:.0f}", torqueValue));
+            UI::ShowText(vertAxisValueX, pointYTorque, 0.25f, std::format("~r~{:.0f}", torqueValue));
         }
 
         // Horizontal torque bar
@@ -314,16 +314,16 @@ void CustomTorque::DrawCurve(CTorqueScript& context, const CConfig& config, Vehi
         float pointYPower = rectY + 0.5f * rectH - powerScaled * rectH;
         if (measurement == 0 || !calcAvail) {
             // pointYPower's (currentPoint.second * input) needs no modification
-            UI::ShowText(vertAxisValueX, pointYPower, 0.25f, fmt::format("~b~{:1.2f}x", powerValue));
+            UI::ShowText(vertAxisValueX, pointYPower, 0.25f, std::format("~b~{:1.2f}x", powerValue));
         }
 
         if (measurement == 1 && calcAvail) {
             pointYPower = rectY + 0.5f * rectH - powerScaled * rectH;
-            UI::ShowText(vertAxisValueX, pointYPower, 0.25f, fmt::format("~b~{:.0f}", powerValue));
+            UI::ShowText(vertAxisValueX, pointYPower, 0.25f, std::format("~b~{:.0f}", powerValue));
         }
         if (measurement == 2 && calcAvail) {
             pointYPower = rectY + 0.5f * rectH - powerScaled * rectH;
-            UI::ShowText(vertAxisValueX, pointYPower, 0.25f, fmt::format("~b~{:.0f}", powerValue));
+            UI::ShowText(vertAxisValueX, pointYPower, 0.25f, std::format("~b~{:.0f}", powerValue));
         }
 
         // Horizontal power bar

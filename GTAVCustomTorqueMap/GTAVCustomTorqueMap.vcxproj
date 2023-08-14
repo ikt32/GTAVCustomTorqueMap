@@ -78,7 +78,6 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\thirdparty\fmt\src\format.cc" />
     <ClCompile Include="..\thirdparty\GTAVMenuBase\menu.cpp" />
     <ClCompile Include="..\thirdparty\GTAVMenuBase\menucontrols.cpp" />
     <ClCompile Include="..\thirdparty\GTAVMenuBase\menukeyboard.cpp" />

@@ -3,12 +3,12 @@
 #include "Util/UI.hpp"
 
 #include <inc/natives.h>
-#include <fmt/format.h>
+#include <format>
 
 bool MenuUtils::GetKbFloat(float& val) {
     UI::Notify("Enter value", true);
     MISC::DISPLAY_ONSCREEN_KEYBOARD(LOCALIZATION::GET_CURRENT_LANGUAGE() == 0, "FMMC_KEY_TIP8", "",
-        fmt::format("{:f}", val).c_str(), "", "", "", 64);
+        std::format("{:f}", val).c_str(), "", "", "", 64);
     while (MISC::UPDATE_ONSCREEN_KEYBOARD() == 0) {
         WAIT(0);
     }
