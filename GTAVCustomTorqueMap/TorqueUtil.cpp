@@ -74,7 +74,7 @@ CustomTorque::STorqueData CustomTorque::GetTorqueData(CTorqueScript& context, co
             realRPM = map(rpm, 0.0f, 0.2f, 0.0f, (float)config.Data.IdleRPM);
         }
 
-        float power = (0.105f * totalForceNm * realRPM) / 1000.0f;
+        float power = (0.10471975512f * totalForceNm * realRPM) / 1000.0f;
         float horsepower = (totalForceLbFt * realRPM) / 5252.0f;
 
         torqueData.RPMData = STorqueDataAdvanced{

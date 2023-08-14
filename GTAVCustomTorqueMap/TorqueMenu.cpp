@@ -20,6 +20,8 @@ namespace CustomTorque {
     std::vector<std::string> FormatTorqueLive(const STorqueData& torqueData);
 
     bool PromptSave(CTorqueScript& context, CConfig& config, Hash model, std::string plate, CConfig::ESaveType saveType);
+
+    const std::vector<std::string> MeasurementTypes { "Relative", "Metric", "Imperial" };
 }
 
 std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
@@ -169,8 +171,14 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
         mbCtx.Title("UI settings");
         mbCtx.Subtitle("");
 
+        mbCtx.StringArray("Measurement", MeasurementTypes, CustomTorque::GetSettings().UI.Measurement,
+            { "Change visualization and summary units.",
+              "Relative: Values as ratio of the max output.",
+              "Metric: Use kW and N-m.",
+              "Imperial: Use hp and lb-ft." });
+
         mbCtx.BoolOption("Enable tachometer", CustomTorque::GetSettings().UI.Tachometer.Enable,
-            { "Display a custom tachometer that incorporates the torque curve." });
+            { "Display a custom tachometer that represents the actual power output." });
 
         const std::vector<std::string> graphPosInfo{
             "Move tachometer position.",
@@ -247,29 +255,47 @@ std::vector<std::string> CustomTorque::FormatTorqueConfig(CTorqueScript& context
 }
 
 std::vector<std::string> CustomTorque::FormatTorqueLive(const STorqueData& torqueData) {
+    std::string rawMapTorque;
+    std::string actualOutput;
+
+    if (CustomTorque::GetSettings().UI.Measurement != 2) {
+        rawMapTorque = fmt::format("Mapped: {:3.0f} N-m", torqueData.RawMapForceNm);
+        if (torqueData.RPMData != std::nullopt)
+            actualOutput = fmt::format("Output: {:3.0f} kW / {:3.0f} N-m", torqueData.RPMData->PowerkW, torqueData.TotalForceNm);
+        else
+            actualOutput = fmt::format("Output: {:3.0f} N-m", torqueData.TotalForceNm);
+    }
+    else {
+        rawMapTorque = fmt::format("Mapped: {:3.0f} lb-ft", torqueData.RawMapForceNm * 0.737562f);
+        if (torqueData.RPMData != std::nullopt)
+            actualOutput = fmt::format("Output: {:3.0f} hp / {:3.0f} lb-ft", torqueData.RPMData->PowerHP, torqueData.TotalForceLbFt);
+        else
+            actualOutput = fmt::format("Output: {:3.0f} lb-ft", torqueData.TotalForceLbFt);
+    }
+
     std::vector<std::string> extras;
-    
     if (torqueData.RPMData != std::nullopt) {
         extras = {
             fmt::format("RPM: {:3.0f} ({:.2f})", torqueData.RPMData->RealRPM, torqueData.NormalizedRPM),
             fmt::format("Torque mult: {:.2f}x", torqueData.TorqueMult),
-            fmt::format("Mapped: {:3.0f} Nm", torqueData.RawMapForceNm),
-            fmt::format("Output: {:3.0f} HP / {:3.0f} lb-ft", torqueData.RPMData->PowerHP, torqueData.TotalForceLbFt),
-            fmt::format("Output: {:3.0f} kW / {:3.0f} Nm", torqueData.RPMData->PowerkW, torqueData.TotalForceNm),
+            rawMapTorque,
+            actualOutput,
         };
     }
     else {
         extras = {
             fmt::format("RPM: {:.2f}", torqueData.NormalizedRPM),
             fmt::format("Torque mult: {:.2f}x", torqueData.TorqueMult),
-            fmt::format("Mapped: {:3.0f} Nm", torqueData.RawMapForceNm),
-            fmt::format("Output: {:3.0f} lb-ft", torqueData.TotalForceLbFt),
-            fmt::format("Output: {:3.0f} Nm", torqueData.TotalForceNm),
-            "For RPM-derived data, add IdleRPM and RevLimitRPM in [Data] in the engine map file."
+            rawMapTorque,
+            actualOutput,
+            "Horsepower not calculated: Add IdleRPM and RevLimitRPM in [Data] in the engine map file for RPM-derived horsepower."
         };
     }
 
     extras.push_back("Performance upgrades and scripts may affect final output.");
+
+    if (CustomTorque::GetSettings().UI.Measurement != 0)
+        extras.push_back("Performance visualization is only based on handling.meta power.");
 
     return extras;
 }

@@ -30,6 +30,12 @@ void CScriptSettings::Load() {
 
     LOAD_VAL("Main", "EnableNPC", Main.EnableNPC);
 
+    LOAD_VAL("UI", "Measurement", UI.Measurement);
+    if (UI.Measurement < 0 || UI.Measurement > 2) {
+        logger.Write(ERROR, "UI.Measurement was %d, fixing range");
+        UI.Measurement = 0;
+    }
+
     LOAD_VAL("UI.Tachometer", "Enable", UI.Tachometer.Enable);
     LOAD_VAL("UI.Tachometer", "X", UI.Tachometer.X);
     LOAD_VAL("UI.Tachometer", "Y", UI.Tachometer.Y);
@@ -72,6 +78,8 @@ void CScriptSettings::Save() {
     CHECK_LOG_SI_ERROR(result, "load");
 
     SAVE_VAL("Main", "EnableNPC", Main.EnableNPC);
+
+    SAVE_VAL("UI", "Measurement", UI.Measurement);
 
     SAVE_VAL("UI.Tachometer", "Enable", UI.Tachometer.Enable);
     SAVE_VAL("UI.Tachometer", "X", UI.Tachometer.X);

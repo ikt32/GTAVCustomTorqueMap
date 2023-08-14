@@ -16,6 +16,8 @@ public:
     } Main;
 
     struct {
+        int Measurement = 0;
+
         struct {
             bool Enable = true;
             float X = 0.90f;

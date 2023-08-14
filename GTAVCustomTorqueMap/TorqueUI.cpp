@@ -4,6 +4,7 @@
 #include "Script.hpp"
 #include "TorqueUtil.hpp"
 
+#include "Memory/Offsets.hpp"
 #include "Memory/VehicleExtensions.hpp"
 #include "Util/Color.h"
 #include "Util/Math.hpp"
@@ -16,6 +17,16 @@
 
 using VExt = VehicleExtensions;
 
+float kW2hp(float val) { return val * 1.34102f; }
+float Nm2lbft(float val) { return val * 0.737562f; }
+
+float GetHandlingTorqueNm(Vehicle vehicle) {
+    auto handlingPtr = VExt::GetHandlingPtr(vehicle);
+    float weight = *reinterpret_cast<float*>(handlingPtr + hOffsets1604.fMass);
+    float torqueNm = weight * *reinterpret_cast<float*>(handlingPtr + hOffsets1604.fInitialDriveForce);
+    return torqueNm;
+}
+
 void CustomTorque::DrawCurve(CTorqueScript& context, const CConfig& config, Vehicle vehicle) {
     struct SPoint {
         float x;
@@ -23,17 +34,104 @@ void CustomTorque::DrawCurve(CTorqueScript& context, const CConfig& config, Vehi
         bool solid;
     };
 
+    const SColor torqueCol{ .R = 219, .G = 86, .B = 55 }; // red-ish
+    const SColor powerCol{ .R = 68, .G = 134, .B = 244 }; // blue-ish
+
+    // Highlights
+    const SColor torqueColH{ .R = 225, .G = 86, .B = 36 }; // red
+    const SColor powerColH{ .R = 64, .G = 213, .B = 255 }; // blue-ish
+
     const int maxSamples = 100;
     const int idleRange = 20; // 0.2 of maxSamples
+    const int measurement = CustomTorque::GetSettings().UI.Measurement;
+
+    // Need to know RPM and power figures in order to display as absolute values
+    bool calcAvail =
+        config.Data.IdleRPM != 0 &&
+        config.Data.RevLimitRPM != 0 &&
+        ENTITY::DOES_ENTITY_EXIST(vehicle);
+
+    float maxTorqueNm = 0.0f;
+    float maxPowerkW = 0.0f;
+
+    float maxMeasurement = 1.0f;
+
+    if (calcAvail) {
+        float maxTorque = GetHandlingTorqueNm(vehicle);
+
+        // TODO: Eww
+        for (const auto& [relRpm, relTorque] : config.Data.TorqueMultMap) {
+            float realRPM = map(relRpm, 0.2f, 1.0f,
+                (float)config.Data.IdleRPM, (float)config.Data.RevLimitRPM);
+
+            if (relRpm < 0.2f) {
+                realRPM = map(relRpm, 0.0f, 0.2f, 0.0f, (float)config.Data.IdleRPM);
+            }
+
+            float torqueNm = relTorque * maxTorque;
+            if (maxTorqueNm < torqueNm)
+                maxTorqueNm = torqueNm;
+
+            // 1/((60) / (2 * pi))
+            float powerKw = (0.10471975512f * torqueNm * realRPM) / 1000.0f;
+            if (maxPowerkW < powerKw)
+                maxPowerkW = powerKw;
+        }
+
+        if (measurement == 0) {
+            maxMeasurement = 1.0f;
+        }
+        if (measurement == 1) {
+            maxMeasurement = std::max(maxTorqueNm, maxPowerkW);
+        }
+        if (measurement == 2) {
+            maxMeasurement = std::max(Nm2lbft(maxTorqueNm), kW2hp(maxPowerkW));
+        }
+    }
 
     std::vector<SPoint> torquePoints(maxSamples);
     std::vector<SPoint> powerPoints(maxSamples);
 
     for (int i = 0; i < maxSamples; i++) {
         float x = static_cast<float>(i) / static_cast<float>(maxSamples);
-        float y = CustomTorque::GetScaledValue(config.Data.TorqueMultMap, x);
-        torquePoints[i] = { x, y, i >= idleRange };
-        powerPoints[i] = { x, y * x, i >= idleRange };
+        float torqueRel = CustomTorque::GetScaledValue(config.Data.TorqueMultMap, x);
+
+        float torqueDisplay = 0;
+        float powerDisplay = 0;
+
+        // Relative scaling - Cross at (RPM = 1.0)
+        if (measurement == 0 || !calcAvail) {
+            torqueDisplay = torqueRel;
+            powerDisplay = torqueDisplay * x;
+        }
+
+        float realRPM = map(x, 0.2f, 1.0f,
+            (float)config.Data.IdleRPM, (float)config.Data.RevLimitRPM);
+
+        if (x < 0.2f) {
+            realRPM = map(x, 0.0f, 0.2f, 0.0f, (float)config.Data.IdleRPM);
+        }
+
+        float torqueNm = torqueRel * maxTorqueNm;
+
+        // Metric - Cross at 9549 RPM ((60 * 1000) / (2 * pi))
+        if (measurement == 1 && calcAvail) {
+            const float powerkW = (0.10471975512f * torqueNm * realRPM) / 1000.0f;
+
+            torqueDisplay = torqueNm / maxMeasurement;
+            powerDisplay = powerkW / maxMeasurement;
+        }
+
+        // Imperial - Cross at 5252 RPM (33000 / ( 2 * pi))
+        if (measurement == 2 && calcAvail) {
+            const float powerhp = (Nm2lbft(torqueNm) * realRPM) / 5252.0f;
+
+            torqueDisplay = Nm2lbft(torqueNm) / maxMeasurement;
+            powerDisplay = powerhp / maxMeasurement;
+        }
+
+        torquePoints[i] = { x, torqueDisplay, i >= idleRange };
+        powerPoints[i] = { x, powerDisplay, i >= idleRange };
     }
 
     float rectX = CustomTorque::GetSettings().UI.TorqueGraph.X;
@@ -45,28 +143,52 @@ void CustomTorque::DrawCurve(CTorqueScript& context, const CConfig& config, Vehi
 
     float vertAxisLabelX = rectX - 0.5f * rectW - 0.05f;
     float vertAxisLabelY = rectY;
-    UI::ShowText(vertAxisLabelX, vertAxisLabelY, 0.25f, "Torque\nMult");
+    if (measurement == 0 || !calcAvail)
+        UI::ShowText(vertAxisLabelX, vertAxisLabelY, 0.25f, "~r~Torque ~n~ ~b~Power");
+    if (measurement == 1 && calcAvail)
+        UI::ShowText(vertAxisLabelX, vertAxisLabelY, 0.25f, "~r~N-m ~n~ ~b~kW");
+    if (measurement == 2 && calcAvail)
+        UI::ShowText(vertAxisLabelX, vertAxisLabelY, 0.25f, "~r~lb-ft ~n~ ~b~hp");
 
     float vertAxisValueX = rectX - 0.5f * rectW - 0.025f;
     float vertAxis0Y = rectY + 0.5f * rectH;
-    UI::ShowText(vertAxisValueX, vertAxis0Y, 0.25f, "0.00x");
+    if (measurement == 0 || !calcAvail)
+        UI::ShowText(vertAxisValueX, vertAxis0Y, 0.25f, "0.00x");
+    else
+        UI::ShowText(vertAxisValueX, vertAxis0Y, 0.25f, "0");
 
     float vertAxis1Y = rectY - 0.5f * rectH;
-    UI::ShowText(vertAxisValueX, vertAxis1Y, 0.25f, "1.00x");
+    if (measurement == 0 || !calcAvail)
+        UI::ShowText(vertAxisValueX, vertAxis1Y, 0.25f, "1.00x");
+    else
+        UI::ShowText(vertAxisValueX, vertAxis1Y, 0.25f, fmt::format("{:.0f}", maxMeasurement));
 
     float horAxisLabelX = rectX;
     float horAxisLabelY = rectY + 0.5f * rectH + 0.05f;
-    UI::ShowText(horAxisLabelX, horAxisLabelY, 0.25f, "Normalized RPM");
+    if (measurement == 0 || !calcAvail)
+        UI::ShowText(horAxisLabelX, horAxisLabelY, 0.25f, "Normalized RPM");
+    else
+        UI::ShowText(horAxisLabelX, horAxisLabelY, 0.25f, "RPM");
 
     float horAxis0_0X = rectX - 0.5f * rectW;
     float horAxisValueY = rectY + 0.5f * rectH + 0.025f;
-    UI::ShowText(horAxis0_0X, horAxisValueY, 0.25f, "0.00");
+    if (measurement == 0 || !calcAvail)
+        UI::ShowText(horAxis0_0X, horAxisValueY, 0.25f, "0.00");
+    else
+        UI::ShowText(horAxis0_0X, horAxisValueY, 0.25f, "0");
 
     float horAxis0_2X = rectX - 0.5f * rectW + 0.2f * rectW;
-    UI::ShowText(horAxis0_2X, horAxisValueY, 0.25f, "0.20\n(Idle)");
+    if (measurement == 0 || !calcAvail)
+        UI::ShowText(horAxis0_2X, horAxisValueY, 0.25f, "0.20 ~n~ (Idle)");
+    else
+        UI::ShowText(horAxis0_2X, horAxisValueY, 0.25f, fmt::format("{} ~n~ (Idle)", config.Data.IdleRPM));
 
     float horAxis1_0X = rectX + 0.5f * rectW;
-    UI::ShowText(horAxis1_0X, horAxisValueY, 0.25f, "1.00");
+    if (measurement == 0 || !calcAvail)
+        UI::ShowText(horAxis1_0X, horAxisValueY, 0.25f, "1.00");
+    else
+        UI::ShowText(horAxis1_0X, horAxisValueY, 0.25f, fmt::format("{}", config.Data.RevLimitRPM));
+
 
     // Left
     GRAPHICS::DRAW_RECT({ rectX - rectW * 0.5f - blockW * 0.5f, rectY },
@@ -102,9 +224,7 @@ void CustomTorque::DrawCurve(CTorqueScript& context, const CConfig& config, Vehi
         float pointY = rectY + 0.5f * rectH - point.y * rectH;
         GRAPHICS::DRAW_RECT({ pointX, pointY },
             blockW, blockH,
-            219,
-            86,
-            55,
+            torqueCol.R, torqueCol.G, torqueCol.B,
             point.solid ? 255 : 91,
             0);
     }
@@ -114,9 +234,7 @@ void CustomTorque::DrawCurve(CTorqueScript& context, const CConfig& config, Vehi
         float pointY = rectY + 0.5f * rectH - point.y * rectH;
         GRAPHICS::DRAW_RECT({ pointX, pointY },
             blockW, blockH,
-            68,
-            134,
-            244,
+            powerCol.R, powerCol.G, powerCol.B,
             point.solid ? 255 : 91,
             0);
     }
@@ -129,21 +247,120 @@ void CustomTorque::DrawCurve(CTorqueScript& context, const CConfig& config, Vehi
         };
 
         float pointX = rectX - 0.5f * rectW + currentPoint.first * rectW;
-        float pointY = rectY + 0.5f * rectH - currentPoint.second * rectH;
 
         // RPM
         float horAxisValueX = pointX;
         float horAxisValueY = rectY + 0.5f * rectH + 0.025f;
-        UI::ShowText(horAxisValueX, horAxisValueY, 0.25f, fmt::format("{:1.2f}", input));
+        if (measurement == 0 || !calcAvail)
+            UI::ShowText(horAxisValueX, horAxisValueY, 0.25f, fmt::format("{:1.2f}", input));
+        else
+            UI::ShowText(horAxisValueX, horAxisValueY, 0.25f, fmt::format("{:.0f}", map(input, 0.2f, 1.0f, (float)config.Data.IdleRPM, (float)config.Data.RevLimitRPM)));
 
-        // Mult
+        // Vertical RPM bar
+        GRAPHICS::DRAW_RECT({ pointX, rectY },
+            0.5f * blockW, rectH + 2.0f * blockH,
+            255, 255, 255, 63, 0);
+
+        // Torque / Power
         float vertAxisValueX = rectX - 0.5f * rectW - 0.025f;
-        float vertAxisValueY = pointY;
-        UI::ShowText(vertAxisValueX, vertAxisValueY, 0.25f, fmt::format("{:1.2f}x", currentPoint.second));
 
-        GRAPHICS::DRAW_RECT({ pointX, pointY },
+        float torqueValue = 0.0f;
+        float powerValue = 0.0f;
+
+        float torqueScaled = 0.0f;
+        float powerScaled = 0.0f;
+
+        if (measurement == 0 || !calcAvail) {
+            torqueValue = currentPoint.second;
+            powerValue = currentPoint.first * currentPoint.second;
+
+            torqueScaled = torqueValue;
+            powerScaled = powerValue;
+        }
+        if (measurement == 1 && calcAvail ||
+            measurement == 2 && calcAvail) {
+            float realRPM = map(input, 0.2f, 1.0f,
+                (float)config.Data.IdleRPM, (float)config.Data.RevLimitRPM);
+
+            if (input < 0.2f) {
+                realRPM = map(input, 0.0f, 0.2f, 0.0f, (float)config.Data.IdleRPM);
+            }
+
+            float torqueNm = currentPoint.second * maxTorqueNm;
+
+            // Metric - Cross at 9549 RPM ((60 * 1000) / (2 * pi))
+            if (measurement == 1 && calcAvail) {
+                const float powerkW = (0.10471975512f * torqueNm * realRPM) / 1000.0f;
+
+                torqueValue = torqueNm;
+                powerValue = powerkW;
+
+                torqueScaled = torqueNm / maxMeasurement;
+                powerScaled = powerkW / maxMeasurement;
+            }
+
+            // Imperial - Cross at 5252 RPM (33000 / ( 2 * pi))
+            if (measurement == 2 && calcAvail) {
+                const float powerhp = (Nm2lbft(torqueNm) * realRPM) / 5252.0f;
+
+                torqueValue = Nm2lbft(torqueNm);
+                powerValue = powerhp;
+
+                torqueScaled = Nm2lbft(torqueNm) / maxMeasurement;
+                powerScaled = powerhp / maxMeasurement;
+            }
+        }
+
+        // Torque
+        float pointYTorque = rectY + 0.5f * rectH - torqueScaled * rectH;
+        if (measurement == 0 || !calcAvail) {
+            // pointYTorque's currentPoint.second needs no modification
+            UI::ShowText(vertAxisValueX, pointYTorque, 0.25f, fmt::format("~r~{:1.2f}x", torqueValue));
+        }
+        if (measurement == 1 && calcAvail) {
+            pointYTorque = rectY + 0.5f * rectH - torqueScaled * rectH;
+            UI::ShowText(vertAxisValueX, pointYTorque, 0.25f, fmt::format("~r~{:.0f}", torqueValue));
+        }
+        if (measurement == 2 && calcAvail) {
+            pointYTorque = rectY + 0.5f * rectH - torqueScaled * rectH;
+            UI::ShowText(vertAxisValueX, pointYTorque, 0.25f, fmt::format("~r~{:.0f}", torqueValue));
+        }
+
+        // Horizontal torque bar
+        GRAPHICS::DRAW_RECT({ rectX, pointYTorque },
+            rectW + 2.0f * blockW, 0.5f * blockH,
+            255, 255, 255, 63, 0);
+
+        // Torque dot
+        GRAPHICS::DRAW_RECT({ pointX, pointYTorque },
             1.5f * blockW, 1.5f * blockH,
-            255, 0, 0, 255, 0);
+            torqueColH.R, torqueColH.G, torqueColH.B, 255, 0);
+
+        // Power
+        float pointYPower = rectY + 0.5f * rectH - powerScaled * rectH;
+        if (measurement == 0 || !calcAvail) {
+            // pointYPower's (currentPoint.second * input) needs no modification
+            UI::ShowText(vertAxisValueX, pointYPower, 0.25f, fmt::format("~b~{:1.2f}x", powerValue));
+        }
+
+        if (measurement == 1 && calcAvail) {
+            pointYPower = rectY + 0.5f * rectH - powerScaled * rectH;
+            UI::ShowText(vertAxisValueX, pointYPower, 0.25f, fmt::format("~b~{:.0f}", powerValue));
+        }
+        if (measurement == 2 && calcAvail) {
+            pointYPower = rectY + 0.5f * rectH - powerScaled * rectH;
+            UI::ShowText(vertAxisValueX, pointYPower, 0.25f, fmt::format("~b~{:.0f}", powerValue));
+        }
+
+        // Horizontal power bar
+        GRAPHICS::DRAW_RECT({ rectX, pointYPower },
+            rectW + 2.0f * blockW, 0.5f * blockH,
+            255, 255, 255, 63, 0);
+
+        // Power dot
+        GRAPHICS::DRAW_RECT({ pointX, pointYPower },
+            1.5f * blockW, 1.5f * blockH,
+            powerColH.R, powerColH.G, powerColH.B, 255, 0);
     }
 }
 
