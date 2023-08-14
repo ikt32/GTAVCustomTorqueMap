@@ -40,6 +40,9 @@ void CustomTorque::DrawCurve(CTorqueScript& context, const CConfig& config, Vehi
         config.Data.RevLimitRPM != 0 &&
         ENTITY::DOES_ENTITY_EXIST(vehicle);
 
+    // To show the default torque map as not-a-flat-line
+    bool defaultMap = Util::strcmpwi(config.Name, "Default");
+
     float maxTorqueNm = 0.0f;
     float maxPowerkW = 0.0f;
 
@@ -68,7 +71,17 @@ void CustomTorque::DrawCurve(CTorqueScript& context, const CConfig& config, Vehi
 
     for (int i = 0; i < maxSamples; i++) {
         float x = static_cast<float>(i) / static_cast<float>(maxSamples);
-        float torqueRel = CustomTorque::GetScaledValue(config.Data.TorqueMultMap, x);
+
+        float torqueMultiplier = 1.0f;
+        if (defaultMap) {
+            if (x > 0.8f) {
+                torqueMultiplier = map(x, 0.8f, 1.0f, 1.0f, 0.6f);
+            }
+            else {
+                torqueMultiplier = 1.0f;
+            }
+        }
+        float torqueRel = CustomTorque::GetScaledValue(config.Data.TorqueMultMap, x) * torqueMultiplier;
 
         float torqueDisplay = 0;
         float powerDisplay = 0;
@@ -215,9 +228,20 @@ void CustomTorque::DrawCurve(CTorqueScript& context, const CConfig& config, Vehi
 
     if (ENTITY::DOES_ENTITY_EXIST(vehicle)) {
         float input = VExt::GetCurrentRPM(vehicle);
+
+        float torqueMultiplier = 1.0f;
+        if (defaultMap) {
+            if (input > 0.8f) {
+                torqueMultiplier = map(input, 0.8f, 1.0f, 1.0f, 0.6f);
+            }
+            else {
+                torqueMultiplier = 1.0f;
+            }
+        }
+
         std::pair<float, float> currentPoint = {
             input,
-            CustomTorque::GetScaledValue(config.Data.TorqueMultMap, input)
+            CustomTorque::GetScaledValue(config.Data.TorqueMultMap, input) * torqueMultiplier
         };
 
         float pointX = rectX - 0.5f * rectW + currentPoint.first * rectW;

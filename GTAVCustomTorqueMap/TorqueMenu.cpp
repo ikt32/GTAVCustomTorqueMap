@@ -12,6 +12,7 @@
 #include "Util/UI.hpp"
 #include "Util/Math.hpp"
 #include "Util/ScriptUtils.h"
+#include "Util/String.hpp"
 
 #include <format>
 #include <optional>
@@ -62,6 +63,9 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
 
             details = FormatTorqueConfig(context, *activeConfig);
             details.insert(details.begin(), "Raw engine map, without boost or other effects applied.");
+            if (Util::strcmpwi(activeConfig->Name, "Default")) {
+                details.push_back("Default map: Due to the game, the torque drop only exists in 2nd gear and up.");
+            }
 
             bool showTorqueMap = false;
             mbCtx.OptionPlus("Torque map info", extra, &showTorqueMap, nullptr, nullptr, torqueExtraTitle, details);
