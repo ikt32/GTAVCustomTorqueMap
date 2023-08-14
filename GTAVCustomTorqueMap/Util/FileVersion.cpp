@@ -39,7 +39,7 @@ SVersion getExeVersion(const std::string & exe) {
                         // Doesn't matter if you are on 32 bit or 64 bit,
                         // DWORD is always 32 bits, so first two revision numbers
                         // come from dwFileVersionMS, last two come from dwFileVersionLS
-                        logger.Write(INFO, "File Version: %d.%d.%d.%d",
+                        LOG(INFO, "File Version: {}.{}.{}.{}",
                             verInfo->dwFileVersionMS >> 16 & 0xffff,
                             verInfo->dwFileVersionMS >> 0 & 0xffff,
                             verInfo->dwFileVersionLS >> 16 & 0xffff,
@@ -52,22 +52,22 @@ SVersion getExeVersion(const std::string & exe) {
             }
         }
     }
-    logger.Write(ERROR, "File version detection failed");
+    LOG(ERROR, "File version detection failed");
     return { 0, 0 };
 }
 
 SVersion getExeInfo() {
     std::string currExe = Paths::GetRunningExecutablePath();
-    logger.Write(INFO, "Running executable: %s", currExe.c_str());
+    LOG(INFO, "Running executable: {}", currExe);
 
     HMODULE citizenGameHandle = GetModuleHandle(L"CitizenGame.dll");
 
     if (citizenGameHandle != nullptr) {
-        logger.Write(INFO, "FiveM detected");
+        LOG(INFO, "FiveM detected");
 
         FARPROC funcGetGameVersion = GetProcAddress(citizenGameHandle, "GetGameVersion");
         if (!funcGetGameVersion) {
-            logger.Write(INFO, "No GetGameVersion in CitizenGame.dll, using default b1604");
+            LOG(INFO, "No GetGameVersion in CitizenGame.dll, using default b1604");
             return { 1604, 0 };
         }
 

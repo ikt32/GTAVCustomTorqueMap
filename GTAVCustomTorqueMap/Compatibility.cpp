@@ -13,10 +13,10 @@ template <typename T>
 T CheckAddr(HMODULE lib, const std::string& funcName) {
     FARPROC func = GetProcAddress(lib, funcName.c_str());
     if (!func) {
-        logger.Write(ERROR, "[Compat] Couldn't get function [%s]", funcName.c_str());
+        LOG(ERROR, "[Compat] Couldn't get function [{}]", funcName);
         return nullptr;
     }
-    logger.Write(DEBUG, "[Compat] Found function [%s]", funcName.c_str());
+    LOG(DEBUG, "[Compat] Found function [{}]", funcName);
     return reinterpret_cast<T>(func);
 }
 
@@ -29,16 +29,16 @@ void Compatibility::Cleanup() {
 }
 
 void TurboFix::Setup() {
-    logger.Write(INFO, "[Compat] Setting up TurboFix");
+    LOG(INFO, "[Compat] Setting up TurboFix");
     if (TurboFixModule &&
         TF_Active && TF_GetAbsoluteBoostMax) {
-        logger.Write(INFO, "[Compat] TurboFix already loaded");
+        LOG(INFO, "[Compat] TurboFix already loaded");
         return;
     }
 
     TurboFixModule = GetModuleHandle(L"TurboFix.asi");
     if (!TurboFixModule) {
-        logger.Write(INFO, "[Compat] TurboFix.asi not found");
+        LOG(INFO, "[Compat] TurboFix.asi not found");
         return;
     }
 

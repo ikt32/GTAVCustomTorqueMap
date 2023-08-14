@@ -14,8 +14,8 @@
 
 #define CHECK_LOG_SI_ERROR(result, operation, file) \
     if ((result) < 0) { \
-        logger.Write(ERROR, "[Config] %s Failed to %s, SI_Error [%d]", \
-        file, operation, result); \
+        LOG(ERROR, "[Config] {} Failed to {}, SI_Error [{}]", \
+        file, operation, static_cast<int>(result)); \
     }
 
 #define SAVE_VAL(section, key, option) \
@@ -35,10 +35,10 @@ CConfig CConfig::Read(const std::string& configFile) {
     ini.SetUnicode();
     ini.SetMultiLine(true);
     SI_Error result = ini.LoadFile(configFile.c_str());
-    CHECK_LOG_SI_ERROR(result, "load", configFile.c_str());
+    CHECK_LOG_SI_ERROR(result, "load", configFile);
 
     config.Name = std::filesystem::path(configFile).stem().string();
-    logger.Write(INFO, "Loading vehicle config [%s]", config.Name.c_str());
+    LOG(INFO, "Loading vehicle config [{}]", config.Name);
 
     // [ID]
     std::string modelNamesAll = ini.GetValue("ID", "Models", "");
@@ -88,19 +88,19 @@ CConfig CConfig::Read(const std::string& configFile) {
             float rpm, mult;
             auto scanned = sscanf_s(line.c_str(), "%f|%f", &rpm, &mult);
             if (scanned != 2) {
-                logger.Write(ERROR, "Failed to read line in torque map file '%s'", line.c_str());
+                LOG(ERROR, "Failed to read line in torque map file '{}'", line);
                 continue;
             }
             config.Data.TorqueMultMap.emplace(rpm, mult);
         }
     }
     else {
-        logger.Write(ERROR, "Missing torque mult map. Raw data: [%s]", torqueMapString.c_str());
+        LOG(ERROR, "Missing torque mult map. Raw data: [{}]", torqueMapString);
     }
 
     if (config.Data.TorqueMultMap.begin() != config.Data.TorqueMultMap.end() &&
         config.Data.TorqueMultMap.begin()->first > 1.0f) {
-        logger.Write(DEBUG, "RPM|Torque map detected, converting into relative values");
+        LOG(DEBUG, "RPM|Torque map detected, converting into relative values");
 
         float maxRpm = 0.0f;
         float maxTorque = 0.0f;
@@ -155,8 +155,8 @@ bool CConfig::Write(const std::string& newName, Hash model, std::string plate, E
     // _Not_ having this just nukes the entire file, including any comments.
     SI_Error result = ini.LoadFile(configFile.c_str());
     if (result < 0) {
-        logger.Write(WARN, "[Config] %s Failed to load, SI_Error [%d]. (No problem if no file exists yet)",
-            configFile.c_str(), result);
+        LOG(WARN, "[Config] {} Failed to load, SI_Error [{}]. (No problem if no file exists yet)",
+            configFile, (int)result);
     }
 
     // [ID]
@@ -195,7 +195,7 @@ bool CConfig::Write(const std::string& newName, Hash model, std::string plate, E
     ini.SetValue("Data", "TorqueMultMap", torqueMultMap.c_str());
 
     result = ini.SaveFile(configFile.c_str());
-    CHECK_LOG_SI_ERROR(result, "save", configFile.c_str());
+    CHECK_LOG_SI_ERROR(result, "save", configFile);
     if (result < 0)
         return false;
     return true;

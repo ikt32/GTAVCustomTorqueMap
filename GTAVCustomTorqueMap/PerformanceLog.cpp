@@ -103,7 +103,7 @@ void PerformanceLog::Finish(Vehicle playerVehicle) {
     
     if (auto result = localtime_s(&local_time, &t); result != 0) {
         UI::Notify(std::format("~r~Internal error, could not create recording"), true);
-        logger.Write(ERROR, "localtime_s failed: %d", result);
+        LOG(ERROR, "localtime_s failed: {}", (int)result);
         return;
     }
 

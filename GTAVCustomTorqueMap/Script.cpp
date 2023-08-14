@@ -34,12 +34,12 @@ namespace {
 
 void CustomTorque::ScriptMain() {
     if (!initialized) {
-        logger.Write(INFO, "Script started");
+        LOG(INFO, "Script started");
         ScriptInit();
         initialized = true;
     }
     else {
-        logger.Write(INFO, "Script restarted");
+        LOG(INFO, "Script restarted");
     }
     ScriptTick();
 }
@@ -56,7 +56,7 @@ void CustomTorque::ScriptInit() {
 
     settings = std::make_shared<CScriptSettings>(settingsGeneralPath);
     settings->Load();
-    logger.Write(INFO, "Settings loaded");
+    LOG(INFO, "Settings loaded");
 
     CustomTorque::LoadConfigs();
 
@@ -174,19 +174,19 @@ uint32_t CustomTorque::LoadConfigs() {
         Constants::ModDir +
         "\\Configs";
 
-    logger.Write(DEBUG, "Clearing and reloading configs");
+    LOG(DEBUG, "Clearing and reloading configs");
 
     configs.clear();
 
     if (!(fs::exists(fs::path(configsPath)) && fs::is_directory(fs::path(configsPath)))) {
-        logger.Write(ERROR, "Directory [%s] not found!", configsPath.c_str());
+        LOG(ERROR, "Directory [{}] not found!", configsPath);
         CustomTorque::UpdateActiveConfigs();
         return 0;
     }
 
     for (const auto& file : fs::directory_iterator(configsPath)) {
         if (Util::to_lower(fs::path(file).extension().string()) != ".ini") {
-            logger.Write(DEBUG, "Skipping [%s] - not .ini", file.path().stem().string().c_str());
+            LOG(DEBUG, "Skipping [{}] - not .ini", file.path().stem().string());
             continue;
         }
 
@@ -197,19 +197,19 @@ uint32_t CustomTorque::LoadConfigs() {
         }
 
         configs.push_back(config);
-        logger.Write(DEBUG, "Loaded vehicle config [%s]", config.Name.c_str());
+        LOG(DEBUG, "Loaded vehicle config [{}]", config.Name);
     }
 
     if (configs.empty() ||
         !configs.empty() && !Util::strcmpwi(configs[0].Name, "Default")) {
-        logger.Write(WARN, "No default config found, generating a default one and saving it...");
+        LOG(WARN, "No default config found, generating a default one and saving it...");
         CConfig defaultConfig;
         defaultConfig.Name = "Default";
         configs.insert(configs.begin(), defaultConfig);
         defaultConfig.Write(CConfig::ESaveType::GenericNone);
     }
 
-    logger.Write(INFO, "Configs loaded: %d", configs.size());
+    LOG(INFO, "Configs loaded: {}", configs.size());
 
     CustomTorque::UpdateActiveConfigs();
     return static_cast<unsigned>(configs.size());

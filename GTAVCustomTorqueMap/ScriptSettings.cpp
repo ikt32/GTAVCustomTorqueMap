@@ -7,8 +7,8 @@
 
 #define CHECK_LOG_SI_ERROR(result, operation) \
     if (result < 0) { \
-        logger.Write(ERROR, "[Settings] %s Failed to %s, SI_Error [%d]", \
-        __FUNCTION__, operation, result); \
+        LOG(ERROR, "[Settings] {} Failed to {}, SI_Error [{}]", \
+        __FUNCTION__, operation, static_cast<int>(result)); \
     }
 
 #define SAVE_VAL(section, key, option) \
@@ -32,7 +32,7 @@ void CScriptSettings::Load() {
 
     LOAD_VAL("UI", "Measurement", UI.Measurement);
     if (UI.Measurement < 0 || UI.Measurement > 2) {
-        logger.Write(ERROR, "UI.Measurement was %d, fixing range");
+        LOG(ERROR, "UI.Measurement was {}, fixing range");
         UI.Measurement = 0;
     }
 
