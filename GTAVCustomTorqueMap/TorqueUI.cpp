@@ -16,22 +16,36 @@
 
 using VExt = VehicleExtensions;
 
-void CustomTorque::DrawCurve(CTorqueScript& context, const CConfig& config, Vehicle vehicle) {
-    struct SPoint {
-        float x;
-        float y;
-        bool solid;
-    };
+struct SPoint {
+    float x;
+    float y;
+    bool solid;
+};
 
-    const SColor torqueCol{ .R = 219, .G = 86, .B = 55 }; // red-ish
-    const SColor powerCol{ .R = 68, .G = 134, .B = 244 }; // blue-ish
+struct SPerformanceSample {
+    SPoint TorquePoint;
+    SPoint PowerPoint;
+
+    std::optional<SPoint> BoostTorquePoint;
+    std::optional<SPoint> BoostPowerPoint;
+};
+
+namespace {
+    // Normal colours
+    const SColor sColorTorque{ .R = 219, .G = 86, .B = 55 }; // red-ish
+    const SColor sColorPower{ .R = 68, .G = 134, .B = 244 }; // blue-ish
 
     // Highlights
-    const SColor torqueColH{ .R = 225, .G = 86, .B = 36 }; // red
-    const SColor powerColH{ .R = 64, .G = 213, .B = 255 }; // blue-ish
+    const SColor sColorTorqueHigh{ .R = 225, .G = 86, .B = 36 }; // red
+    const SColor sColorPowerHigh{ .R = 64, .G = 213, .B = 255 }; // blue-ish
 
-    const int maxSamples = 100;
-    const int idleRange = 20; // 0.2 of maxSamples
+    constexpr int sMaxDisplaySamples = 100;
+    constexpr int sIdleRangeSamples = static_cast<int>(static_cast<float>(sMaxDisplaySamples) * 0.2f);
+
+    const float sBaseTurboTorqueMult = 1.1f;
+}
+
+void CustomTorque::DrawCurve(CTorqueScript& context, const CConfig& config, Vehicle vehicle) {
     const int measurement = CustomTorque::GetSettings().UI.Measurement;
 
     // Need to know RPM and power figures in order to display as absolute values
@@ -66,11 +80,23 @@ void CustomTorque::DrawCurve(CTorqueScript& context, const CConfig& config, Vehi
         }
     }
 
-    std::vector<SPoint> torquePoints(maxSamples);
-    std::vector<SPoint> powerPoints(maxSamples);
+    // TODO: This scaling is not accurate, replace
+    // Propose: Some solution where the two whole torque curves are calculated beforehand (e.g. enter veh)
+    // This method should only display it.
+    if (Util::VehicleHasTurboMod(vehicle)) {
+        if (TurboFix::Active()) {
+            float boost = TurboFix::GetAbsoluteBoostConfig(TurboFix::GetActiveConfigName(), -1.0f);
+            maxMeasurement *= std::max(1.0f, 1.0f + (boost * 0.1f));
+        }
+        else {
+            maxMeasurement *= sBaseTurboTorqueMult;
+        }
+    }
 
-    for (int i = 0; i < maxSamples; i++) {
-        float x = static_cast<float>(i) / static_cast<float>(maxSamples);
+    std::vector<SPerformanceSample> perfSamples(sMaxDisplaySamples);
+
+    for (int i = 0; i < sMaxDisplaySamples; i++) {
+        float x = static_cast<float>(i) / static_cast<float>(sMaxDisplaySamples);
 
         float torqueMultiplier = 1.0f;
         if (defaultMap) {
@@ -88,8 +114,10 @@ void CustomTorque::DrawCurve(CTorqueScript& context, const CConfig& config, Vehi
 
         // Relative scaling - Cross at (RPM = 1.0)
         if (measurement == 0 || !calcAvail) {
-            torqueDisplay = torqueRel;
-            powerDisplay = torqueDisplay * x;
+            float powerRel = torqueDisplay * x;
+
+            torqueDisplay = torqueRel / maxMeasurement;
+            powerDisplay = powerRel / maxMeasurement;
         }
 
         float realRPM = map(x, 0.2f, 1.0f,
@@ -117,15 +145,35 @@ void CustomTorque::DrawCurve(CTorqueScript& context, const CConfig& config, Vehi
             powerDisplay = powerhp / maxMeasurement;
         }
 
-        torquePoints[i] = { x, torqueDisplay, i >= idleRange };
-        powerPoints[i] = { x, powerDisplay, i >= idleRange };
+        std::optional<SPoint> boostTorquePoint;
+        std::optional<SPoint> boostPowerPoint;
+
+        if (Util::VehicleHasTurboMod(vehicle)) {
+            if (TurboFix::Active()) {
+                float boost = TurboFix::GetAbsoluteBoostConfig(TurboFix::GetActiveConfigName(), x);
+                float torqueMult = std::max(1.0f, 1.0f + (boost * 0.1f));
+                boostTorquePoint = { x, torqueDisplay * torqueMult, false };
+                boostPowerPoint = { x, powerDisplay * torqueMult, false };
+            }
+            else {
+                boostTorquePoint = { x, torqueDisplay * sBaseTurboTorqueMult, false };
+                boostPowerPoint = { x, powerDisplay * sBaseTurboTorqueMult, false };
+            }
+        }
+
+        perfSamples[i] = {
+            .TorquePoint = { x, torqueDisplay, i >= sIdleRangeSamples },
+            .PowerPoint = { x, powerDisplay, i >= sIdleRangeSamples },
+            .BoostTorquePoint = boostTorquePoint,
+            .BoostPowerPoint = boostPowerPoint,
+        };
     }
 
     float rectX = CustomTorque::GetSettings().UI.TorqueGraph.X;
     float rectY = CustomTorque::GetSettings().UI.TorqueGraph.Y;
     float rectW = CustomTorque::GetSettings().UI.TorqueGraph.W / GRAPHICS::GET_ASPECT_RATIO(FALSE);
     float rectH = CustomTorque::GetSettings().UI.TorqueGraph.H;
-    float blockW = rectW / maxSamples;//0.001f * (16.0f / 9.0f) / GRAPHICS::_GET_ASPECT_RATIO(FALSE);
+    float blockW = rectW / sMaxDisplaySamples;//0.001f * (16.0f / 9.0f) / GRAPHICS::_GET_ASPECT_RATIO(FALSE);
     float blockH = blockW * GRAPHICS::GET_ASPECT_RATIO(FALSE);
 
     float vertAxisLabelX = rectX - 0.5f * rectW - 0.05f;
@@ -206,24 +254,23 @@ void CustomTorque::DrawCurve(CTorqueScript& context, const CConfig& config, Vehi
         rectW + blockW / 2.0f, rectH + blockH / 2.0f,
         0, 0, 0, 191, 0);
 
-    for (auto point : torquePoints) {
+    auto drawPoint = [&](const SPoint& point, const SColor& color) {
         float pointX = rectX - 0.5f * rectW + point.x * rectW;
         float pointY = rectY + 0.5f * rectH - point.y * rectH;
         GRAPHICS::DRAW_RECT({ pointX, pointY },
             blockW, blockH,
-            torqueCol.R, torqueCol.G, torqueCol.B,
+            color.R, color.G, color.B,
             point.solid ? 255 : 91,
             0);
-    }
+    };
 
-    for (auto point : powerPoints) {
-        float pointX = rectX - 0.5f * rectW + point.x * rectW;
-        float pointY = rectY + 0.5f * rectH - point.y * rectH;
-        GRAPHICS::DRAW_RECT({ pointX, pointY },
-            blockW, blockH,
-            powerCol.R, powerCol.G, powerCol.B,
-            point.solid ? 255 : 91,
-            0);
+    for (const auto& sample : perfSamples) {
+        drawPoint(sample.TorquePoint, sColorTorque);
+        drawPoint(sample.PowerPoint, sColorPower);
+        if (sample.BoostTorquePoint)
+            drawPoint(*sample.BoostTorquePoint, sColorTorque);
+        if (sample.BoostPowerPoint)
+            drawPoint(*sample.BoostPowerPoint, sColorPower);
     }
 
     if (ENTITY::DOES_ENTITY_EXIST(vehicle)) {
@@ -332,7 +379,7 @@ void CustomTorque::DrawCurve(CTorqueScript& context, const CConfig& config, Vehi
         // Torque dot
         GRAPHICS::DRAW_RECT({ pointX, pointYTorque },
             1.5f * blockW, 1.5f * blockH,
-            torqueColH.R, torqueColH.G, torqueColH.B, 255, 0);
+            sColorTorqueHigh.R, sColorTorqueHigh.G, sColorTorqueHigh.B, 255, 0);
 
         // Power
         float pointYPower = rectY + 0.5f * rectH - powerScaled * rectH;
@@ -358,7 +405,7 @@ void CustomTorque::DrawCurve(CTorqueScript& context, const CConfig& config, Vehi
         // Power dot
         GRAPHICS::DRAW_RECT({ pointX, pointYPower },
             1.5f * blockW, 1.5f * blockH,
-            powerColH.R, powerColH.G, powerColH.B, 255, 0);
+            sColorPowerHigh.R, sColorPowerHigh.G, sColorPowerHigh.B, 255, 0);
     }
 }
 

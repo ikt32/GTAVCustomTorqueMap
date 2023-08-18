@@ -7,6 +7,8 @@ namespace {
     HMODULE TurboFixModule = nullptr;
     bool(*TF_Active)() = nullptr;
     float(*TF_GetAbsoluteBoostMax)() = nullptr;
+    const char*(*TF_GetActiveConfigName)() = nullptr;
+    float(*TF_GetAbsoluteBoostConfig)(const char*, float) = nullptr;
 }
 
 template <typename T>
@@ -44,6 +46,8 @@ void TurboFix::Setup() {
 
     TF_Active = CheckAddr<bool(*)()>(TurboFixModule, "TF_Active");
     TF_GetAbsoluteBoostMax = CheckAddr<float(*)()>(TurboFixModule, "TF_GetAbsoluteBoostMax");
+    TF_GetActiveConfigName = CheckAddr<const char*(*)()>(TurboFixModule, "TF_GetActiveConfigName");
+    TF_GetAbsoluteBoostConfig = CheckAddr<float(*)(const char*, float)>(TurboFixModule, "TF_GetAbsoluteBoostConfig");
 }
 
 bool TurboFix::Active() {
@@ -55,5 +59,17 @@ bool TurboFix::Active() {
 float TurboFix::GetAbsoluteBoostMax() {
     if (TF_GetAbsoluteBoostMax)
         return TF_GetAbsoluteBoostMax();
+    return 0.0f;
+}
+
+std::string TurboFix::GetActiveConfigName() {
+    if (TF_GetActiveConfigName)
+        return TF_GetActiveConfigName();
+    return std::string();
+}
+
+float TurboFix::GetAbsoluteBoostConfig(const std::string& configName, float rpm) {
+    if (TF_GetAbsoluteBoostConfig)
+        return TF_GetAbsoluteBoostConfig(configName.c_str(), rpm);
     return 0.0f;
 }
