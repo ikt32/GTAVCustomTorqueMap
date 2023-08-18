@@ -129,6 +129,7 @@ CConfig CConfig::Read(const std::string& configFile) {
 
         if (config.Data.Peak.Power < relTorque * relRpm) {
             config.Data.Peak.Power = relTorque * relRpm;
+            config.Data.Peak.PowerTorque = relTorque;
             config.Data.Peak.PowerRPM = relRpm;
         }
     }

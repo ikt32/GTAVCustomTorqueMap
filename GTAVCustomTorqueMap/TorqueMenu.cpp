@@ -260,7 +260,7 @@ std::vector<std::string> CustomTorque::FormatTorqueConfig(CTorqueScript& context
             float maxTorqueRPM = map(config.Data.Peak.TorqueRPM, 0.2f, 1.0f,
                 (float)config.Data.IdleRPM, (float)config.Data.RevLimitRPM);
 
-            float maxPowerkW = config.Data.Peak.Power * maxTorqueNm;
+            float maxPowerkW = config.Data.Peak.Power * maxTorqueNm * config.Data.Peak.PowerTorque;
             float maxPowerRPM = map(config.Data.Peak.PowerRPM, 0.2f, 1.0f,
                 (float)config.Data.IdleRPM, (float)config.Data.RevLimitRPM);
 

@@ -50,6 +50,7 @@ public:
             float TorqueRPM = 0.0f;
 
             float Power = 0.0f;
+            float PowerTorque = 0.0f; // Torque ratio @ peak power
             float PowerRPM = 0.0f;
         } Peak;
     } Data;
