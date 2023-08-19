@@ -23,7 +23,7 @@ namespace CustomTorque {
 
     bool PromptSave(CTorqueScript& context, CConfig& config, Hash model, std::string plate, CConfig::ESaveType saveType);
 
-    const std::vector<std::string> MeasurementTypes { "Relative", "Metric", "Imperial" };
+    const std::vector<std::string> sMeasurementTypes { "Relative", "Metric", "Imperial" };
 }
 
 std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
@@ -176,7 +176,7 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
         mbCtx.Title("UI settings");
         mbCtx.Subtitle("");
 
-        mbCtx.StringArray("Measurement", MeasurementTypes, CustomTorque::GetSettings().UI.Measurement,
+        mbCtx.StringArray("Measurement", sMeasurementTypes, CustomTorque::GetSettings().UI.Measurement,
             { "Change visualization and summary units.",
               "Relative: Values as ratio of the max output.",
               "Metric: Use kW and N-m.",
