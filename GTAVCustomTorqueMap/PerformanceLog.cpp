@@ -76,7 +76,7 @@ void UpdateRecording(Vehicle playerVehicle, CTorqueScript& context) {
 
     const auto& config = *context.ActiveConfig();
 
-    auto torqueData = CustomTorque::GetTorqueData(context, config);
+    auto torqueData = CustomTorque::GetTorqueData(playerVehicle, config);
     bool rpmAvailable = torqueData.RPMData != std::nullopt;
 
     LogEntry entry{

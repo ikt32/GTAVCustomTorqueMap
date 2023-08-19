@@ -34,25 +34,25 @@ float CustomTorque::GetScaledValue(const std::map<float, float>& map, float key)
 }
 
 
-CustomTorque::STorqueData CustomTorque::GetTorqueData(CTorqueScript& context, const CConfig& config) {
+CustomTorque::STorqueData CustomTorque::GetTorqueData(Vehicle vehicle, const CConfig& config) {
 
-    float rpm = VEHICLE::GET_IS_VEHICLE_ENGINE_RUNNING(context.GetVehicle()) ?
-        VExt::GetCurrentRPM(context.GetVehicle()) : 0.00f;
+    float rpm = VEHICLE::GET_IS_VEHICLE_ENGINE_RUNNING(vehicle) ?
+        VExt::GetCurrentRPM(vehicle) : 0.00f;
 
     float mapMultiplier = CustomTorque::GetScaledValue(config.Data.TorqueMultMap, rpm);
 
-    auto forces = VExt::GetWheelPower(context.GetVehicle());
+    auto forces = VExt::GetWheelPower(vehicle);
     float totalForce = 0.0f;
 
     for (uint32_t i = 0; i < forces.size(); ++i) {
         totalForce += forces[i];
     }
 
-    auto handlingPtr = VExt::GetHandlingPtr(context.GetVehicle());
+    auto handlingPtr = VExt::GetHandlingPtr(vehicle);
     float weight = *reinterpret_cast<float*>(handlingPtr + hOffsets1604.fMass);
     float baseDriveForce = weight * *reinterpret_cast<float*>(handlingPtr + hOffsets1604.fInitialDriveForce);
 
-    float gearRatio = VExt::GetGearRatios(context.GetVehicle())[VExt::GetGearCurr(context.GetVehicle())];
+    float gearRatio = VExt::GetGearRatios(vehicle)[VExt::GetGearCurr(vehicle)];
     float totalForceNm = (totalForce * weight) / gearRatio;
     float totalForceLbFt = totalForceNm / 1.356f;
 

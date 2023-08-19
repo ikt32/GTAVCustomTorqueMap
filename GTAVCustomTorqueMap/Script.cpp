@@ -220,7 +220,7 @@ bool CTM_GetPlayerRPMInfo(CTM_RPMInfo* rpmInfo) {
     if (rpmInfo && playerInstance) {
         auto* playerConfig = playerInstance->ActiveConfig();
         if (playerConfig) {
-            auto torqueData = CustomTorque::GetTorqueData(*playerInstance, *playerConfig);
+            auto torqueData = CustomTorque::GetTorqueData(playerInstance->GetVehicle(), *playerConfig);
             if (torqueData.RPMData) {
                 rpmInfo->IdleRPM = static_cast<float>(playerConfig->Data.IdleRPM);
                 rpmInfo->RevLimitRPM = static_cast<float>(playerConfig->Data.RevLimitRPM);

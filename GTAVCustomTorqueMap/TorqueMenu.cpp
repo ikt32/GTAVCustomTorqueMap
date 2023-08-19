@@ -57,7 +57,7 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
 
             torqueExtraTitle = activeConfig->Name;
 
-            auto torqueData = GetTorqueData(context, *activeConfig);
+            auto torqueData = GetTorqueData(context.GetVehicle(), *activeConfig);
 
             extra = FormatTorqueLive(torqueData);
 

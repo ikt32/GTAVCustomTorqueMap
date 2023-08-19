@@ -23,7 +23,7 @@ namespace CustomTorque {
     };
 
     float GetScaledValue(const std::map<float, float>& map, float key);
-    STorqueData GetTorqueData(CTorqueScript& context, const CConfig& config);
+    STorqueData GetTorqueData(Vehicle vehicle, const CConfig& config);
 
     inline float kW2hp(float val) { return val * 1.34102f; }
     inline float Nm2lbft(float val) { return val * 0.737562f; }
