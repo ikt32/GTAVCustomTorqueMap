@@ -24,6 +24,12 @@ namespace CustomTorque {
     bool PromptSave(CTorqueScript& context, CConfig& config, Hash model, std::string plate, CConfig::ESaveType saveType);
 
     const std::vector<std::string> sMeasurementTypes { "Relative", "Metric", "Imperial" };
+
+    std::optional<SDrawPerformanceValues> cachedPerfValues;
+}
+
+void CustomTorque::InvalidateCachedTorqueGraphData() {
+    cachedPerfValues.reset();
 }
 
 std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
@@ -40,6 +46,7 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
             mbCtx.Option("No vehicle", { "Get in a vehicle." });
             mbCtx.MenuOption("UI settings", "uimenu");
             mbCtx.MenuOption("Developer settings", "developermenu");
+            cachedPerfValues.reset();
             return;
         }
 
@@ -68,9 +75,13 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
             }
 
             bool showTorqueMap = false;
-            mbCtx.OptionPlus("Torque map info", extra, &showTorqueMap, nullptr, nullptr, torqueExtraTitle, details);
-            if (showTorqueMap) {
-                DrawCurve(context, *activeConfig, playerVehicle);
+            bool triggered =
+                mbCtx.OptionPlus("Torque map info", extra, &showTorqueMap, nullptr, nullptr, torqueExtraTitle, details);
+            if (showTorqueMap && cachedPerfValues) {
+                DrawCurve(*activeConfig, playerVehicle, cachedPerfValues.value());
+            }
+            if (!cachedPerfValues || triggered) {
+                cachedPerfValues = GenerateCurveData(*activeConfig, playerVehicle);
             }
         }
 
@@ -161,7 +172,7 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
 
             if (selected) {
                 mbCtx.OptionPlusPlus(FormatTorqueConfig(context, config), config.Name);
-                DrawCurve(context, config, 0);
+                DrawCurve(config, 0, GenerateCurveData(config, 0));
             }
 
             if (triggered) {
@@ -176,11 +187,13 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
         mbCtx.Title("UI settings");
         mbCtx.Subtitle("");
 
-        mbCtx.StringArray("Measurement", sMeasurementTypes, CustomTorque::GetSettings().UI.Measurement,
+        bool triggered = mbCtx.StringArray("Measurement", sMeasurementTypes, CustomTorque::GetSettings().UI.Measurement,
             { "Change visualization and summary units.",
               "Relative: Values as ratio of the max output.",
               "Metric: Use kW and N-m.",
               "Imperial: Use hp and lb-ft." });
+        if (triggered)
+            InvalidateCachedTorqueGraphData();
 
         mbCtx.BoolOption("Enable tachometer", CustomTorque::GetSettings().UI.Tachometer.Enable,
             { "Display a custom tachometer that represents the actual power output." });
@@ -207,7 +220,7 @@ std::vector<CScriptMenu<CTorqueScript>::CSubmenu> CustomTorque::BuildMenu() {
 
         // For reference/editing coords.
         if (CustomTorque::GetConfigs().size() > 0)
-            DrawCurve(context, CustomTorque::GetConfigs()[0], 0);
+            DrawCurve(CustomTorque::GetConfigs()[0], 0, GenerateCurveData(CustomTorque::GetConfigs()[0], 0));
 
         const std::vector<std::string> graphPosInfo {
             "Move graph position.",

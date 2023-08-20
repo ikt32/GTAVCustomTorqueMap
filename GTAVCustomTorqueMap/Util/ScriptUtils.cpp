@@ -2,6 +2,7 @@
 #include "../Constants.hpp"
 #include "../Memory/Offsets.hpp"
 #include "../Memory/VehicleExtensions.hpp"
+#include "../Util/Math.hpp"
 #include <inc/enums.h>
 #include <inc/natives.h>
 
@@ -48,7 +49,27 @@ bool Util::VehicleHasTurboMod(Vehicle vehicle) {
         VEHICLE::IS_TOGGLE_MOD_ON(vehicle, VehicleToggleModTurbo);
 }
 
+float Util::GetEngineModTorqueMult(Vehicle vehicle) {
+    if (vehicle == 0 ||
+        !ENTITY::DOES_ENTITY_EXIST(vehicle)) {
+        return 1.0f;
+    }
+
+    const int modLevel = VEHICLE::GET_VEHICLE_MOD(vehicle, eVehicleMod::VehicleModEngine);
+    if (modLevel < 0) {
+        return 1.0f;
+    }
+
+    const int modVal = VEHICLE::GET_VEHICLE_MOD_MODIFIER_VALUE(vehicle, eVehicleMod::VehicleModEngine, modLevel);
+    return map(static_cast<float>(modVal), 0.0f, 100.0f, 1.0f, 1.2f);
+}
+
 float Util::GetHandlingTorqueNm(Vehicle vehicle) {
+    if (vehicle == 0 ||
+        !ENTITY::DOES_ENTITY_EXIST(vehicle)) {
+        return 0.0f;
+    }
+
     auto handlingPtr = VehicleExtensions::GetHandlingPtr(vehicle);
     float weight = *reinterpret_cast<float*>(handlingPtr + hOffsets1604.fMass);
     float torqueNm = weight * *reinterpret_cast<float*>(handlingPtr + hOffsets1604.fInitialDriveForce);

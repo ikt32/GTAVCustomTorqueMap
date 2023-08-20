@@ -9,6 +9,7 @@ namespace CustomTorque {
     void UpdateNPC();
     void UpdateActiveConfigs();
     std::vector<CScriptMenu<CTorqueScript>::CSubmenu> BuildMenu();
+    void InvalidateCachedTorqueGraphData();
 
     CScriptSettings& GetSettings();
     CTorqueScript* GetScript();

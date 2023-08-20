@@ -4,6 +4,7 @@
 #include "PerformanceLog.hpp"
 #include "TorqueUtil.hpp"
 #include "TorqueUI.hpp"
+#include "Script.hpp"
 #include "VehicleMods.hpp"
 
 #include "Util/Math.hpp"
@@ -58,6 +59,7 @@ void CTorqueScript::Tick() {
         mVehicle = playerVehicle;
 
         UpdateActiveConfig(true);
+        CustomTorque::InvalidateCachedTorqueGraphData();
     }
 
     if (mActiveConfig && Util::VehicleAvailable(mVehicle, PLAYER::PLAYER_PED_ID(), false)) {

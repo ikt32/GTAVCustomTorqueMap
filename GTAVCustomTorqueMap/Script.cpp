@@ -70,6 +70,7 @@ void CustomTorque::ScriptInit() {
             // OnInit
             settings->Load();
             CustomTorque::LoadConfigs();
+            InvalidateCachedTorqueGraphData();
         },
         []() {
             // OnExit
